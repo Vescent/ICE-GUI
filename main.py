@@ -1,8 +1,15 @@
+#!python3
 __author__ = 'Vescent Photonics'
 __version__ = '1.0'
 
+# NOTE: PyQt5 depends on DirectX for doing OpenGL graphics, so
+# the deployment machine may require the Microsoft DirectX runtime
+# to be installed for the application to start.
+
 import sys
+import ctypes
 from PyQt5.QtCore import *
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtQuick import QQuickView
 from PyQt5.QtQml import QJSValue
@@ -18,8 +25,7 @@ class iceController(QObject):
         super().__init__()
         self.slot = 0
         self._logging = False
-        self.iceRef = iceComm.Connection(logging=True)
-        #self.iceRef = iceComm.Connection()
+        self.iceRef = iceComm.Connection(logging=False)
 
     @pyqtSlot(int)
     def setSlot(self, slot):
@@ -96,20 +102,37 @@ class iceController(QObject):
             
         return portnames
 
-print('Starting ICE Control GUI...')        
-app = QApplication(sys.argv)
-view = QQuickView()
-context = view.rootContext()
+if __name__ == "__main__":
+	print('ICE Control v' + str(__version__))
+	print('Starting GUI...') 
+	
+	app = QApplication(sys.argv)
+	
+	# This is a workaround for letting python interpreter display application's
+	# icon instead of python's on windows.
+	# http://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7/1552105#1552105
+	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Vescent.ICE_Control')
+	
+	app_name = 'ICE Control'
+	app.setOrganizationName("Vescent Photonics, Inc.")
+	app.setOrganizationDomain("www.vescent.com")
+	app.setApplicationName(app_name)
+	app.setWindowIcon(QIcon("vescent.ico"))
+	
+	view = QQuickView()
+	view.setTitle(app_name)
+	
+	context = view.rootContext()
 
-console = PyConsole()
-context.setContextProperty('PyConsole', console)
+	console = PyConsole()
+	context.setContextProperty('PyConsole', console)
 
-ice = iceController()
-context.setContextProperty('ice', ice)
+	ice = iceController()
+	context.setContextProperty('ice', ice)
 
-view.setSource(QUrl("qml/main.qml"))
-view.show()
+	view.setSource(QUrl("qml/main.qml"))
+	view.show()
 
-app.exec_()
-ice.iceRef.disconnect()
-sys.exit(0)
+	app.exec_()
+	ice.iceRef.disconnect()
+	sys.exit(0)
