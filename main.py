@@ -1,4 +1,4 @@
-#!python3.4
+#!python3
 __author__ = 'Vescent Photonics'
 __version__ = '1.0'
 
@@ -7,62 +7,13 @@ __version__ = '1.0'
 # to be installed for the application to start.
 
 import sys
-import os
 import ctypes
-
-# This is to add our local site-package directory before any
-# other paths for importing PyQt5 modules
-dirname = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(dirname, 'pkgs'))
-
-print('Starting ICE Control GUI...')
-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtQuick import QQuickView
 from PyQt5.QtQml import QJSValue
 import iceComm
-
-# Since QtCore.dll is patched to look for PyQt libraries in the location
-# specified during the installation on the development machine, we must
-# programmatically add the local PyQt5 site-package paths to QApplication
-# before instantiating it. The plugin_path will enable QApplication to load the
-# windows platform plugin qwindows.dll. However, qwindows.dll still depends
-# on libEGL.dll, but doesn't seem to look in the PyQt package directory we
-# set with addLibraryPath(). For now, libEGL.dll must be copied to the same
-# directory that this python script executes from.
-os.chdir(dirname) #change working directory so other qml relative imports work.
-pyqt_path = os.path.join(dirname, 'pkgs', 'PyQt5')
-plugin_path = os.path.join(pyqt_path, 'plugins')
-QCoreApplication.addLibraryPath(pyqt_path) 
-QCoreApplication.addLibraryPath(plugin_path) 
-
-# Alternate way of specifying plugin path:
-#os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(plugin_path, 'platforms')
-
-app = QApplication(sys.argv) 
-
-# This is a workaround for letting python interpreter display application's
-# icon instead of python's on windows.
-# http://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7/1552105#1552105
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Vescent.ICE_Control')
-
-app_name = 'ICE Control'
-app.setOrganizationName("Vescent Photonics, Inc.")
-app.setOrganizationDomain("www.vescent.com")
-app.setApplicationName(app_name)
-app.setWindowIcon(QIcon("vescent.ico"))
-
-view = QQuickView()
-
-# The QML import paths also need to be changed to our local site-package paths,
-# otherwise our qml files won't be able to import QtQuick by the qml interpreter.
-qml_path = os.path.join(pyqt_path, 'qml')
-view.engine().addImportPath(qml_path)
-view.setTitle(app_name)
-
-context = view.rootContext()
 
 class PyConsole(QObject):
     @pyqtSlot(str)
@@ -151,16 +102,37 @@ class iceController(QObject):
             
         return portnames
 
-		
-console = PyConsole()
-context.setContextProperty('PyConsole', console)
+if __name__ == "__main__":
+	print('ICE Control v' + str(__version__))
+	print('Starting GUI...') 
+	
+	app = QApplication(sys.argv)
+	
+	# This is a workaround for letting python interpreter display application's
+	# icon instead of python's on windows.
+	# http://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7/1552105#1552105
+	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Vescent.ICE_Control')
+	
+	app_name = 'ICE Control'
+	app.setOrganizationName("Vescent Photonics, Inc.")
+	app.setOrganizationDomain("www.vescent.com")
+	app.setApplicationName(app_name)
+	app.setWindowIcon(QIcon("vescent.ico"))
+	
+	view = QQuickView()
+	view.setTitle(app_name)
+	
+	context = view.rootContext()
 
-ice = iceController()
-context.setContextProperty('ice', ice)
+	console = PyConsole()
+	context.setContextProperty('PyConsole', console)
 
-view.setSource(QUrl("qml/main.qml"))
-view.show()
+	ice = iceController()
+	context.setContextProperty('ice', ice)
 
-app.exec_()
-ice.iceRef.disconnect()
-sys.exit(0)
+	view.setSource(QUrl("qml/main.qml"))
+	view.show()
+
+	app.exec_()
+	ice.iceRef.disconnect()
+	sys.exit(0)

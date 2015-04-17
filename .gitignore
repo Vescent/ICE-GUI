@@ -1,7 +1,2 @@
 .idea
 __pycache__
-pkgs
-WinPython-64bit-3.4.2.3
-launcher.bat
-launcher.py
-libEGL.dll
