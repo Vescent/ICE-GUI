@@ -1,4 +1,4 @@
-#!python3
+#!python3.4
 __author__ = 'Vescent Photonics'
 __version__ = '1.0'
 
@@ -7,7 +7,7 @@ __version__ = '1.0'
 # to be installed for the application to start.
 
 import sys
-import ctypes
+import os
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
@@ -102,37 +102,37 @@ class iceController(QObject):
             
         return portnames
 
+def main():		
+    app = QApplication(sys.argv) 
+
+    app_name = 'ICE Control'
+    app.setOrganizationName("Vescent Photonics, Inc.")
+    app.setOrganizationDomain("www.vescent.com")
+    app.setApplicationName(app_name)
+    app.setWindowIcon(QIcon("vescent.ico"))
+
+    view = QQuickView()
+
+    # The QML import paths also need to be changed to our local site-package paths,
+    # otherwise our qml files won't be able to import QtQuick by the qml interpreter.
+    qml_path = os.path.join(pyqt_path, 'qml')
+    view.engine().addImportPath(qml_path)
+    view.setTitle(app_name)
+
+    context = view.rootContext()
+    
+    console = PyConsole()
+    context.setContextProperty('PyConsole', console)
+
+    ice = iceController()
+    context.setContextProperty('ice', ice)
+
+    view.setSource(QUrl("qml/main.qml"))
+    view.show()
+
+    app.exec_()
+    ice.iceRef.disconnect()
+    sys.exit(0)
+    
 if __name__ == "__main__":
-	print('ICE Control v' + str(__version__))
-	print('Starting GUI...') 
-	
-	app = QApplication(sys.argv)
-	
-	# This is a workaround for letting python interpreter display application's
-	# icon instead of python's on windows.
-	# http://stackoverflow.com/questions/1551605/how-to-set-applications-taskbar-icon-in-windows-7/1552105#1552105
-	ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Vescent.ICE_Control')
-	
-	app_name = 'ICE Control'
-	app.setOrganizationName("Vescent Photonics, Inc.")
-	app.setOrganizationDomain("www.vescent.com")
-	app.setApplicationName(app_name)
-	app.setWindowIcon(QIcon("vescent.ico"))
-	
-	view = QQuickView()
-	view.setTitle(app_name)
-	
-	context = view.rootContext()
-
-	console = PyConsole()
-	context.setContextProperty('PyConsole', console)
-
-	ice = iceController()
-	context.setContextProperty('ice', ice)
-
-	view.setSource(QUrl("qml/main.qml"))
-	view.show()
-
-	app.exec_()
-	ice.iceRef.disconnect()
-	sys.exit(0)
+    main()
