@@ -113,11 +113,13 @@ function switchSlot(slot) {
 
 function loadSystemDevices() {
     if (standaloneMode) {
-        systemDevices[0] = 1;
+        systemDevices[0] = 1; // ICE-QT1
         slotButtons[0].enabled = true;
-        systemDevices[2] = 2;
+        systemDevices[1] = 2; // ICE-CS1
+        slotButtons[1].enabled = true;
+        systemDevices[2] = 3; // ICE-CP1
         slotButtons[2].enabled = true;
-        systemDevices[3] = 3;
+        systemDevices[3] = 6; // ICE-PB1
         slotButtons[3].enabled = true;
     } else {
         ice.send('#enumerate', 1, function(response) {

@@ -16,6 +16,7 @@ Rectangle {
     property bool alternate: false
     property int dataWidth: 150
     property real maxRampVal: 2.4
+    property real maxCurrent: 200
     property var global: ({
                               numDataPoints: 256,
                               rampOn: false,
@@ -47,11 +48,29 @@ Rectangle {
 
             intervalTimer.start();
             setGraphLabels();
+            getFeatureID();
         }
         else {
             intervalTimer.stop();
             runRamp(false);
         }
+    }
+
+    function getFeatureID() {
+        ice.send('Enumdev', slot, function(result){
+            deviceID = result.split(" ");
+            feature = parseInt(deviceID[2], 10);
+
+            if (feature === 0) {
+                maxCurrent = 200;
+            }
+            else if (feature === 1) {
+                maxCurrent = 500;
+            }
+            else {
+                console.log("Error getting feature ID");
+            }
+        });
     }
 
     function timerUpdate() {
@@ -746,7 +765,7 @@ Rectangle {
             text: "0.0"
             precision: 5
             useInt: false
-            maxVal: 200
+            maxVal: maxCurrent
             minVal: 0
             decimal: 1
             pointSize: 19
@@ -770,7 +789,7 @@ Rectangle {
             value: 0
             stepSize: 1
             minValue: 0
-            maxValue: 200
+            maxValue: maxCurrent
             onNewValue: {
                 setCurrent(value);
             }

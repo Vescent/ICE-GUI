@@ -11,6 +11,7 @@ Rectangle {
     border.color: (active) ? '#3399ff' : "#666666";
     property string widgetTitle: 'Power Breakout'
     property int slot: 1
+    property int updateRate: 1000
     property bool active: false
     signal error(string msg)
 
@@ -18,10 +19,15 @@ Rectangle {
         if (active) {
             getEnable();
 			getAutoPower();
+			intervalTimer.start();
         }
         else {
-            // no operation
+            intervalTimer.stop();
         }
+    }
+
+    function timerUpdate() {
+        getEnable();
     }
 	
 	function save(value) {
@@ -98,6 +104,14 @@ Rectangle {
         });
     }
 
+    Timer {
+        id: intervalTimer
+        interval: updateRate
+        running: false
+        repeat: true
+        onTriggered: timerUpdate()
+        triggeredOnStart: true
+    }
 
     Text {
         id: textWidgetTitle
