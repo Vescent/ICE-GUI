@@ -20,7 +20,9 @@ Rectangle {
                               dataChn: 3,
                               rampOn: false,
                               servoOn: false,
-							  blockChunkSize: 8
+							  blockChunkSize: 8,
+							  rampCenter: 0,
+							  rampSwp: 10
                           })
 
     signal error(string msg)
@@ -45,6 +47,7 @@ Rectangle {
             getOpAmpOffset();
             getDataChannel();
             intervalTimer.start();
+            setGraphLabels();
         }
         else {
             intervalTimer.stop();
@@ -67,6 +70,20 @@ Rectangle {
 				console.log('Error saving settings.');
 			}
 		});
+	}
+
+	function setGraphLabels() {
+        var yDiv = (graphcomponent.yMaximum - graphcomponent.yMinimum)/graphcomponent.gridYDiv;
+        var xDiv = global.rampSwp/graphcomponent.gridXDiv;
+        xDiv = xDiv.toFixed(2);
+        graphcomponent.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
+        graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
+        graphcomponent.refresh();
+
+        yDiv = (graphcomponent2.yMaximum - graphcomponent2.yMinimum)/graphcomponent2.gridYDiv;
+        graphcomponent2.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
+        graphcomponent2.axisYLabel = "DC Error [" + yDiv + " V/Div]";
+        graphcomponent2.refresh();
 	}
 
     // Common Laser Controller Command Set
@@ -289,6 +306,7 @@ Rectangle {
         ice.send('RampSwp ' + value, slot, function(result){
             rotarycontrolRange.setValue(result);
             global.rampSwp = parseFloat(result);
+            setGraphLabels();
             return;
         });
     }
@@ -1132,14 +1150,14 @@ Rectangle {
         y: 32
         width: 443
         height: 235
-        gridYDiv: 10
+        gridYDiv: 8
         yMinimum: -1
         yMaximum: 1
         xMinimum: -128
         xMaximum: 128
         datasetFill: false
         axisYLabel: "Error Input"
-        axisXLabel: "Time"
+        axisXLabel: "Ramp Voltage"
         autoScale: false
     }
 
@@ -1149,14 +1167,14 @@ Rectangle {
         y: 273
         width: 443
         height: 239
-        gridYDiv: 10
+        gridYDiv: 8
         yMinimum: -0.2
         yMaximum: 0.2
         xMinimum: -128
         xMaximum: 128
         datasetFill: false
         axisYLabel: "DC Error"
-        axisXLabel: "Time"
+        axisXLabel: "Ramp Voltage"
         autoScale: false
     }
 

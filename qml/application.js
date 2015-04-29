@@ -40,6 +40,7 @@ function serialConnect() {
                 console.log('ICE Master Controller Version ' + version);
                 appWindow.serialConnected = true;
                 buttonConnect.text = 'Disconnect';
+                buttonConnect.highlight = false;
 
                 ice.send('#status', 1, function(response){
                     console.log('Power: ' + response);
@@ -67,6 +68,7 @@ function serialConnect() {
 		ice.serialClose();
         appWindow.serialConnected = false;
         buttonConnect.text = 'Connect';
+        buttonConnect.highlight = true;
         console.log('Serial port disconnected.');
     }
 }

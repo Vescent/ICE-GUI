@@ -19,7 +19,9 @@ Rectangle {
     property var global: ({
                               numDataPoints: 256,
                               rampOn: false,
-                              servoOn: false
+                              servoOn: false,
+                              rampCenter: 0,
+							  rampSwp: 10
                           })
 
     signal error(string msg)
@@ -44,6 +46,7 @@ Rectangle {
             getGain();
 
             intervalTimer.start();
+            setGraphLabels();
         }
         else {
             intervalTimer.stop();
@@ -66,6 +69,15 @@ Rectangle {
 				console.log('Error saving settings.');
 			}
 		});
+	}
+
+	function setGraphLabels() {
+        var yDiv = (graphcomponent.yMaximum - graphcomponent.yMinimum)/graphcomponent.gridYDiv;
+        var xDiv = global.rampSwp/graphcomponent.gridXDiv;
+        xDiv = xDiv.toFixed(2);
+        graphcomponent.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
+        graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
+        graphcomponent.refresh();
 	}
 
     // Common Laser Controller Command Set
@@ -285,6 +297,7 @@ Rectangle {
         ice.send('RampSwp ' + value, slot, function(result){
             rotarycontrolRange.setValue(result);
             global.rampSwp = parseFloat(result);
+            setGraphLabels();
             return;
         });
     }
@@ -1021,7 +1034,7 @@ Rectangle {
         xMaximum: 128
         datasetFill: false
         axisYLabel: "Error Input"
-        axisXLabel: "Time"
+        axisXLabel: "Ramp Voltage"
         autoScale: false
     }
 

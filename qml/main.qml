@@ -266,6 +266,7 @@ Rectangle {
             anchors.leftMargin: 6
             anchors.verticalCenter: parent.verticalCenter
             onClicked: App.serialConnect()
+            highlight: true
         }
 
 		/*
@@ -340,6 +341,7 @@ Rectangle {
         anchors.bottomMargin: 6
         placeholderText: "Enter Command"
         onAccepted: commandSend(commandEntry.text)
+        readOnly: !appWindow.serialConnected
     }
 
     TextField {
@@ -353,6 +355,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 6
         placeholderText: "Command Result"
+        readOnly: true
     }
 
     Text {
