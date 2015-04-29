@@ -58,8 +58,8 @@ Rectangle {
 
     function getFeatureID() {
         ice.send('Enumdev', slot, function(result){
-            deviceID = result.split(" ");
-            feature = parseInt(deviceID[2], 10);
+            var deviceID = result.split(" ");
+            var feature = parseInt(deviceID[2], 10);
 
             if (feature === 0) {
                 maxCurrent = 200;
