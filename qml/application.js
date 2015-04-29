@@ -1,3 +1,4 @@
+// application.js - utility functions for main.qml window
 var currentWidget;
 var systemDevices = [0, 0, 0, 0, 0, 0, 0, 0];
 var slotButtons = [];
@@ -22,7 +23,7 @@ function onLoad() {
     }
 
     if (standaloneMode) {
-        toggleswitchSystemPower.enableSwitch(true);
+        //toggleswitchSystemPower.enableSwitch(true);
         appWindow.systemPower = true;
         loadSystemDevices();
     }
@@ -44,23 +45,26 @@ function serialConnect() {
                     console.log('Power: ' + response);
 
                     if (response === 'On') {
-                        toggleswitchSystemPower.enableSwitch(true);
+                        //toggleswitchSystemPower.enableSwitch(true);
                         appWindow.systemPower = true;
                         loadSystemDevices();
                     }
                     else {
-                        toggleswitchSystemPower.enableSwitch(false);
+                        //toggleswitchSystemPower.enableSwitch(false);
                         appWindow.systemPower = false;
+						appWindow.alert('ICE box power is not enabled. Send #poweron command and then reconnecting.')
                     }
                 });
             });
         }
         else {
             console.log('Error connecting to serial port.');
+			appWindow.alert('Error connecting to serial port.')
         }
     }
     else {
         unloadSystemDevices();
+		ice.serialClose();
         appWindow.serialConnected = false;
         buttonConnect.text = 'Connect';
         console.log('Serial port disconnected.');
@@ -82,14 +86,25 @@ function loadSlotWidget(slotNumber, deviceType) {
 
     var component = Qt.createComponent(sourceFile);
     var widget = component.createObject(widgetView, {
-                                            'slot': slotNumber
-                                        });
+		'slot': slotNumber
+	});
     widget.error.connect(function(msg) {
         console.log(msg);
         commandResult.text = msg;
     });
 
     currentWidget = widget;
+}
+
+function switchSlot(slot) {
+	for (var i = 0; i < slotButtons.length; i++) {
+		slotButtons[i].highlight = false;
+		slotButtons[i].width = 40;
+	}
+
+	slotButtons[slot - 1].highlight = true;
+	slotButtons[slot - 1].width = 50;
+	setSlotActive(slot);
 }
 
 function loadSystemDevices() {
@@ -123,6 +138,14 @@ function loadSystemDevices() {
 
             textSlot.color = "#fff";
             textSlot.font.bold = true;
+			
+			// Load first slot that has a device
+			for (var i = 0; i < systemDevices.length; i++) {
+				if (systemDevices[i] !== 0) {
+					switchSlot(i + 1);
+					break;
+				}
+			}
         });
     }
 }
@@ -153,14 +176,15 @@ function setSlotActive(slotNumber) {
 function toggleSystemPower(enable) {
     if (enable) {  
         ice.send('#poweron', 1, function(response){
-            return;
+			return;
         });
 
         appWindow.setTimeout(function(){
-            ice.send('#status', 1, function(response){
-                loadSystemDevices();
+			ice.send('#status', 1, function(response){
+                ice.getResponses();
+				loadSystemDevices();
             });
-        }, 5000);
+        }, 8000);
 
         appWindow.systemPower = true;
     }

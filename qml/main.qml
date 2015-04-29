@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.0
+import QtQuick.Dialogs 1.1
 import "application.js" as App
 
 Rectangle {
@@ -47,11 +48,24 @@ Rectangle {
         triggeredOnStart: false
         onTriggered: {
 			ice.processResponses();
-			//var data = ice.getResponses();
 			ice.getResponses();
-			//console.log(data);
 		}
     }
+	
+	MessageDialog {
+		id: messageDialog
+		title: ""
+		icon: StandardIcon.Warning
+		text: "Error"
+		onAccepted: {
+			return;
+		}
+	}
+	
+	function alert(message) {
+		messageDialog.text = message;
+		messageDialog.open();
+	}
 
     Item {
         id: slotSwitcher
@@ -77,7 +91,7 @@ Rectangle {
                 textColor: "#ffffff"
                 borderWidth: 0
                 highlight: false
-                onClicked: switchSlot(1)
+                onClicked: App.switchSlot(1)
                 enabled: false
             }
 
@@ -91,7 +105,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(2)
+                onClicked: App.switchSlot(2)
                 enabled: false
             }
 
@@ -105,7 +119,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(3)
+                onClicked: App.switchSlot(3)
                 enabled: false
             }
 
@@ -119,7 +133,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(4)
+                onClicked: App.switchSlot(4)
                 enabled: false
             }
 
@@ -133,7 +147,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(5)
+                onClicked: App.switchSlot(5)
                 enabled: false
             }
 
@@ -147,7 +161,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(6)
+                onClicked: App.switchSlot(6)
                 enabled: false
             }
 
@@ -161,7 +175,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(7)
+                onClicked: App.switchSlot(7)
                 enabled: false
             }
 
@@ -175,7 +189,7 @@ Rectangle {
                 textColor: "#ffffff"
                 highlight: false
                 borderWidth: 0
-                onClicked: switchSlot(8)
+                onClicked: App.switchSlot(8)
                 enabled: false
             }
 
@@ -254,6 +268,7 @@ Rectangle {
             onClicked: App.serialConnect()
         }
 
+		/*
         ToggleSwitch {
             id: toggleswitchSystemPower
             y: 5
@@ -277,6 +292,7 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             opacity: serialConnected ? 1.0 : 0;
         }
+		*/
 		
         ToggleSwitch {
             id: logMode
@@ -306,17 +322,6 @@ Rectangle {
         anchors.topMargin: 38
         anchors.fill: parent
         spacing: 10
-    }
-
-    function switchSlot(slot) {
-        for (var i = 0; i < App.slotButtons.length; i++) {
-            App.slotButtons[i].highlight = false;
-            App.slotButtons[i].width = 40;
-        }
-
-        App.slotButtons[slot - 1].highlight = true;
-        App.slotButtons[slot - 1].width = 50;
-        App.setSlotActive(slot);
     }
 
     function commandSend(command) {
