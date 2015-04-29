@@ -56,6 +56,17 @@ Rectangle {
             updateServoLock();
         }
     }
+	
+	function save(value) {
+		ice.send('Save', slot, function(result){
+			if (result == "Success") {
+				console.log('Successfully saved settings.');
+			}
+			else {
+				console.log('Error saving settings.');
+			}
+		});
+	}
 
     // Common Laser Controller Command Set
     function setLaser(value) {
@@ -507,6 +518,19 @@ Rectangle {
         font.pointSize: 12
         font.family: "MS Shell Dlg 2"
     }
+	
+	ThemeButton {
+		id: saveBtn
+		y: 7
+		width: 40
+		height: 20
+		anchors.right: widget.right
+		anchors.rightMargin: 10
+		text: "Save"
+		highlight: false
+		onClicked: save()
+		enabled: true
+	}
 
     Rectangle {
         id: rampRect
