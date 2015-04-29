@@ -81,6 +81,8 @@ function loadSlotWidget(slotNumber, deviceType) {
                 break;
         case 3: sourceFile = 'OPLS.qml';
                 break;
+		case 6: sourceFile = 'PB1.qml';
+                break;
         default: return;
     }
 
