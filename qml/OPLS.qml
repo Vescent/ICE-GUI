@@ -1,4 +1,4 @@
- import QtQuick 2.0
+import QtQuick 2.0
 import QtQuick.Controls 1.0
 
 Rectangle {
@@ -868,7 +868,7 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
         }
 
-        RotaryControl {
+        StepControl {
             id: rotarycontrolNDiv
             x: 188
             y: 149
@@ -879,14 +879,10 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             displayTextRatio: 0.2
             decimalPlaces: 0
-            useArc: true
-            useCursor: true
-            showRange: false
-            value: 8
-            stepSize: 8
-            minValue: 4
-            maxValue: 64
+            maxValue: 3
+            stepValues: [8,16,32,64]
             onNewValue: setNDiv(value)
+            //onNewValue: console.log(value)
         }
 
         Text {
