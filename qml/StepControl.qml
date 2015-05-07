@@ -104,7 +104,7 @@ Item {
             x: 12
             y: widget.height/2*(1 + widget.displayTextRatio)
             color: (acceptableInput) ? widget.displayTextColor : '#ff0000'
-            text: '0'
+            text: widget.stepValues[0]
             anchors.verticalCenterOffset: 0
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -206,7 +206,18 @@ Item {
             return;
         }
 
-        widget.value = number.toFixed(widget.decimalPlaces);
+        if (widget.useStepValues === true) {
+            var pos = widget.stepValues.indexOf(number);
+            if (pos === -1) {
+                console.log("Couldn't find index of " + text + " in StepControl");
+            }
+            else {
+                widget.value = pos;
+            }
+        }
+        else {
+            widget.value = number.toFixed(widget.decimalPlaces);
+        }
     }
 
     function getValue() {
