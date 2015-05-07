@@ -76,7 +76,7 @@ Rectangle {
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
 
-            // Draw X axis label
+            // Draw label
             ctx.fillText('[-] V/Div [+]', 2, 0);
         }
 
@@ -86,8 +86,8 @@ Rectangle {
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
 
-            // Draw X axis label
-            ctx.fillText('[-] V Pos. [+]', 80, 0);
+            // Draw  label
+            ctx.fillText('[-] V Pos. [+] : ' + graphWidget.yOffset.toFixed(2) + graphWidget.axisYUnits, 80, 0);
         }
 
         for (var i = 0; i < datasets.length; i++) {
@@ -204,7 +204,8 @@ Rectangle {
         var xx, yy, x0;
         var di = axes.pixelWidth/datasets[series].size;
         var y0 = axes.y0;
-        var scale = (axes.pixelHeight - 0.5)/Math.abs(datasets[series].yMaximum - datasets[series].yMinimum); // 40 pixels from x=0 to x=1
+        //var scale = (axes.pixelHeight - 0.5)/Math.abs(datasets[series].yMaximum - datasets[series].yMinimum); // 40 pixels from x=0 to x=1
+		var scale = (axes.pixelHeight - 0.5)/Math.abs(graphWidget.yMaximum - graphWidget.yMinimum); // 40 pixels from x=0 to x=1
         var length = datasets[series].data.length;
 
         ctx.beginPath();
@@ -220,7 +221,7 @@ Rectangle {
 
         for (var i = 0; i < length; i++) {
             xx = x0 + i*di;
-            yy = scale*datasets[series].data[i];
+            yy = scale*(datasets[series].data[i] + graphWidget.yOffset);
 
             if (i == 0)
                 ctx.moveTo(xx,y0-yy);
@@ -315,6 +316,7 @@ Rectangle {
         graphWidget.yMaximum = graphWidget.vDivSteps[step];
         graphWidget.yMinimum = -graphWidget.yMaximum;
         refresh();
+		//console.log(graphWidget.vDivSteps[step]);
     }
 
     MouseArea {
@@ -326,7 +328,8 @@ Rectangle {
          enabled: graphWidget.adjustableVdiv
          onClicked: {
              if (graphWidget.vDivSetting > 0) {
-                setVdiv(graphWidget.vDivSetting--);
+                graphWidget.vDivSetting--;
+				setVdiv(graphWidget.vDivSetting);
              }
          }
     }
@@ -341,7 +344,8 @@ Rectangle {
          height: 20
          onClicked: {
              if (graphWidget.vDivSetting < (graphWidget.vDivSteps.length - 1)) {
-                setVdiv(graphWidget.vDivSetting++);
+                graphWidget.vDivSetting++;
+				setVdiv(graphWidget.vDivSetting);
              }
          }
     }
@@ -354,8 +358,9 @@ Rectangle {
          height: 20
          enabled: graphWidget.adjustableYOffset
          onClicked: {
-             var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting];
+             var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
              graphWidget.yOffset -= stepSize;
+             refresh();
              //console.log(graphWidget.yOffset);
          }
     }
@@ -370,6 +375,7 @@ Rectangle {
          enabled: graphWidget.adjustableYOffset
          onDoubleClicked: {
              graphWidget.yOffset = 0.0;
+             refresh();
              //console.log(graphWidget.yOffset);
          }
     }
@@ -383,8 +389,9 @@ Rectangle {
          height: 20
          enabled: graphWidget.adjustableYOffset
          onClicked: {
-             var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting];
+             var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
              graphWidget.yOffset += stepSize;
+             refresh();
              //console.log(graphWidget.yOffset);
          }
     }
