@@ -41,7 +41,7 @@ Rectangle {
     property int minDatasetSize: 50
     property var datasets: []
     property bool adjustableVdiv: true
-    property bool adjustableYOffset: true
+    property bool adjustableYOffset: false
     property var vDivSteps: [0.01,0.02,0.05,0.1,0.2,0.5,1.0,2.0,5.0,10.0]
     property int vDivSetting: 4
     property real yOffset: 0.0

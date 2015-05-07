@@ -14,7 +14,7 @@ Rectangle {
     property bool active: false
     property int updateRate: 500
     property bool alternate: false
-    property int dataWidth: 128
+    property int dataWidth: 256
     property real maxCurrent: 200
     property var global: ({
                               numDataPoints: 128,
@@ -1169,8 +1169,8 @@ Rectangle {
         y: 32
         width: 443
         height: 235
-        yMinimum: -1
-        yMaximum: 1
+        yMinimum: -0.8
+        yMaximum: 0.8
         xMinimum: -128
         xMaximum: 128
         datasetFill: false
@@ -1178,6 +1178,7 @@ Rectangle {
         axisXLabel: "Ramp Voltage"
         autoScale: false
         vDivSetting: 4
+        adjustableYOffset: true
     }
 
     GraphComponent {

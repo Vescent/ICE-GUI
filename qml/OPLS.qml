@@ -14,7 +14,7 @@ Rectangle {
     property bool active: false
     property int updateRate: 500
     property bool alternate: false
-    property int dataWidth: 150
+    property int dataWidth: 256
     property real maxRampVal: 2.4
     property real maxCurrent: 200
     property var global: ({
