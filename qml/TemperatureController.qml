@@ -501,6 +501,8 @@ Rectangle {
                         id: tErrorGraph
                         width: parent.width
                         height: parent.height
+                        adjustableVdiv: false
+                        adjustableYOffset: false
                         yMaximum: 200
                         yMinimum: -200
                         rollMode: true

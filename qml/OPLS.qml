@@ -95,7 +95,7 @@ Rectangle {
         var xDiv = global.rampSwp/graphcomponent.gridXDiv;
         xDiv = xDiv.toFixed(2);
         graphcomponent.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
-        graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
+        //graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
         graphcomponent.refresh();
 	}
 
@@ -1051,6 +1051,7 @@ Rectangle {
         axisYLabel: "Error Input"
         axisXLabel: "Ramp Voltage"
         autoScale: false
+        vDivSetting: 6
     }
 
 }

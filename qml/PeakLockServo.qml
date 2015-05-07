@@ -96,12 +96,12 @@ Rectangle {
         var xDiv = global.rampSwp/graphcomponent.gridXDiv;
         xDiv = xDiv.toFixed(2);
         graphcomponent.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
-        graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
+        //graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
         graphcomponent.refresh();
 
         yDiv = (graphcomponent2.yMaximum - graphcomponent2.yMinimum)/graphcomponent2.gridYDiv;
         graphcomponent2.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
-        graphcomponent2.axisYLabel = "DC Error [" + yDiv + " V/Div]";
+        //graphcomponent2.axisYLabel = "DC Error [" + yDiv + " V/Div]";
         graphcomponent2.refresh();
 	}
 
@@ -1169,7 +1169,6 @@ Rectangle {
         y: 32
         width: 443
         height: 235
-        gridYDiv: 8
         yMinimum: -1
         yMaximum: 1
         xMinimum: -128
@@ -1178,6 +1177,7 @@ Rectangle {
         axisYLabel: "Error Input"
         axisXLabel: "Ramp Voltage"
         autoScale: false
+        vDivSetting: 4
     }
 
     GraphComponent {
@@ -1186,7 +1186,6 @@ Rectangle {
         y: 273
         width: 443
         height: 239
-        gridYDiv: 8
         yMinimum: -0.2
         yMaximum: 0.2
         xMinimum: -128
@@ -1195,6 +1194,7 @@ Rectangle {
         axisYLabel: "DC Error"
         axisXLabel: "Ramp Voltage"
         autoScale: false
+        vDivSetting: 2
     }
 
 }
