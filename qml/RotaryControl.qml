@@ -2,7 +2,7 @@ import QtQuick 2.0
 
 Item {
     id: widget
-    anchors.centerIn: parent
+    //anchors.centerIn: parent
     width: widget.height
     height: 100
     property color background: '#202020'
