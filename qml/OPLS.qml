@@ -49,10 +49,43 @@ Rectangle {
             intervalTimer.start();
             setGraphLabels();
             getFeatureID();
+
+            if (typeof(appWindow.widgetState[slot].vDivSetting) === 'number') {
+                graphcomponent.vDivSetting = appWindow.widgetState[slot].vDivSetting;
+            }
+
+            if (typeof(appWindow.widgetState[slot].numDataPoints) === 'number') {
+                global.numDataPoints = appWindow.widgetState[slot].numDataPoints;
+            }
+
+            if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
+                global.rampOn = appWindow.widgetState[slot].rampOn;
+
+                if (global.rampOn) {
+                    setServo(false);
+                }
+
+                runRamp(global.rampOn)
+                //console.log('Ramp: ' + global.rampOn);
+            }
+
+            if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
+                global.servoOn = appWindow.widgetState[slot].servoOn;
+                runRamp(false);
+                setServo(global.servoOn);
+                //console.log('Servo: ' + global.rampOn);
+            }
+
+            graphcomponent.refresh();
         }
         else {
             intervalTimer.stop();
             runRamp(false);
+
+            appWindow.widgetState[slot].vDivSetting = graphcomponent.vDivSetting;
+            appWindow.widgetState[slot].numDataPoints = global.numDataPoints;
+            appWindow.widgetState[slot].rampOn = global.rampOn;
+            appWindow.widgetState[slot].servoOn = global.servoOn;
         }
     }
 

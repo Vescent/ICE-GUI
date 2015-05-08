@@ -50,10 +50,59 @@ Rectangle {
             intervalTimer.start();
             setGraphLabels();
             getFeatureID();
+
+            if (typeof(appWindow.widgetState[slot].vDivSetting1) === 'number') {
+                graphcomponent.vDivSetting = appWindow.widgetState[slot].vDivSetting1;
+            }
+
+            if (typeof(appWindow.widgetState[slot].vDivSetting2) === 'number') {
+                graphcomponent2.vDivSetting = appWindow.widgetState[slot].vDivSetting2;
+            }
+
+            if (typeof(appWindow.widgetState[slot].yOffset) === 'number') {
+                graphcomponent.yOffset = appWindow.widgetState[slot].yOffset;
+            }
+
+            if (typeof(appWindow.widgetState[slot].numDataPoints) === 'number') {
+                global.numDataPoints = appWindow.widgetState[slot].numDataPoints;
+                datainputRampNum.text = global.numDataPoints.toString();
+                setRampNum(global.numDataPoints);
+
+            }
+
+            if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
+                global.rampOn = appWindow.widgetState[slot].rampOn;
+
+                if (global.rampOn) {
+                    setServo(false);
+                }
+
+                runRamp(global.rampOn)
+                //console.log('Ramp: ' + global.rampOn);
+            }
+
+            if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
+                global.servoOn = appWindow.widgetState[slot].servoOn;
+                if (global.servoOn) {
+                    runRamp(false);
+                }
+                setServo(global.servoOn);
+                //console.log('Servo: ' + global.rampOn);
+            }
+
+            graphcomponent.refresh();
+            graphcomponent2.refresh();
         }
         else {
             intervalTimer.stop();
             runRamp(false);
+
+            appWindow.widgetState[slot].vDivSetting1 = graphcomponent.vDivSetting;
+            appWindow.widgetState[slot].vDivSetting2 = graphcomponent2.vDivSetting;
+            appWindow.widgetState[slot].yOffset = graphcomponent.yOffset;
+            appWindow.widgetState[slot].numDataPoints = global.numDataPoints;
+            appWindow.widgetState[slot].rampOn = global.rampOn;
+            appWindow.widgetState[slot].servoOn = global.servoOn;
         }
     }
 

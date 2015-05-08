@@ -71,6 +71,7 @@ Rectangle {
             drawScale(ctx, axes);
 
         if (adjustableVdiv) {
+            setVdiv(graphWidget.vDivSetting);
             ctx.font = axisFont;
             ctx.fillStyle = '#fff';
             ctx.textAlign = 'left';
@@ -165,6 +166,8 @@ Rectangle {
             data: data,
             size: data.length
         }
+
+        //setVdiv(graphWidget.vDivSetting);
 
         if (autoScale) {
             var min = 0;
@@ -315,7 +318,7 @@ Rectangle {
     function setVdiv(step) {
         graphWidget.yMaximum = graphWidget.vDivSteps[step];
         graphWidget.yMinimum = -graphWidget.yMaximum;
-        refresh();
+        //refresh();
 		//console.log(graphWidget.vDivSteps[step]);
     }
 
@@ -329,7 +332,8 @@ Rectangle {
          onClicked: {
              if (graphWidget.vDivSetting > 0) {
                 graphWidget.vDivSetting--;
-				setVdiv(graphWidget.vDivSetting);
+				//setVdiv(graphWidget.vDivSetting);
+				refresh();
              }
          }
     }
@@ -345,7 +349,8 @@ Rectangle {
          onClicked: {
              if (graphWidget.vDivSetting < (graphWidget.vDivSteps.length - 1)) {
                 graphWidget.vDivSetting++;
-				setVdiv(graphWidget.vDivSetting);
+				//setVdiv(graphWidget.vDivSetting);
+				refresh();
              }
          }
     }

@@ -3,8 +3,8 @@ import QtQuick.Controls 1.0
 
 Rectangle {
     id: widget
-    width: 750
-    height: 525
+    width: 280
+    height: 410
     color: "#333333"
     radius: 15
     border.width: 2
@@ -257,7 +257,7 @@ Rectangle {
             useArc: true
             showRange: true
             value: 0
-            stepSize: 1
+            stepSize: 2
             minValue: 0
             maxValue: maxCurrent
             onNewValue: {
@@ -376,7 +376,7 @@ Rectangle {
             useArc: true
             showRange: true
             value: 0
-            stepSize: 1
+            stepSize: 2
             minValue: 0
             maxValue: maxCurrent
             onNewValue: {

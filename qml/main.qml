@@ -13,6 +13,7 @@ Rectangle {
     Component.onCompleted: App.onLoad()
     property int currentSlot: 1
     property bool logMode: false
+    property var widgetState: [{},{},{},{},{},{},{},{}]
 
     // Function that when paired with a QML Timer replicates functionality of window.setTimeout().
     function setTimeout(callback, interval) {
@@ -297,7 +298,7 @@ Rectangle {
 
 		Text {
             id: textVersion
-            color: "#ffffff"
+            color: "#aaa"
             text: 'v' + App.programVersion
             verticalAlignment: Text.AlignVCenter
             anchors.verticalCenter: parent.verticalCenter

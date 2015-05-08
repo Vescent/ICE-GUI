@@ -1,10 +1,14 @@
 // application.js - utility functions for main.qml window
+
+// Settings
+var debugMode = false; // Enables debugging messages
+var standaloneMode = false; // Loads UI widgets without ICE box connected
+var programVersion = '0.9';
+
+// Global Variables
 var currentWidget;
 var systemDevices = [0, 0, 0, 0, 0, 0, 0, 0];
 var slotButtons = [];
-var debugMode = false; // Enables debugging messages
-var standaloneMode = false; // Loads UI widgets without ICE box connected
-var programVersion = '0.9 Beta';
 
 function onLoad() {
 	var comPorts = ice.getSerialPorts();
@@ -173,6 +177,7 @@ function unloadSystemDevices() {
 function setSlotActive(slotNumber) {
     if (typeof(currentWidget) != 'undefined') {
         if (typeof(currentWidget.destroy) != 'undefined') {
+            currentWidget.active = false;
             currentWidget.destroy();
         }
     }
