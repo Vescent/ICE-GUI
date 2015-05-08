@@ -4,6 +4,7 @@ var systemDevices = [0, 0, 0, 0, 0, 0, 0, 0];
 var slotButtons = [];
 var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
+var programVersion = '0.9 Beta';
 
 function onLoad() {
 	var comPorts = ice.getSerialPorts();

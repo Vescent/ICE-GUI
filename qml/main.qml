@@ -294,6 +294,17 @@ Rectangle {
             opacity: serialConnected ? 1.0 : 0;
         }
 		*/
+
+		Text {
+            id: textVersion
+            color: "#ffffff"
+            text: 'v' + App.programVersion
+            verticalAlignment: Text.AlignVCenter
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: logMode.left
+            anchors.rightMargin: 10
+            font.pixelSize: 10
+        }
 		
         ToggleSwitch {
             id: logMode
