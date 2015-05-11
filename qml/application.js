@@ -3,7 +3,7 @@
 // Settings
 var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
-var programVersion = '0.9';
+var programVersion = '1.0';
 
 // Global Variables
 var currentWidget;
