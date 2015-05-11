@@ -1,4 +1,4 @@
- import QtQuick 2.0
+import QtQuick 2.0
 import QtQuick.Controls 1.0
 
 Rectangle {
@@ -14,12 +14,15 @@ Rectangle {
     property bool active: false
     property int updateRate: 500
     property bool alternate: false
-    property int dataWidth: 150
+    property int dataWidth: 256
     property real maxRampVal: 2.4
+    property real maxCurrent: 200
     property var global: ({
                               numDataPoints: 256,
                               rampOn: false,
-                              servoOn: false
+                              servoOn: false,
+                              rampCenter: 0,
+							  rampSwp: 10
                           })
 
     signal error(string msg)
@@ -44,11 +47,63 @@ Rectangle {
             getGain();
 
             intervalTimer.start();
+            setGraphLabels();
+            getFeatureID();
+
+            if (typeof(appWindow.widgetState[slot].vDivSetting) === 'number') {
+                graphcomponent.vDivSetting = appWindow.widgetState[slot].vDivSetting;
+            }
+
+            if (typeof(appWindow.widgetState[slot].numDataPoints) === 'number') {
+                global.numDataPoints = appWindow.widgetState[slot].numDataPoints;
+            }
+
+            if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
+                global.rampOn = appWindow.widgetState[slot].rampOn;
+
+                if (global.rampOn) {
+                    setServo(false);
+                }
+
+                runRamp(global.rampOn)
+                //console.log('Ramp: ' + global.rampOn);
+            }
+
+            if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
+                global.servoOn = appWindow.widgetState[slot].servoOn;
+                runRamp(false);
+                setServo(global.servoOn);
+                //console.log('Servo: ' + global.rampOn);
+            }
+
+            graphcomponent.refresh();
         }
         else {
             intervalTimer.stop();
             runRamp(false);
+
+            appWindow.widgetState[slot].vDivSetting = graphcomponent.vDivSetting;
+            appWindow.widgetState[slot].numDataPoints = global.numDataPoints;
+            appWindow.widgetState[slot].rampOn = global.rampOn;
+            appWindow.widgetState[slot].servoOn = global.servoOn;
         }
+    }
+
+    function getFeatureID() {
+        ice.send('Enumdev', slot, function(result){
+            var deviceID = result.split(" ");
+            var feature = parseInt(deviceID[2], 10);
+
+            if (feature === 0) {
+                maxCurrent = 200;
+            }
+            else if (feature === 1) {
+                maxCurrent = 500;
+            }
+            else {
+                console.log("Error getting feature ID");
+            }
+        });
     }
 
     function timerUpdate() {
@@ -56,6 +111,26 @@ Rectangle {
             updateServoLock();
         }
     }
+	
+	function save(value) {
+		ice.send('Save', slot, function(result){
+			if (result == "Success") {
+				console.log('Successfully saved settings.');
+			}
+			else {
+				console.log('Error saving settings.');
+			}
+		});
+	}
+
+	function setGraphLabels() {
+        var yDiv = (graphcomponent.yMaximum - graphcomponent.yMinimum)/graphcomponent.gridYDiv;
+        var xDiv = global.rampSwp/graphcomponent.gridXDiv;
+        xDiv = xDiv.toFixed(2);
+        graphcomponent.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
+        //graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
+        graphcomponent.refresh();
+	}
 
     // Common Laser Controller Command Set
     function setLaser(value) {
@@ -274,6 +349,7 @@ Rectangle {
         ice.send('RampSwp ' + value, slot, function(result){
             rotarycontrolRange.setValue(result);
             global.rampSwp = parseFloat(result);
+            setGraphLabels();
             return;
         });
     }
@@ -507,6 +583,19 @@ Rectangle {
         font.pointSize: 12
         font.family: "MS Shell Dlg 2"
     }
+	
+	ThemeButton {
+		id: saveBtn
+		y: 7
+		width: 40
+		height: 20
+		anchors.right: widget.right
+		anchors.rightMargin: 10
+		text: "Save"
+		highlight: false
+		onClicked: save()
+		enabled: true
+	}
 
     Rectangle {
         id: rampRect
@@ -709,7 +798,7 @@ Rectangle {
             text: "0.0"
             precision: 5
             useInt: false
-            maxVal: 200
+            maxVal: maxCurrent
             minVal: 0
             decimal: 1
             pointSize: 19
@@ -733,7 +822,7 @@ Rectangle {
             value: 0
             stepSize: 1
             minValue: 0
-            maxValue: 200
+            maxValue: maxCurrent
             onNewValue: {
                 setCurrent(value);
             }
@@ -812,7 +901,7 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
         }
 
-        RotaryControl {
+        StepControl {
             id: rotarycontrolNDiv
             x: 188
             y: 149
@@ -823,14 +912,10 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             displayTextRatio: 0.2
             decimalPlaces: 0
-            useArc: true
-            useCursor: true
-            showRange: false
-            value: 8
-            stepSize: 8
-            minValue: 4
-            maxValue: 64
+            maxValue: 3
+            stepValues: [8,16,32,64]
             onNewValue: setNDiv(value)
+            //onNewValue: console.log(value)
         }
 
         Text {
@@ -997,8 +1082,9 @@ Rectangle {
         xMaximum: 128
         datasetFill: false
         axisYLabel: "Error Input"
-        axisXLabel: "Time"
+        axisXLabel: "Ramp Voltage"
         autoScale: false
+        vDivSetting: 6
     }
 
 }

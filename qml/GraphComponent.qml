@@ -15,6 +15,8 @@ Rectangle {
     property bool axisShowLabels : true
     property string axisXLabel : 'X Axis'
     property string axisYLabel : 'Y Axis'
+    property string axisXUnits : 'V'
+    property string axisYUnits : 'V'
     property string axisFont : '12px Arial'
     property string axisFontColor : "#ddd"
     property bool showAxes : true
@@ -38,6 +40,11 @@ Rectangle {
     property bool datasetFill : true
     property int minDatasetSize: 50
     property var datasets: []
+    property bool adjustableVdiv: true
+    property bool adjustableYOffset: false
+    property var vDivSteps: [0.01,0.02,0.05,0.1,0.2,0.5,1.0,2.0,5.0,10.0]
+    property int vDivSetting: 4
+    property real yOffset: 0.0
 
     function draw(ctx) {
         var axes={};
@@ -63,6 +70,27 @@ Rectangle {
         if (showScale)
             drawScale(ctx, axes);
 
+        if (adjustableVdiv) {
+            setVdiv(graphWidget.vDivSetting);
+            ctx.font = axisFont;
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            // Draw label
+            ctx.fillText('[-] V/Div [+]', 2, 0);
+        }
+
+        if (adjustableYOffset) {
+            ctx.font = axisFont;
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+
+            // Draw  label
+            ctx.fillText('[-] V Pos. [+] : ' + graphWidget.yOffset.toFixed(2) + graphWidget.axisYUnits, 80, 0);
+        }
+
         for (var i = 0; i < datasets.length; i++) {
             dataGraph(ctx, axes, i);
         }
@@ -75,6 +103,9 @@ Rectangle {
 
     function addPoint(dataPoint, series) {
         var point = parseFloat(dataPoint);
+
+        // Add vertical offset
+        point += graphWidget.yOffset;
 
         if (datasets.length < (series + 1)) {
             //console.log('no dataset');
@@ -136,6 +167,8 @@ Rectangle {
             size: data.length
         }
 
+        //setVdiv(graphWidget.vDivSetting);
+
         if (autoScale) {
             var min = 0;
             var max = 0;
@@ -174,7 +207,8 @@ Rectangle {
         var xx, yy, x0;
         var di = axes.pixelWidth/datasets[series].size;
         var y0 = axes.y0;
-        var scale = (axes.pixelHeight - 0.5)/Math.abs(datasets[series].yMaximum - datasets[series].yMinimum); // 40 pixels from x=0 to x=1
+        //var scale = (axes.pixelHeight - 0.5)/Math.abs(datasets[series].yMaximum - datasets[series].yMinimum); // 40 pixels from x=0 to x=1
+		var scale = (axes.pixelHeight - 0.5)/Math.abs(graphWidget.yMaximum - graphWidget.yMinimum); // 40 pixels from x=0 to x=1
         var length = datasets[series].data.length;
 
         ctx.beginPath();
@@ -190,7 +224,7 @@ Rectangle {
 
         for (var i = 0; i < length; i++) {
             xx = x0 + i*di;
-            yy = scale*datasets[series].data[i];
+            yy = scale*(datasets[series].data[i] + graphWidget.yOffset);
 
             if (i == 0)
                 ctx.moveTo(xx,y0-yy);
@@ -228,8 +262,17 @@ Rectangle {
             ctx.fillText(axisXLabel, axes.x0, axes.ymax);
 
             // Draw Y axis label
+            if (graphWidget.adjustableVdiv) {
+                var ylabel = axisYLabel + ' [';
+                ylabel += graphWidget.vDivSteps[graphWidget.vDivSetting].toString();
+                ylabel += ' ' + graphWidget.axisYUnits + '/Div]'
+            }
+            else {
+                var ylabel = axisYLabel;
+            }
+
             ctx.rotate(-90*Math.PI/180);
-            ctx.fillText(axisYLabel, -axes.y0, 0);
+            ctx.fillText(ylabel, -axes.y0, 0);
             ctx.rotate(90*Math.PI/180);
         }
     }
@@ -270,6 +313,92 @@ Rectangle {
         ctx.lineTo(axes.xmin,axes.ymax);
 
         ctx.stroke();
+    }
+
+    function setVdiv(step) {
+        graphWidget.yMaximum = graphWidget.vDivSteps[step];
+        graphWidget.yMinimum = -graphWidget.yMaximum;
+        //refresh();
+		//console.log(graphWidget.vDivSteps[step]);
+    }
+
+    MouseArea {
+         id: vDivDecArea
+         anchors.top: parent.top
+         anchors.left: parent.left
+         width: 20
+         height: 20
+         enabled: graphWidget.adjustableVdiv
+         onClicked: {
+             if (graphWidget.vDivSetting > 0) {
+                graphWidget.vDivSetting--;
+				//setVdiv(graphWidget.vDivSetting);
+				refresh();
+             }
+         }
+    }
+
+    MouseArea {
+         id: vDivIncArea
+         anchors.top: parent.top
+         anchors.left: vDivDecArea.right
+         anchors.leftMargin: 20
+         enabled: graphWidget.adjustableVdiv
+         width: 20
+         height: 20
+         onClicked: {
+             if (graphWidget.vDivSetting < (graphWidget.vDivSteps.length - 1)) {
+                graphWidget.vDivSetting++;
+				//setVdiv(graphWidget.vDivSetting);
+				refresh();
+             }
+         }
+    }
+
+    MouseArea {
+         id: yOffsetDecArea
+         x: 80
+         y: 0
+         width: 20
+         height: 20
+         enabled: graphWidget.adjustableYOffset
+         onClicked: {
+             var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
+             graphWidget.yOffset -= stepSize;
+             refresh();
+             //console.log(graphWidget.yOffset);
+         }
+    }
+
+    MouseArea {
+         id: yOffsetReset
+         anchors.top: parent.top
+         anchors.left: yOffsetDecArea.right
+         anchors.leftMargin: 2.5
+         width: 20
+         height: 20
+         enabled: graphWidget.adjustableYOffset
+         onDoubleClicked: {
+             graphWidget.yOffset = 0.0;
+             refresh();
+             //console.log(graphWidget.yOffset);
+         }
+    }
+
+    MouseArea {
+         id: yOffsetIncArea
+         anchors.top: parent.top
+         anchors.left: yOffsetReset.right
+         anchors.leftMargin: 0
+         width: 20
+         height: 20
+         enabled: graphWidget.adjustableYOffset
+         onClicked: {
+             var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
+             graphWidget.yOffset += stepSize;
+             refresh();
+             //console.log(graphWidget.yOffset);
+         }
     }
 
     Canvas {

@@ -14,13 +14,16 @@ Rectangle {
     property bool active: false
     property int updateRate: 500
     property bool alternate: false
-    property int dataWidth: 128
+    property int dataWidth: 256
+    property real maxCurrent: 200
     property var global: ({
                               numDataPoints: 128,
                               dataChn: 3,
                               rampOn: false,
                               servoOn: false,
-							  blockChunkSize: 8
+							  blockChunkSize: 8,
+							  rampCenter: 0,
+							  rampSwp: 10
                           })
 
     signal error(string msg)
@@ -45,11 +48,79 @@ Rectangle {
             getOpAmpOffset();
             getDataChannel();
             intervalTimer.start();
+            setGraphLabels();
+            getFeatureID();
+
+            if (typeof(appWindow.widgetState[slot].vDivSetting1) === 'number') {
+                graphcomponent.vDivSetting = appWindow.widgetState[slot].vDivSetting1;
+            }
+
+            if (typeof(appWindow.widgetState[slot].vDivSetting2) === 'number') {
+                graphcomponent2.vDivSetting = appWindow.widgetState[slot].vDivSetting2;
+            }
+
+            if (typeof(appWindow.widgetState[slot].yOffset) === 'number') {
+                graphcomponent.yOffset = appWindow.widgetState[slot].yOffset;
+            }
+
+            if (typeof(appWindow.widgetState[slot].numDataPoints) === 'number') {
+                global.numDataPoints = appWindow.widgetState[slot].numDataPoints;
+                datainputRampNum.text = global.numDataPoints.toString();
+                setRampNum(global.numDataPoints);
+
+            }
+
+            if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
+                global.rampOn = appWindow.widgetState[slot].rampOn;
+
+                if (global.rampOn) {
+                    setServo(false);
+                }
+
+                runRamp(global.rampOn)
+                //console.log('Ramp: ' + global.rampOn);
+            }
+
+            if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
+                global.servoOn = appWindow.widgetState[slot].servoOn;
+                if (global.servoOn) {
+                    runRamp(false);
+                }
+                setServo(global.servoOn);
+                //console.log('Servo: ' + global.rampOn);
+            }
+
+            graphcomponent.refresh();
+            graphcomponent2.refresh();
         }
         else {
             intervalTimer.stop();
             runRamp(false);
+
+            appWindow.widgetState[slot].vDivSetting1 = graphcomponent.vDivSetting;
+            appWindow.widgetState[slot].vDivSetting2 = graphcomponent2.vDivSetting;
+            appWindow.widgetState[slot].yOffset = graphcomponent.yOffset;
+            appWindow.widgetState[slot].numDataPoints = global.numDataPoints;
+            appWindow.widgetState[slot].rampOn = global.rampOn;
+            appWindow.widgetState[slot].servoOn = global.servoOn;
         }
+    }
+
+    function getFeatureID() {
+        ice.send('Enumdev', slot, function(result){
+            var deviceID = result.split(" ");
+            var feature = parseInt(deviceID[2], 10);
+
+            if (feature === 0) {
+                maxCurrent = 200;
+            }
+            else if (feature === 1) {
+                maxCurrent = 500;
+            }
+            else {
+                console.log("Error getting feature ID");
+            }
+        });
     }
 
     function timerUpdate() {
@@ -57,6 +128,31 @@ Rectangle {
             updateServoLock();
         }
     }
+	
+	function save(value) {
+		ice.send('Save', slot, function(result){
+			if (result == "Success") {
+				console.log('Successfully saved settings.');
+			}
+			else {
+				console.log('Error saving settings.');
+			}
+		});
+	}
+
+	function setGraphLabels() {
+        var yDiv = (graphcomponent.yMaximum - graphcomponent.yMinimum)/graphcomponent.gridYDiv;
+        var xDiv = global.rampSwp/graphcomponent.gridXDiv;
+        xDiv = xDiv.toFixed(2);
+        graphcomponent.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
+        //graphcomponent.axisYLabel = "Error Input [" + yDiv + " V/Div]";
+        graphcomponent.refresh();
+
+        yDiv = (graphcomponent2.yMaximum - graphcomponent2.yMinimum)/graphcomponent2.gridYDiv;
+        graphcomponent2.axisXLabel = "Ramp Voltage [" + xDiv + " V/Div]";
+        //graphcomponent2.axisYLabel = "DC Error [" + yDiv + " V/Div]";
+        graphcomponent2.refresh();
+	}
 
     // Common Laser Controller Command Set
     function setLaser(value) {
@@ -278,6 +374,7 @@ Rectangle {
         ice.send('RampSwp ' + value, slot, function(result){
             rotarycontrolRange.setValue(result);
             global.rampSwp = parseFloat(result);
+            setGraphLabels();
             return;
         });
     }
@@ -567,6 +664,19 @@ Rectangle {
         font.pointSize: 12
         font.family: "MS Shell Dlg 2"
     }
+	
+	ThemeButton {
+		id: saveBtn
+		y: 7
+		width: 40
+		height: 20
+		anchors.right: widget.right
+		anchors.rightMargin: 10
+		text: "Save"
+		highlight: false
+		onClicked: save()
+		enabled: true
+	}
 
     Rectangle {
         id: rampRect
@@ -804,7 +914,7 @@ Rectangle {
             text: "0.0"
             precision: 5
             useInt: false
-            maxVal: 200
+            maxVal: maxCurrent
             minVal: 0
             decimal: 1
             pointSize: 19
@@ -828,7 +938,7 @@ Rectangle {
             value: 0
             stepSize: 1
             minValue: 0
-            maxValue: 200
+            maxValue: maxCurrent
             onNewValue: {
                 setCurrent(value);
             }
@@ -1108,15 +1218,16 @@ Rectangle {
         y: 32
         width: 443
         height: 235
-        gridYDiv: 10
-        yMinimum: -1
-        yMaximum: 1
+        yMinimum: -0.8
+        yMaximum: 0.8
         xMinimum: -128
         xMaximum: 128
         datasetFill: false
         axisYLabel: "Error Input"
-        axisXLabel: "Time"
+        axisXLabel: "Ramp Voltage"
         autoScale: false
+        vDivSetting: 4
+        adjustableYOffset: true
     }
 
     GraphComponent {
@@ -1125,15 +1236,15 @@ Rectangle {
         y: 273
         width: 443
         height: 239
-        gridYDiv: 10
         yMinimum: -0.2
         yMaximum: 0.2
         xMinimum: -128
         xMaximum: 128
         datasetFill: false
         axisYLabel: "DC Error"
-        axisXLabel: "Time"
+        axisXLabel: "Ramp Voltage"
         autoScale: false
+        vDivSetting: 2
     }
 
 }

@@ -9,7 +9,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: "Quad Temperature Controller"
+    property string widgetTitle: "Quad Temp Controller"
     property int slot: 1
     property bool active: false
     property int updateRate: 125
@@ -40,6 +40,17 @@ Rectangle {
             alternate = !alternate;
         }
     }
+	
+	function save(value) {
+		ice.send('Save', slot, function(result){
+			if (result == "Success") {
+				console.log('Successfully saved settings.');
+			}
+			else {
+				console.log('Error saving settings.');
+			}
+		});
+	}
 
     Timer {
         id: timer1
@@ -263,26 +274,28 @@ Rectangle {
             function setTempMax(channel, value) {
                 ice.send('TempMax ' + channel + ' ' + value, slot, function(result){
                     tempMaxSet.setValue(result);
+					tempSet.maxVal = tempMaxSet.value;
                 });
             }
 
             function getTempMax(channel) {
                 ice.send('TempMax? ' + channel, slot, function(result){
                     tempMaxSet.setValue(result);
-                    tempSet.maxVal = result;
+                    tempSet.maxVal = tempMaxSet.value;
                 });
             }
 
             function setTempMin(channel, value) {
                 ice.send('TempMin ' + channel + ' ' + value, slot, function(result){
                     tempMinSet.setValue(result);
+					tempSet.minVal = tempMinSet.value;
                 });
             }
 
             function getTempMin(channel) {
                 ice.send('TempMin? ' + channel, slot, function(result){
                     tempMinSet.setValue(result);
-                    tempSet.minVal = result;
+                    tempSet.minVal = tempMinSet.value;
                 });
             }
 
@@ -488,6 +501,8 @@ Rectangle {
                         id: tErrorGraph
                         width: parent.width
                         height: parent.height
+                        adjustableVdiv: false
+                        adjustableYOffset: false
                         yMaximum: 200
                         yMinimum: -200
                         rollMode: true
@@ -715,9 +730,9 @@ Rectangle {
 
     Rectangle {
         id: tempControllerOptions
-        x: 277
+        x: 240
         y: 5
-        width: 157
+        width: 140
         height: 24
         color: "#202020"
         radius: 5
@@ -815,5 +830,20 @@ Rectangle {
             styleColor: "#ffffff"
             font.pointSize: 12
         }
+		
+		
     }
+	
+	ThemeButton {
+		id: saveBtn
+		y: 7
+		width: 40
+		height: 20
+		anchors.right: widget.right
+		anchors.rightMargin: 10
+		text: "Save"
+		highlight: false
+		onClicked: save()
+		enabled: true
+	}
 }

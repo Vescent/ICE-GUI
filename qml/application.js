@@ -1,8 +1,14 @@
+// application.js - utility functions for main.qml window
+
+// Settings
+var debugMode = false; // Enables debugging messages
+var standaloneMode = false; // Loads UI widgets without ICE box connected
+var programVersion = '1.0';
+
+// Global Variables
 var currentWidget;
 var systemDevices = [0, 0, 0, 0, 0, 0, 0, 0];
 var slotButtons = [];
-var debugMode = false; // Enables debugging messages
-var standaloneMode = false; // Loads UI widgets without ICE box connected
 
 function onLoad() {
 	var comPorts = ice.getSerialPorts();
@@ -22,7 +28,7 @@ function onLoad() {
     }
 
     if (standaloneMode) {
-        toggleswitchSystemPower.enableSwitch(true);
+        //toggleswitchSystemPower.enableSwitch(true);
         appWindow.systemPower = true;
         loadSystemDevices();
     }
@@ -39,30 +45,35 @@ function serialConnect() {
                 console.log('ICE Master Controller Version ' + version);
                 appWindow.serialConnected = true;
                 buttonConnect.text = 'Disconnect';
+                buttonConnect.highlight = false;
 
                 ice.send('#status', 1, function(response){
                     console.log('Power: ' + response);
 
                     if (response === 'On') {
-                        toggleswitchSystemPower.enableSwitch(true);
+                        //toggleswitchSystemPower.enableSwitch(true);
                         appWindow.systemPower = true;
                         loadSystemDevices();
                     }
                     else {
-                        toggleswitchSystemPower.enableSwitch(false);
+                        //toggleswitchSystemPower.enableSwitch(false);
                         appWindow.systemPower = false;
+						appWindow.alert('ICE box power is not enabled. Send #poweron command and then reconnecting.')
                     }
                 });
             });
         }
         else {
             console.log('Error connecting to serial port.');
+			appWindow.alert('Error connecting to serial port.')
         }
     }
     else {
         unloadSystemDevices();
+		ice.serialClose();
         appWindow.serialConnected = false;
         buttonConnect.text = 'Connect';
+        buttonConnect.highlight = true;
         console.log('Serial port disconnected.');
     }
 }
@@ -77,13 +88,17 @@ function loadSlotWidget(slotNumber, deviceType) {
                 break;
         case 3: sourceFile = 'OPLS.qml';
                 break;
+        case 4: sourceFile = 'SOA.qml';
+                break;
+		case 6: sourceFile = 'PB1.qml';
+                break;
         default: return;
     }
 
     var component = Qt.createComponent(sourceFile);
     var widget = component.createObject(widgetView, {
-                                            'slot': slotNumber
-                                        });
+		'slot': slotNumber
+	});
     widget.error.connect(function(msg) {
         console.log(msg);
         commandResult.text = msg;
@@ -92,13 +107,26 @@ function loadSlotWidget(slotNumber, deviceType) {
     currentWidget = widget;
 }
 
+function switchSlot(slot) {
+	for (var i = 0; i < slotButtons.length; i++) {
+		slotButtons[i].highlight = false;
+		slotButtons[i].width = 40;
+	}
+
+	slotButtons[slot - 1].highlight = true;
+	slotButtons[slot - 1].width = 50;
+	setSlotActive(slot);
+}
+
 function loadSystemDevices() {
     if (standaloneMode) {
-        systemDevices[0] = 1;
+        systemDevices[0] = 1; // ICE-QT1
         slotButtons[0].enabled = true;
-        systemDevices[2] = 2;
+        systemDevices[1] = 2; // ICE-CS1
+        slotButtons[1].enabled = true;
+        systemDevices[2] = 3; // ICE-CP1
         slotButtons[2].enabled = true;
-        systemDevices[3] = 3;
+        systemDevices[3] = 6; // ICE-PB1
         slotButtons[3].enabled = true;
     } else {
         ice.send('#enumerate', 1, function(response) {
@@ -123,6 +151,14 @@ function loadSystemDevices() {
 
             textSlot.color = "#fff";
             textSlot.font.bold = true;
+			
+			// Load first slot that has a device
+			for (var i = 0; i < systemDevices.length; i++) {
+				if (systemDevices[i] !== 0) {
+					switchSlot(i + 1);
+					break;
+				}
+			}
         });
     }
 }
@@ -141,6 +177,7 @@ function unloadSystemDevices() {
 function setSlotActive(slotNumber) {
     if (typeof(currentWidget) != 'undefined') {
         if (typeof(currentWidget.destroy) != 'undefined') {
+            currentWidget.active = false;
             currentWidget.destroy();
         }
     }
@@ -153,14 +190,15 @@ function setSlotActive(slotNumber) {
 function toggleSystemPower(enable) {
     if (enable) {  
         ice.send('#poweron', 1, function(response){
-            return;
+			return;
         });
 
         appWindow.setTimeout(function(){
-            ice.send('#status', 1, function(response){
-                loadSystemDevices();
+			ice.send('#status', 1, function(response){
+                ice.getResponses();
+				loadSystemDevices();
             });
-        }, 5000);
+        }, 8000);
 
         appWindow.systemPower = true;
     }
