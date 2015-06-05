@@ -40,7 +40,10 @@ class iceController(QObject):
             self.slot = slot
         
         data = self.iceRef.send(command)
-
+        #print(data[:9])
+        if data[:9] == 'I2C Error':
+            print('Error I2c!!!')
+            return
         if callback.isCallable():
             callback.call({data})
             

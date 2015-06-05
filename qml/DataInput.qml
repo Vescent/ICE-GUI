@@ -17,7 +17,7 @@ Item {
     property bool fixedPrecision: false
     property bool useBorder: true
     property bool active: true
-    property double value
+    property double value: 0
     signal valueEntered(real newVal)
     onValueChanged: {
         if (fixedPrecision) {
@@ -35,6 +35,14 @@ Item {
             console.log('Result NaN:' + text);
             return;
         }
+		
+		//console.log(number)
+		
+		// TODO: This fixed bug where number '100.000000' doesn't
+		// display properly.
+		if (number == 100.000000) {
+			number += 0.0000001;
+		}
 
         widget.value = number;
     }

@@ -24,6 +24,7 @@ Rectangle {
                               rampCenter: 0,
 							  rampSwp: 10
                           })
+	property double intfreq: 100
 
     signal error(string msg)
 
@@ -57,7 +58,8 @@ Rectangle {
             if (typeof(appWindow.widgetState[slot].numDataPoints) === 'number') {
                 global.numDataPoints = appWindow.widgetState[slot].numDataPoints;
             }
-
+			
+			/*
             if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
                 global.rampOn = appWindow.widgetState[slot].rampOn;
 
@@ -75,6 +77,7 @@ Rectangle {
                 setServo(global.servoOn);
                 //console.log('Servo: ' + global.rampOn);
             }
+			*/
 
             graphcomponent.refresh();
         }
@@ -267,6 +270,17 @@ Rectangle {
     function getIntFreq() {
         ice.send('IntFreq?', slot, function(result){
             datainputIntFreq.setValue(result);
+			/*
+			//var val = '100.0000000000';
+			//datainputIntFreq.setValue(val);
+			var num = parseFloat(val);
+			intfreq = num;
+			console.log(val);
+			console.log(num);
+			console.log(num.toFixed(6));
+			console.log(intfreq);
+			//datainputIntFreq.text = intfreq.toFixed(6);
+			*/
             return;
         });
     }
@@ -303,9 +317,11 @@ Rectangle {
         ice.send('Servo?', slot, function(result){
             if (result === 'On') {
                 toggleswitchServo.enableSwitch(true);
+				global.servoOn = true;
             }
             else {
                 toggleswitchServo.enableSwitch(false);
+				global.servoOn = false;
             }
 
             return;
@@ -412,7 +428,10 @@ Rectangle {
 
     function doRamp() {
         global.start = new Date();
-        console.log('Started: ' + global.start);
+        
+		if (ice.logging == true) {
+			console.log('Started: ' + global.start);
+		}
 		
 		if (global.rampRun == false) {
 			return;
@@ -444,12 +463,15 @@ Rectangle {
 
     function processBlockData(data) {
         global.stop = new Date();
-        var totalTime = global.stop - global.start;
-        console.log('Total Time (s): ' + totalTime/1000);
-        var bulkTime = global.bulkStop - global.bulk;
-        console.log('- Bulk (s):  ' + bulkTime/1000);
-        var setupTime = totalTime - bulkTime;
-        console.log('- Setup (s): ' + setupTime/1000);
+		
+		if (ice.logging == true) {
+			var totalTime = global.stop - global.start;
+			console.log('Total Time (s): ' + totalTime/1000);
+			var bulkTime = global.bulkStop - global.bulk;
+			console.log('- Bulk (s):  ' + bulkTime/1000);
+			var setupTime = totalTime - bulkTime;
+			console.log('- Setup (s): ' + setupTime/1000);
+		}
 
         // Trim excess data
         data.splice(global.numDataPoints, (data.length - global.numDataPoints));
@@ -457,9 +479,11 @@ Rectangle {
         if (data.length === global.numDataPoints) {
             graphcomponent.plotData(data, 0);
         }
-
-        console.log('Data Points: ' + data.length + '/' + global.numDataPoints);
-
+		
+		if (ice.logging == true) {
+			console.log('Data Points: ' + data.length + '/' + global.numDataPoints);
+		}
+		
         //console.log('Data: ' + dataErrInput);
 
         if (global.rampRun === true) {
@@ -877,12 +901,14 @@ Rectangle {
                 if (enableState) {
                     global.rampState = global.rampRun;
                     runRamp(false);
+					setServo(true);
                 }
                 else {
-                    runRamp(global.rampState); // restore old state of ramp
+                    setServo(false);
+					runRamp(global.rampState); // restore old state of ramp
                 }
 
-                setServo(enableState);
+                //setServo(enableState);
             }
         }
 
