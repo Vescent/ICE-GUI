@@ -595,8 +595,8 @@ Rectangle {
                         width: 50
                         height: 20
                         text: "50"
-                        minVal: 0.2
-                        maxVal: 1.0
+                        minVal: 0.00
+                        maxVal: 1.51
                         background: "#333"
                         active: widget.active
                         anchors.horizontalCenter: parent.horizontalCenter

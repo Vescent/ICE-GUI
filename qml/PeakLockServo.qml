@@ -70,6 +70,7 @@ Rectangle {
 
             }
 
+			/*
             if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
                 global.rampOn = appWindow.widgetState[slot].rampOn;
 
@@ -89,6 +90,7 @@ Rectangle {
                 setServo(global.servoOn);
                 //console.log('Servo: ' + global.rampOn);
             }
+			*/
 
             graphcomponent.refresh();
             graphcomponent2.refresh();
@@ -439,6 +441,7 @@ Rectangle {
         if (enableState) {
             global.rampRun = true;
             toggleswitchRamp.enableSwitch(true);
+			setServo(false);
             
             ice.send('#pauselcd t', slot, function(result){});
             
@@ -447,6 +450,7 @@ Rectangle {
         else {
             global.rampRun = false;
             toggleswitchRamp.enableSwitch(false);
+			
             ice.send('#pauselcd f', slot, function(result){});
         }
     }
@@ -458,7 +462,7 @@ Rectangle {
 			console.log('Started: ' + global.start);
 		}
         
-        if (global.rampRun === false) {
+        if (global.rampRun == false) {
 			return;
 		}
 
@@ -936,7 +940,7 @@ Rectangle {
             useArc: true
             showRange: true
             value: 0
-            stepSize: 1
+            stepSize: .2
             minValue: 0
             maxValue: maxCurrent
             onNewValue: {
@@ -991,12 +995,13 @@ Rectangle {
                 if (enableState) {
                     global.rampState = global.rampRun;
                     runRamp(false);
+					setServo(true);
                 }
                 else {
                     runRamp(global.rampState); // restore old state of ramp
                 }
                 
-                setServo(enableState);
+                //setServo(enableState);
             }
         }
 
@@ -1218,6 +1223,7 @@ Rectangle {
         y: 32
         width: 443
         height: 235
+        yOffset: -0.6
         yMinimum: -0.8
         yMaximum: 0.8
         xMinimum: -128
@@ -1226,7 +1232,7 @@ Rectangle {
         axisYLabel: "Error Input"
         axisXLabel: "Ramp Voltage"
         autoScale: false
-        vDivSetting: 4
+        vDivSetting: 5
         adjustableYOffset: true
     }
 
@@ -1244,7 +1250,7 @@ Rectangle {
         axisYLabel: "DC Error"
         axisXLabel: "Ramp Voltage"
         autoScale: false
-        vDivSetting: 2
+        vDivSetting: 4
     }
 
 }
