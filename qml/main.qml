@@ -68,6 +68,14 @@ Rectangle {
 		messageDialog.open();
 	}
 
+	function commandSend(command) {
+		App.pushCmdToHistory(command);
+
+		ice.send(command, currentSlot, function(response){
+            commandResult.text = response;
+        });
+    }
+
     Item {
         id: slotSwitcher
         width: 50
@@ -337,12 +345,6 @@ Rectangle {
         spacing: 10
     }
 
-    function commandSend(command) {
-		ice.send(command, currentSlot, function(response){
-            commandResult.text = response;
-        });
-    }
-
     TextField {
         id: commandEntry
         x: 55
@@ -354,6 +356,8 @@ Rectangle {
         placeholderText: "Enter Command"
         onAccepted: commandSend(commandEntry.text)
         readOnly: !appWindow.serialConnected
+        Keys.onUpPressed: commandEntry.text = App.getPrevCmdFromHistory()
+        Keys.onDownPressed: commandEntry.text = App.getNextCmdFromHistory()
     }
 
     TextField {

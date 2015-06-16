@@ -3,12 +3,14 @@
 // Settings
 var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
-var programVersion = '1.0';
+var programVersion = '1.1 alpha';
 
 // Global Variables
 var currentWidget;
 var systemDevices = [0, 0, 0, 0, 0, 0, 0, 0];
 var slotButtons = [];
+var cmdHistory = [];
+var cmdHistoryIndex = 0;
 
 function onLoad() {
 	var comPorts = ice.getSerialPorts();
@@ -90,6 +92,8 @@ function loadSlotWidget(slotNumber, deviceType) {
                 break;
         case 4: sourceFile = 'SOA.qml';
                 break;
+        case 5: sourceFile = 'HC1.qml';
+                break;
 		case 6: sourceFile = 'PB1.qml';
                 break;
         default: return;
@@ -128,6 +132,8 @@ function loadSystemDevices() {
         slotButtons[2].enabled = true;
         systemDevices[3] = 6; // ICE-PB1
         slotButtons[3].enabled = true;
+        systemDevices[4] = 4; // ICE-DC1
+        slotButtons[4].enabled = true;
     } else {
         ice.send('#enumerate', 1, function(response) {
             var devices = response.split(' ');
@@ -165,6 +171,7 @@ function loadSystemDevices() {
 
 function unloadSystemDevices() {
     if (typeof(currentWidget) != 'undefined') {
+        currentWidget.active = false;
         currentWidget.destroy();
     }
     for (var i = 0; i < 8; i++) {
@@ -207,4 +214,34 @@ function toggleSystemPower(enable) {
         ice.send('#poweroff', 1, null);
         appWindow.systemPower = false;
     }
+}
+
+function pushCmdToHistory(command) {
+    if (cmdHistory[cmdHistory.length - 1] == command) {
+        return;
+    }
+
+    // Restrict maximum length of array
+    if (cmdHistory.length >= 20) {
+        cmdHistory.shift();
+    }
+
+    cmdHistory.push(command);
+    cmdHistoryIndex = cmdHistory.length - 1;
+}
+
+function getPrevCmdFromHistory() {
+    if (cmdHistoryIndex > 0) {
+        cmdHistoryIndex -= 1;
+    }
+
+    return cmdHistory[cmdHistoryIndex];
+}
+
+function getNextCmdFromHistory() {
+    if (cmdHistoryIndex < (cmdHistory.length - 1)) {
+        cmdHistoryIndex += 1;
+    }
+
+    return cmdHistory[cmdHistoryIndex];
 }

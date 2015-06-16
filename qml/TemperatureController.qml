@@ -9,7 +9,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: "Quad Temp Controller"
+    property string widgetTitle: "ICE-QT1: Temp Controller"
     property int slot: 1
     property bool active: false
     property int updateRate: 125

@@ -9,7 +9,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: 'OPLS and Current Controller'
+    property string widgetTitle: 'ICE-CP1: OPLS and Current Controller'
     property int slot: 1
     property bool active: false
     property int updateRate: 500

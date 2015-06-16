@@ -9,7 +9,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: 'SOA Driver'
+    property string widgetTitle: 'ICE-DC1: SOA Driver'
     property int slot: 1
     property int updateRate: 1000
     property real maxCurrent: 1000

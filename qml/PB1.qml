@@ -9,7 +9,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: 'Power Breakout'
+    property string widgetTitle: 'ICE-PB1: Power Breakout'
     property int slot: 1
     property int updateRate: 1000
     property bool active: false
