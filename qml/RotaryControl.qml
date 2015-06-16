@@ -148,7 +148,6 @@ Item {
                 }
             }
         }
-
     }
 
     MouseArea {
@@ -160,7 +159,7 @@ Item {
         property bool centerClick
 
         onWheel: {
-            if (ringClick === false) {
+            if (dataInput.focus === false) {
                 return;
             }
 
@@ -179,7 +178,7 @@ Item {
             }
 
             widget.value = newVal;
-            //widget.newValue(newVal);
+            widget.newValue(widget.value);
         }
 
         onPressed: {
@@ -191,9 +190,8 @@ Item {
                 centerClick = true;
                 mouse.accepted = false;
             }
-            else {
-                dataInput.focus = false;
-            }
+
+            dataInput.focus = true;
         }
 
         onReleased: {
@@ -221,7 +219,6 @@ Item {
             }
         }
     }
-
 
     function setValue(text) {
         var number = parseFloat(text);
