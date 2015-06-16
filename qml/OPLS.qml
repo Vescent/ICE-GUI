@@ -1094,12 +1094,27 @@ Rectangle {
 
     }
 
+    Text {
+        id: textGraphNote
+        x: 289
+        y: 262
+        color: "#ffff26"
+        text: qsTr("Note: Servo locks to <i>negative</i> slope.")
+        anchors.bottom: graphcomponent.top
+        anchors.bottomMargin: 2
+        anchors.horizontalCenterOffset: 0
+        anchors.horizontalCenter: rotarycontrolGain.horizontalCenter
+        horizontalAlignment: Text.AlignHCenter
+        font.pointSize: 9
+        verticalAlignment: Text.AlignVCenter
+    }
+
     GraphComponent {
         id: graphcomponent
         x: 289
-        y: 32
+        y: 47
         width: 443
-        height: 480
+        height: 465
         gridYDiv: 10
         yMinimum: -5
         yMaximum: 5

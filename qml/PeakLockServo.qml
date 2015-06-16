@@ -1228,7 +1228,7 @@ Rectangle {
         x: 289
         y: 32
         width: 443
-        height: 235
+        height: 230
         yOffset: 0
         yMinimum: -0.8
         yMaximum: 0.8
@@ -1242,12 +1242,27 @@ Rectangle {
         adjustableYOffset: true
     }
 
+    Text {
+        id: textGraphNote
+        x: 289
+        y: 262
+        color: "#ffff26"
+        text: qsTr("Note: Servo locks to <i>positive</i> slope.")
+        anchors.bottom: graphcomponent2.top
+        anchors.bottomMargin: 2
+        anchors.horizontalCenterOffset: 0
+        anchors.horizontalCenter: rotarycontrolGain.horizontalCenter
+        horizontalAlignment: Text.AlignHCenter
+        font.pointSize: 9
+        verticalAlignment: Text.AlignVCenter
+    }
+
     GraphComponent {
         id: graphcomponent2
         x: 289
-        y: 273
+        y: 282
         width: 443
-        height: 239
+        height: 230
         yMinimum: -0.2
         yMaximum: 0.2
         xMinimum: -128
