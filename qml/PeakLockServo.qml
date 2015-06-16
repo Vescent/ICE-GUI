@@ -769,6 +769,7 @@ Rectangle {
             minVal: 1
             decimal: 0
             pointSize: 12
+            stepSize: 1
             onValueEntered: setRampNum(newVal)
         }
 
@@ -799,6 +800,7 @@ Rectangle {
             minVal: 1
             decimal: 0
             pointSize: 12
+            stepSize: 1
             onValueEntered: setDataChannel(newVal)
         }
 
@@ -924,6 +926,7 @@ Rectangle {
             minVal: 0
             decimal: 1
             pointSize: 19
+            stepSize: 1
             onValueEntered: setCurrentLimit(newVal)
         }
 
@@ -1226,7 +1229,7 @@ Rectangle {
         y: 32
         width: 443
         height: 235
-        yOffset: -0.6
+        yOffset: 0
         yMinimum: -0.8
         yMaximum: 0.8
         xMinimum: -128

@@ -212,6 +212,7 @@ Rectangle {
             minVal: 0
             decimal: 1
             pointSize: 19
+            stepSize: 1
             onValueEntered: setCurrentLimit(newVal, 1)
         }
 
@@ -331,6 +332,7 @@ Rectangle {
             minVal: 0
             decimal: 1
             pointSize: 19
+            stepSize: 1
             onValueEntered: setCurrentLimit(newVal, 2)
         }
 

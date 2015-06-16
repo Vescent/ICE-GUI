@@ -278,32 +278,6 @@ Rectangle {
             highlight: true
         }
 
-		/*
-        ToggleSwitch {
-            id: toggleswitchSystemPower
-            y: 5
-            anchors.left: textSystemPower.right
-            anchors.leftMargin: 6
-            onClicked: App.toggleSystemPower(enableState)
-            opacity: serialConnected ? 1.0 : 0;
-        }
-
-        Text {
-            id: textSystemPower
-            y: 8
-            width: 77
-            color: "#ffffff"
-            text: qsTr("System Power:")
-            anchors.left: buttonConnect.right
-            anchors.leftMargin: 12
-            anchors.verticalCenterOffset: 0
-            font.pixelSize: 12
-            anchors.verticalCenter: parent.verticalCenter
-            verticalAlignment: Text.AlignVCenter
-            opacity: serialConnected ? 1.0 : 0;
-        }
-		*/
-
 		Text {
             id: textVersion
             color: "#aaa"
@@ -358,6 +332,11 @@ Rectangle {
         readOnly: !appWindow.serialConnected
         Keys.onUpPressed: commandEntry.text = App.getPrevCmdFromHistory()
         Keys.onDownPressed: commandEntry.text = App.getNextCmdFromHistory()
+        onFocusChanged: {
+            if (commandEntry.focus === true) {
+                commandEntry.selectAll();
+            }
+        }
     }
 
     TextField {

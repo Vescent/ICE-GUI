@@ -18,7 +18,9 @@ Item {
     property bool useBorder: true
     property bool active: true
     property double value: 0
+    property double stepSize: 0
     signal valueEntered(real newVal)
+
     onValueChanged: {
         if (fixedPrecision) {
             text1.text = widget.value.toPrecision(precision);
@@ -38,8 +40,7 @@ Item {
 		
 		//console.log(number)
 		
-		// TODO: This fixed bug where number '100.000000' doesn't
-		// display properly.
+		// TODO: This fixed bug where number '100.000000' doesn't display properly.
 		if (number == 100.000000) {
 			number += 0.0000001;
 		}
@@ -91,6 +92,21 @@ Item {
             onFocusChanged: {
                 if (text1.focus === false) {
                     text1.text = widget.value.toFixed(widget.decimal);
+                }
+                else {
+                    text1.selectAll();
+                }
+            }
+            Keys.onUpPressed: {
+                if (widget.value < widget.maxVal) {
+                    widget.value += stepSize;
+                    widget.valueEntered(widget.value)
+                }
+            }
+            Keys.onDownPressed: {
+                if (widget.value > widget.minVal) {
+                    widget.value -= stepSize;
+                    widget.valueEntered(widget.value)
                 }
             }
         }

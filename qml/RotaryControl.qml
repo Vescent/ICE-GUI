@@ -131,6 +131,21 @@ Item {
                 if (dataInput.focus === false) {
                     dataInput.text = widget.value.toFixed(widget.decimalPlaces);
                 }
+                else {
+                    dataInput.selectAll();
+                }
+            }
+            Keys.onUpPressed: {
+                if (widget.value < widget.maxValue) {
+                    widget.value += widget.stepSize;
+                    widget.newValue(widget.value)
+                }
+            }
+            Keys.onDownPressed: {
+                if (widget.value > widget.minValue) {
+                    widget.value -= widget.stepSize;
+                    widget.newValue(widget.value)
+                }
             }
         }
 

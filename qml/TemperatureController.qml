@@ -394,6 +394,7 @@ Rectangle {
                         precision: 5
                         minVal: 0.0
                         maxVal: 100.0
+                        stepSize: 0.1
                         anchors.verticalCenter: parent.verticalCenter
                         onValueEntered: setTemp(channel1.tempChannel, newVal)
                         active: widget.active
@@ -571,6 +572,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 0
                         precision: 5
+                        stepSize: 1
                         onValueEntered: setGain(channel1.tempChannel, newVal)
                     }
 
@@ -603,6 +605,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 2
                         precision: 5
+                        stepSize: 0.1
                         onValueEntered: setTecMaxCurrent(channel1.tempChannel, newVal)
                     }
 
@@ -657,6 +660,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 1
                         precision: 5
+                        stepSize: 1
                         onValueEntered: setTempMin(channel1.tempChannel, newVal)
                     }
 
@@ -689,6 +693,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 1
                         precision: 5
+                        stepSize: 1
                         onValueEntered: setTempMax(channel1.tempChannel, newVal)
                     }
                 }

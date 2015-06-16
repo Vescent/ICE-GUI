@@ -771,9 +771,6 @@ Rectangle {
             anchors.horizontalCenterOffset: 0
             verticalAlignment: Text.AlignVCenter
         }
-
-
-
     }
 
     Rectangle {
@@ -826,6 +823,7 @@ Rectangle {
             minVal: 0
             decimal: 1
             pointSize: 19
+            stepSize: 1
             onValueEntered: setCurrentLimit(newVal)
         }
 
@@ -1090,6 +1088,7 @@ Rectangle {
             minVal: 50
             value: 100
             decimal: 6
+            stepSize: 1.0
             onValueEntered: setIntFreq(newVal)
         }
 
