@@ -22,7 +22,10 @@ Rectangle {
                               rampOn: false,
                               servoOn: false,
                               rampCenter: 0,
-							  rampSwp: 10
+							  rampSwp: 10,
+							  evtLOffAddr: 0,
+                              evtJumpAddr: 0,
+                              evtNum: 0
                           })
 	property double intfreq: 100
 
@@ -623,10 +626,12 @@ Rectangle {
 
     Rectangle {
         id: rampRect
-        x: 9
+        anchors.top: textWidgetTitle.bottom
+        anchors.left: parent.left
+        anchors.margins: 10
         y: 32
         width: 275
-        height: 153
+        height: 135
         color: "#00000000"
         radius: 7
         border.color: "#cccccc"
@@ -775,34 +780,21 @@ Rectangle {
 
     Rectangle {
         id: servoRect
-        x: 10
-        y: 191
-        width: 273
-        height: 321
+        anchors.top: rampRect.bottom
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
+        width: 275
         color: "#00000000"
         radius: 7
         border.color: "#cccccc"
 
         Text {
-            id: textCurrentLimit
-            x: 128
-            y: 70
-            color: "#ffffff"
-            text: qsTr("Current Limit (mA)")
-            anchors.horizontalCenter: datainputCurrentLimit.horizontalCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 10
-            verticalAlignment: Text.AlignVCenter
-        }
-
-        Text {
             id: textCurrentSet
-            x: 27
-            y: 5
             color: "#ffffff"
             text: qsTr("Laser Current (mA)")
-            anchors.bottom: rotarycontrolCurrent.top
-            anchors.bottomMargin: 3
+            anchors.top: parent.top
+            anchors.margins: 5
             anchors.horizontalCenterOffset: 0
             anchors.horizontalCenter: rotarycontrolCurrent.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
@@ -810,30 +802,14 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
         }
 
-        DataInput {
-            id: datainputCurrentLimit
-            x: 143
-            y: 88
-            width: 106
-            height: 35
-            text: "0.0"
-            precision: 5
-            useInt: false
-            maxVal: maxCurrent
-            minVal: 0
-            decimal: 1
-            pointSize: 19
-            stepSize: 1
-            onValueEntered: setCurrentLimit(newVal)
-        }
-
         RotaryControl {
             id: rotarycontrolCurrent
             x: 11
-            y: 23
             width: 100
             height: 100
             colorInner: "#ff7300"
+            anchors.top: textCurrentSet.bottom
+            anchors.margins: 5
             anchors.verticalCenterOffset: -88
             anchors.horizontalCenterOffset: -76
             anchors.horizontalCenter: parent.horizontalCenter
@@ -852,22 +828,21 @@ Rectangle {
 
         Text {
             id: textLaserBtn
-            x: 147
-            y: 11
             color: "#ffffff"
             text: qsTr("Laser")
-            anchors.bottom: toggleswitchLaser.top
-            anchors.bottomMargin: 2
+            anchors.top: parent.top
+            anchors.margins: 5
             anchors.horizontalCenter: toggleswitchLaser.horizontalCenter
-            font.pointSize: 12
+            font.pointSize: 10
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
         }
 
         ToggleSwitch {
             id: toggleswitchLaser
-            x: 128
-            y: 32
+            x: 132
+            anchors.top: textLaserBtn.bottom
+            anchors.margins: 5
             width: 56
             height: 32
             pointSize: 12
@@ -876,22 +851,21 @@ Rectangle {
 
         Text {
             id: textServoBtn
-            x: 13
-            y: 8
             color: "#ffffff"
             text: qsTr("Servo")
-            anchors.bottom: toggleswitchServo.top
-            anchors.bottomMargin: 3
+            anchors.top: parent.top
+            anchors.margins: 5
             anchors.horizontalCenter: toggleswitchServo.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 12
+            font.pointSize: 10
             verticalAlignment: Text.AlignVCenter
         }
 
         ToggleSwitch {
             id: toggleswitchServo
             x: 200
-            y: 32
+            anchors.top: textServoBtn.bottom
+            anchors.margins: 5
             width: 58
             height: 32
             pointSize: 12
@@ -905,20 +879,46 @@ Rectangle {
                     setServo(false);
 					runRamp(global.rampState); // restore old state of ramp
                 }
-
-                //setServo(enableState);
             }
         }
 
         Text {
+            id: textCurrentLimit
+            anchors.top: toggleswitchServo.bottom
+            anchors.margins: 5
+            color: "#ffffff"
+            text: qsTr("Current Limit (mA)")
+            anchors.horizontalCenter: datainputCurrentLimit.horizontalCenter
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 10
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        DataInput {
+            id: datainputCurrentLimit
+            x: 143
+            anchors.top: textCurrentLimit.bottom
+            anchors.margins: 5
+            width: 106
+            height: 35
+            text: "0.0"
+            precision: 5
+            useInt: false
+            maxVal: maxCurrent
+            minVal: 0
+            decimal: 1
+            pointSize: 19
+            stepSize: 1
+            onValueEntered: setCurrentLimit(newVal)
+        }
+
+        Text {
             id: textNDiv
-            x: 196
-            y: 131
             color: "#ffffff"
             text: qsTr("N Div")
-            anchors.bottom: rotarycontrolNDiv.top
-            anchors.bottomMargin: 2
-            anchors.horizontalCenterOffset: 1
+            anchors.top: rotarycontrolCurrent.bottom
+            anchors.margins: 5
+            //anchors.horizontalCenterOffset: 1
             anchors.horizontalCenter: rotarycontrolNDiv.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 10
@@ -927,30 +927,26 @@ Rectangle {
 
         StepControl {
             id: rotarycontrolNDiv
-            x: 188
-            y: 149
+            x: 250
             width: 70
             height: 70
-            anchors.verticalCenterOffset: 23
+            anchors.top: textNDiv.bottom
+            anchors.margins: 5
+            anchors.verticalCenterOffset: 20
             anchors.horizontalCenterOffset: 84
-            anchors.horizontalCenter: parent.horizontalCenter
             displayTextRatio: 0.2
             decimalPlaces: 0
             maxValue: 3
             stepValues: [8,16,32,64]
             onNewValue: setNDiv(value)
-            //onNewValue: console.log(value)
         }
 
         Text {
             id: textServoOffset
-            x: 258
-            y: 1
             color: "#ffffff"
             text: qsTr("Servo Offset")
-            anchors.bottom: rotarycontrolServoOffset.top
-            anchors.bottomMargin: 2
-            anchors.horizontalCenterOffset: 0
+            anchors.top: rotarycontrolCurrent.bottom
+            anchors.margins: 5
             anchors.horizontalCenter: rotarycontrolServoOffset.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 10
@@ -960,11 +956,11 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolServoOffset
             x: 101
-            y: 149
             width: 70
             height: 70
-            anchors.verticalCenterOffset: 23
-            anchors.horizontalCenterOffset: -1
+            anchors.top: textServoOffset.bottom
+            anchors.margins: 5
+            //anchors.verticalCenterOffset: 23
             displayTextRatio: 0.25
             decimalPlaces: 2
             useArc: true
@@ -979,13 +975,10 @@ Rectangle {
 
         Text {
             id: textGain
-            x: 274
-            y: 87
             color: "#ffffff"
             text: qsTr("Gain")
-            anchors.bottom: rotarycontrolGain.top
-            anchors.bottomMargin: 2
-            anchors.horizontalCenterOffset: 0
+            anchors.top: rotarycontrolCurrent.bottom
+            anchors.margins: 5
             anchors.horizontalCenter: rotarycontrolGain.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 10
@@ -995,11 +988,12 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolGain
             x: 16
-            y: 149
             width: 70
             height: 70
-            anchors.verticalCenterOffset: 23
-            anchors.horizontalCenterOffset: -86
+            anchors.top: textGain.bottom
+            anchors.margins: 5
+            //anchors.verticalCenterOffset: 23
+            //anchors.horizontalCenterOffset: -86
             displayTextRatio: 0.3
             decimalPlaces: 0
             useArc: true
@@ -1014,60 +1008,52 @@ Rectangle {
         ToggleSwitch {
             id: toggleswitchInvert
             x: 19
-            y: 239
             width: 45
             height: 27
+            anchors.top: textInvert.bottom
             onClicked: setInvert(enableState)
         }
 
         Text {
             id: textInvert
-            x: 29
-            y: 225
             color: "#ffffff"
             text: qsTr("Invert")
-            anchors.bottom: toggleswitchInvert.top
-            anchors.bottomMargin: 0
+            anchors.top: rotarycontrolGain.bottom
+            anchors.margins: 5
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignTop
             font.pointSize: 10
-            anchors.horizontalCenterOffset: 1
             anchors.horizontalCenter: toggleswitchInvert.horizontalCenter
         }
 
         ToggleSwitch {
             id: toggleswitchIntRef
             x: 19
-            y: 286
             width: 45
             height: 27
+            anchors.top: textIntRef.bottom
             onClicked: setIntRef(enableState)
         }
 
         Text {
             id: textIntRef
-            x: 29
-            y: 272
             color: "#ffffff"
             text: qsTr("Int Ref")
             horizontalAlignment: Text.AlignHCenter
-            anchors.bottomMargin: 0
+            anchors.margins: 5
             verticalAlignment: Text.AlignTop
-            anchors.bottom: toggleswitchIntRef.top
+            anchors.top: toggleswitchInvert.bottom
             font.pointSize: 10
-            anchors.horizontalCenterOffset: 0
             anchors.horizontalCenter: toggleswitchIntRef.horizontalCenter
         }
 
         Text {
             id: textIntFreq
             x: 100
-            y: 260
             color: "#ffffff"
             text: qsTr("Int Ref Freq (MHz)")
-            anchors.bottom: datainputIntFreq.top
-            anchors.bottomMargin: 2
-            anchors.horizontalCenterOffset: 0
+            anchors.top: rotarycontrolGain.bottom
+            anchors.margins: 5
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font.pointSize: 10
@@ -1077,7 +1063,7 @@ Rectangle {
         DataInput {
             id: datainputIntFreq
             x: 87
-            y: 251
+            anchors.top: textIntFreq.bottom
             width: 170
             height: 35
             text: "0.000000"
@@ -1092,39 +1078,622 @@ Rectangle {
             onValueEntered: setIntFreq(newVal)
         }
 
+        Text {
+            id: textOffsetFreq
+            x: 100
+            color: "#ffffff"
+            text: qsTr("Offset Freq (GHz)")
+            anchors.top: datainputIntFreq.bottom
+            anchors.margins: 5
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            font.pointSize: 10
+            anchors.horizontalCenter: readoutOffsetFreq.horizontalCenter
+        }
+
+        Readout {
+            id: readoutOffsetFreq
+            x: 87
+            anchors.top: textOffsetFreq.bottom
+            width: 170
+            height: 25
+            text: datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000
+            pointSize: 16
+            decimal: 6
+            textColor: "#ffffff"
+        }
+
     }
 
-    Text {
-        id: textGraphNote
-        x: 289
-        y: 262
-        color: "#ffff26"
-        text: qsTr("Note: Servo locks to <i>negative</i> slope.")
-        anchors.bottom: graphcomponent.top
-        anchors.bottomMargin: 2
-        anchors.horizontalCenterOffset: 0
-        anchors.horizontalCenter: rotarycontrolGain.horizontalCenter
-        horizontalAlignment: Text.AlignHCenter
-        font.pointSize: 9
-        verticalAlignment: Text.AlignVCenter
+    ToggleSwitch {
+		id: graphPanelBtn
+		width: 60
+		anchors.top: textWidgetTitle.bottom
+		anchors.margins: 0
+		anchors.topMargin: 10
+		anchors.leftMargin: 15
+		anchors.left: rampRect.right
+		text: "Graph"
+		textOnState: "Graph"
+		enableState: true
+		radius: 0
+		onClicked: {
+		    rectAllEvents.visible = !enableState;
+		    rectGraph.visible = enableState;
+		    evtPanelBtn.enableSwitch(!enableState);
+		    runRamp(global.rampState); // restore old state of ramp
+		}
+	}
+
+	ToggleSwitch {
+		id: evtPanelBtn
+		width: 60
+		anchors.top: textWidgetTitle.bottom
+		anchors.margins: 0
+		anchors.topMargin: 10
+		anchors.bottomMargin: 0
+		anchors.left: graphPanelBtn.right
+		text: "Events"
+		textOnState: "Events"
+		enableState: false
+		radius: 0
+		onClicked: {
+		    global.rampState = global.rampRun;
+		    runRamp(false);
+		    rectAllEvents.visible = enableState;
+		    rectGraph.visible = !enableState;
+		    graphPanelBtn.enableSwitch(!enableState);
+		}
+	}
+
+    Rectangle {
+        id: rectGraph
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+
+        Text {
+            id: textGraphNote
+            color: "#ffff26"
+            text: qsTr("Note: Servo locks to <i>negative</i> slope.")
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: 5
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 9
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        GraphComponent {
+            id: graphcomponent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.top: textGraphNote.bottom
+            anchors.margins: 5
+            gridYDiv: 10
+            yMinimum: -5
+            yMaximum: 5
+            xMinimum: -128
+            xMaximum: 128
+            datasetFill: false
+            axisYLabel: "Error Input"
+            axisXLabel: "Ramp Voltage"
+            autoScale: false
+            vDivSetting: 6
+        }
     }
 
-    GraphComponent {
-        id: graphcomponent
-        x: 289
-        y: 47
-        width: 443
-        height: 465
-        gridYDiv: 10
-        yMinimum: -5
-        yMaximum: 5
-        xMinimum: -128
-        xMaximum: 128
-        datasetFill: false
-        axisYLabel: "Error Input"
-        axisXLabel: "Ramp Voltage"
-        autoScale: false
-        vDivSetting: 6
+    function getEvtLOff() {
+        var result = ice.send('EvtLOff?', slot, null);
+        return parseInt(result);
     }
 
+    function getEvtJump() {
+        var result = ice.send('EvtJump?', slot, null);
+        return parseInt(result);
+    }
+
+    function getEvtNum() {
+        var result = ice.send('EvtNum?', slot, null);
+        return parseInt(result);
+    }
+
+    function getEvtJumpRow() {
+        var result = ice.send('EvtJRow?', slot, null);
+        var row = parseInt(result);
+
+        setCurrentJumpRow(row);
+
+        return row;
+    }
+
+    function setCurrentJumpRow(row) {
+        for (var i = 0; i < global.evtNum; i++) {
+            var rect = repeater.itemAt(i);
+            var item = rect.children[0];
+            rect.border.color = '#CCCCCC'
+            item.color = '#FFFFFF';
+            item.font.bold = false;
+        }
+
+        rect = repeater.itemAt(row - 1);
+        item = repeater.itemAt(row - 1).children[0];
+        rect.border.color = '#3399ff'
+        item.color = '#3399ff';
+        item.font.bold = true;
+    }
+
+    function getEvtLOffRow() {
+        var result = ice.send('Laser?', slot, null);
+        var row = 0;
+
+        if (result.toUpperCase() == 'ON') {
+            result = ice.send('Readvolt 5', slot, null);
+            var current = parseFloat(result);
+
+            if (current < 0.005) {
+                row = 2;
+            }
+            else {
+                row = 1;
+            }
+        }
+        else {
+            row = 2;
+        }
+
+        setCurrentLOffRow(row);
+        return row;
+    }
+
+    function setCurrentLOffRow(row) {
+        if (row === 1) {
+            var rect1 = rectEvtLoffState2;
+            var rect2 = rectEvtLoffState1;
+        }
+        else {
+            var rect1 = rectEvtLoffState1;
+            var rect2 = rectEvtLoffState2;
+        }
+
+        var item1 = rect1.children[0];
+        var item2 = rect2.children[0];
+        rect1.border.color = '#CCCCCC'
+        item1.color = '#FFFFFF';
+        item1.font.bold = false;
+        rect2.border.color = '#3399ff'
+        item2.color = '#3399ff';
+        item2.font.bold = true;
+    }
+
+    function getEvtDataRow(row) {
+        var result = ice.send('EvtData? ' + row + ' 0', slot, null);
+        var mode = parseInt(result);
+        result = ice.send('EvtData? ' + row + ' 1', slot, null);
+        var freq = parseFloat(result);
+
+        return {mode: mode, intfreq: freq};
+    }
+
+    function readEvtData() {
+        var evtNum = 0;
+
+        global.evtLOffAddr = getEvtLOff();
+        laserAddrTextField.setValue(global.evtLOffAddr);
+        global.evtJumpAddr = getEvtJump();
+        jumpAddrTextField.setValue(global.evtJumpAddr);
+        global.evtNum = getEvtNum();
+        numEventsTextField.setValue(global.evtNum);
+
+        repeater.model = global.evtNum;
+        getEvtJumpRow();
+
+        for (var i = 0; i < global.evtNum; i++) {
+            var rowData = getEvtDataRow(i+1);
+            repeater.itemAt(i).children[1].text = rowData.mode;
+            repeater.itemAt(i).children[2].text = rowData.intfreq;
+        }
+    }
+
+    function pushEvtData() {
+        var step, mode, intfreq;
+
+        for (var i = 0; i < global.evtNum; i++) {
+            step = repeater.itemAt(i).children[0].text;
+            mode = repeater.itemAt(i).children[1].text;
+            intfreq = repeater.itemAt(i).children[2].text;
+            var command = 'EvtData ' + step + ' ' + mode + ' ' + intfreq;
+            ice.send(command, slot, null);
+        }
+    }
+
+    Rectangle {
+        id: rectAllEvents
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+        visible: false
+        onVisibleChanged: {
+            if (visible) {
+                readEvtData();
+                getEvtLOffRow();
+            }
+        }
+
+        Rectangle {
+            id: rectJumpEvents
+            anchors.top: parent.top
+            anchors.left: rectLOffEvents.right
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: 5
+            color: "#505050"
+            radius: 5
+
+            Text {
+                id: eventJumpTitle
+                color: "#cccccc"
+                text: "Offset Freq Events"
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.top: parent.top
+                anchors.topMargin: 7
+                styleColor: "#ffffff"
+                font.bold: true
+                font.pointSize: 10
+            }
+
+            Column {
+                id: controls
+                anchors.left: parent.left
+                anchors.top: eventJumpTitle.bottom
+                anchors.margins: 10
+                spacing: 5
+                width: 65
+
+                Text {
+                    text: '# States:'
+                    color: "#ffffff"
+                    font.pointSize: 10
+                }
+
+                DataInput {
+                    id: numEventsTextField
+                    width: 40
+                    useInt: true
+                    pointSize: 12
+                    maxVal: 16
+                    minVal: 1
+                    value: 1
+                    decimal: 0
+                    stepSize: 1
+                    onValueEntered: {
+                        global.evtNum = newVal;
+                        repeater.model = global.evtNum;
+                        ice.send('EvtNum ' + global.evtNum, slot, null);
+                        readEvtData();
+                    }
+                }
+
+                Text {
+                    text: 'Address:'
+                    color: "#ffffff"
+                    font.pointSize: 10
+                }
+
+                DataInput {
+                    id: jumpAddrTextField
+                    width: 40
+                    useInt: true
+                    pointSize: 12
+                    maxVal: 7
+                    minVal: 0
+                    value: 0
+                    decimal: 0
+                    stepSize: 1
+                    onValueEntered: {
+                        global.evtJumpAddr = newVal;
+                        ice.send('EvtJump ' + global.evtJumpAddr, slot, null);
+                    }
+                }
+
+                ThemeButton {
+                    id: trigBtn
+                    y: 7
+                    width: 50
+                    height: 30
+                    text: "Trig"
+                    highlight: false
+                    onClicked: {
+                        ice.send('#DoEvent ' + global.evtJumpAddr, slot, null);
+                        getEvtJumpRow();
+                    }
+                    enabled: true
+                }
+
+                ThemeButton {
+                    id: saveJmpBtn
+                    y: 7
+                    width: 50
+                    height: 30
+                    text: "Save"
+                    highlight: false
+                    onClicked: {
+                        pushEvtData();
+                    }
+                    enabled: true
+                }
+
+                ThemeButton {
+                    id: resetBtn
+                    y: 7
+                    width: 50
+                    height: 30
+                    text: "Reset"
+                    highlight: false
+                    onClicked: {
+                        ice.send('EvtNum ' + global.evtNum, slot, null);
+                        getEvtJumpRow();
+                    }
+                    enabled: true
+                }
+
+            }
+
+            Column {
+                id: column1
+                anchors.left: controls.right
+                anchors.right: parent.left
+                anchors.top: eventJumpTitle.bottom
+                anchors.bottom: parent.bottom
+                anchors.margins: 10
+                spacing: 5
+
+                Rectangle {
+                    width: parent.width
+                    height: 10
+
+                    Text {
+                        x: 0
+                        anchors.top: parent.top
+                        text: "State"
+                        color: "#cccccc"
+                    }
+
+                    Text {
+                        x: 40
+                        anchors.top: parent.top
+                        text: "Mode"
+                        color: "#cccccc"
+                    }
+
+                    Text {
+                        x: 80
+                        anchors.top: parent.top
+                        text: "Int. Frequency"
+                        color: "#cccccc"
+                    }
+                }
+
+                Repeater {
+                    id: repeater
+                    model: 16
+
+                    Rectangle {
+                        width: 175
+                        height: 20
+                        color: "#202020"
+                        border.color: '#cccccc'
+                        border.width: 1;
+                        radius: 5
+
+                        Text {
+                            x: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: (index + 1).toString()
+                            color: "#cccccc"
+                        }
+
+                        TextInput {
+                            x: 40
+                            text: '0'
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 30
+                            color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
+                            validator: IntValidator{bottom: 0; top: 15}
+                            selectByMouse: true
+                            selectionColor: '#3399ff'
+                            onFocusChanged: {
+                                if (this.focus === true) {
+                                    this.selectAll();
+                                }
+                            }
+                        }
+
+                        TextInput {
+                            x: 80
+                            text: '100.000000'
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 120
+                            color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
+                            validator: DoubleValidator{decimals: 6; bottom: 50.0; top: 250.0}
+                            maximumLength: 10
+                            selectByMouse: true
+                            selectionColor: '#3399ff'
+                            onFocusChanged: {
+                                if (this.focus === true) {
+                                    this.selectAll();
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+	    }
+
+	    Rectangle {
+            id: rectLOffEvents
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.margins: 5
+            width: 165
+            color: "#505050"
+            radius: 5
+
+            Text {
+                id: eventLOffTitle
+                color: "#cccccc"
+                text: "Laser Pulse Events"
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.top: parent.top
+                anchors.topMargin: 7
+                styleColor: "#ffffff"
+                font.bold: true
+                font.pointSize: 10
+            }
+
+            Column {
+                id: controlsLOff
+                anchors.left: parent.left
+                anchors.top: eventLOffTitle.bottom
+                anchors.margins: 10
+                spacing: 5
+                width: 60
+
+                Text {
+                    text: 'Address:'
+                    color: "#ffffff"
+                    font.pointSize: 10
+                }
+
+                DataInput {
+                    id: laserAddrTextField
+                    width: 40
+                    useInt: true
+                    pointSize: 12
+                    maxVal: 7
+                    minVal: 0
+                    value: 0
+                    decimal: 0
+                    stepSize: 1
+                    onValueEntered: {
+                        global.evtLOffAddr = newVal;
+                        ice.send('EvtLOff ' + global.evtLOffAddr, slot, null);
+                    }
+                }
+
+                ThemeButton {
+                    id: trigLOffBtn
+                    y: 7
+                    width: 50
+                    height: 30
+                    text: "Trig"
+                    highlight: false
+                    onClicked: {
+                        ice.send('#DoEvent ' + global.evtLOffAddr, slot, null);
+                        getEvtLOffRow();
+                    }
+                    enabled: true
+                }
+            }
+
+            Column {
+                id: columnLOff
+                anchors.left: controlsLOff.right
+                anchors.right: parent.left
+                anchors.top: eventLOffTitle.bottom
+                anchors.bottom: parent.bottom
+                anchors.margins: 10
+                spacing: 5
+
+                Rectangle {
+                    width: parent.width
+                    height: 10
+
+                    Text {
+                        x: 0
+                        anchors.top: parent.top
+                        text: "State"
+                        color: "#cccccc"
+                    }
+
+                    Text {
+                        x: 40
+                        anchors.top: parent.top
+                        text: "Laser"
+                        color: "#cccccc"
+                    }
+                }
+
+                Rectangle {
+                    id: rectEvtLoffState1
+                    width: 70
+                    height: 20
+                    color: "#202020"
+                    border.color: '#cccccc'
+                    border.width: 1;
+                    radius: 5
+
+                    Text {
+                        x: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: '1'
+                        color: "#cccccc"
+                    }
+
+                    Text {
+                        x: 40
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: 'On'
+                        color: "#FFFFFF"
+                    }
+                }
+
+                Rectangle {
+                    id: rectEvtLoffState2
+                    width: 70
+                    height: 20
+                    color: "#202020"
+                    border.color: '#cccccc'
+                    border.width: 1;
+                    radius: 5
+
+                    Text {
+                        x: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: '2'
+                        color: "#cccccc"
+                    }
+
+                    Text {
+                        x: 40
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: 'Off'
+                        color: "#FFFFFF"
+                    }
+                }
+
+                Text {
+                    text: "Note: TTL Event\ninputs may\noverride GUI\ntrigger button."
+                    color: "#cccccc"
+                }
+            }
+        }
+	}
 }

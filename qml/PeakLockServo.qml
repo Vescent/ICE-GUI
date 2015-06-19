@@ -686,7 +686,9 @@ Rectangle {
 
     Rectangle {
         id: rampRect
-        x: 9
+        anchors.top: textWidgetTitle.bottom
+        anchors.left: parent.left
+        anchors.margins: 10
         y: 32
         width: 275
         height: 153
@@ -878,10 +880,11 @@ Rectangle {
 
     Rectangle {
         id: servoRect
-        x: 10
-        y: 191
-        width: 273
-        height: 321
+        anchors.top: rampRect.bottom
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
+        width: 275
         color: "#00000000"
         radius: 7
         border.color: "#cccccc"
@@ -1223,55 +1226,309 @@ Rectangle {
 
     }
 
-    GraphComponent {
-        id: graphcomponent
-        x: 289
-        y: 32
-        width: 443
-        height: 230
-        yOffset: 0
-        yMinimum: -0.8
-        yMaximum: 0.8
-        xMinimum: -128
-        xMaximum: 128
-        datasetFill: false
-        axisYLabel: "Error Input"
-        axisXLabel: "Ramp Voltage"
-        autoScale: false
-        vDivSetting: 5
-        adjustableYOffset: true
+    ToggleSwitch {
+		id: graphPanelBtn
+		width: 60
+		anchors.top: textWidgetTitle.bottom
+		anchors.margins: 0
+		anchors.topMargin: 10
+		anchors.leftMargin: 15
+		anchors.left: rampRect.right
+		text: "Graph"
+		textOnState: "Graph"
+		enableState: true
+		radius: 0
+		onClicked: {
+		    rectAllEvents.visible = !enableState;
+		    rectGraph.visible = enableState;
+		    evtPanelBtn.enableSwitch(!enableState);
+		    runRamp(global.rampState); // restore old state of ramp
+		}
+	}
+
+	ToggleSwitch {
+		id: evtPanelBtn
+		width: 60
+		anchors.top: textWidgetTitle.bottom
+		anchors.margins: 0
+		anchors.topMargin: 10
+		anchors.bottomMargin: 0
+		anchors.left: graphPanelBtn.right
+		text: "Events"
+		textOnState: "Events"
+		enableState: false
+		radius: 0
+		onClicked: {
+		    global.rampState = global.rampRun;
+		    runRamp(false);
+		    rectAllEvents.visible = enableState;
+		    rectGraph.visible = !enableState;
+		    graphPanelBtn.enableSwitch(!enableState);
+		}
+	}
+
+    Rectangle {
+        id: rectGraph
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+
+        GraphComponent {
+            id: graphcomponent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 5
+            height: 212
+            yOffset: 0
+            yMinimum: -0.8
+            yMaximum: 0.8
+            xMinimum: -128
+            xMaximum: 128
+            datasetFill: false
+            axisYLabel: "Error Input"
+            axisXLabel: "Ramp Voltage"
+            autoScale: false
+            vDivSetting: 5
+            adjustableYOffset: true
+        }
+
+        Text {
+            id: textGraphNote
+            color: "#ffff26"
+            text: qsTr("Note: Servo locks to <i>positive</i> slope.")
+            anchors.left: graphcomponent.left
+            anchors.top: graphcomponent.bottom
+            anchors.topMargin: 2
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 9
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        GraphComponent {
+            id: graphcomponent2
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: textGraphNote.bottom
+            anchors.margins: 5
+            height: 212
+            yMinimum: -0.2
+            yMaximum: 0.2
+            xMinimum: -128
+            xMaximum: 128
+            datasetFill: false
+            axisYLabel: "DC Error"
+            axisXLabel: "Ramp Voltage"
+            autoScale: false
+            vDivSetting: 4
+        }
     }
 
-    Text {
-        id: textGraphNote
-        x: 289
-        y: 262
-        color: "#ffff26"
-        text: qsTr("Note: Servo locks to <i>positive</i> slope.")
-        anchors.bottom: graphcomponent2.top
-        anchors.bottomMargin: 2
-        anchors.horizontalCenterOffset: 0
-        anchors.horizontalCenter: rotarycontrolGain.horizontalCenter
-        horizontalAlignment: Text.AlignHCenter
-        font.pointSize: 9
-        verticalAlignment: Text.AlignVCenter
+    function getEvtLOffRow() {
+        var result = ice.send('Laser?', slot, null);
+        var row = 0;
+
+        if (result.toUpperCase() == 'ON') {
+            result = ice.send('Readvolt 5', slot, null);
+            var current = parseFloat(result);
+
+            if (current < 0.005) {
+                row = 2;
+            }
+            else {
+                row = 1;
+            }
+        }
+        else {
+            row = 2;
+        }
+
+        setCurrentLOffRow(row);
+        return row;
     }
 
-    GraphComponent {
-        id: graphcomponent2
-        x: 289
-        y: 282
-        width: 443
-        height: 230
-        yMinimum: -0.2
-        yMaximum: 0.2
-        xMinimum: -128
-        xMaximum: 128
-        datasetFill: false
-        axisYLabel: "DC Error"
-        axisXLabel: "Ramp Voltage"
-        autoScale: false
-        vDivSetting: 4
+    function setCurrentLOffRow(row) {
+        if (row === 1) {
+            var rect1 = rectEvtLoffState2;
+            var rect2 = rectEvtLoffState1;
+        }
+        else {
+            var rect1 = rectEvtLoffState1;
+            var rect2 = rectEvtLoffState2;
+        }
+
+        var item1 = rect1.children[0];
+        var item2 = rect2.children[0];
+        rect1.border.color = '#CCCCCC'
+        item1.color = '#FFFFFF';
+        item1.font.bold = false;
+        rect2.border.color = '#3399ff'
+        item2.color = '#3399ff';
+        item2.font.bold = true;
     }
 
+    Rectangle {
+        id: rectAllEvents
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+        visible: false
+        onVisibleChanged: {
+            if (visible) {
+                getEvtLOffRow();
+            }
+        }
+
+        Text {
+            id: eventLOffTitle
+            color: "#cccccc"
+            text: "Laser Pulse Events"
+            anchors.left: parent.left
+            anchors.leftMargin: 10
+            anchors.top: parent.top
+            anchors.topMargin: 7
+            styleColor: "#ffffff"
+            font.bold: true
+            font.pointSize: 10
+        }
+
+        Column {
+            id: controlsLOff
+            anchors.left: parent.left
+            anchors.top: eventLOffTitle.bottom
+            anchors.margins: 10
+            spacing: 5
+            width: 60
+
+            Text {
+                text: 'Address:'
+                color: "#ffffff"
+                font.pointSize: 10
+            }
+
+            DataInput {
+                id: laserAddrTextField
+                width: 40
+                useInt: true
+                pointSize: 12
+                maxVal: 7
+                minVal: 0
+                value: 0
+                decimal: 0
+                stepSize: 1
+                onValueEntered: {
+                    global.evtLOffAddr = newVal;
+                    ice.send('EvtLOff ' + global.evtLOffAddr, slot, null);
+                }
+            }
+
+            ThemeButton {
+                id: trigLOffBtn
+                y: 7
+                width: 50
+                height: 30
+                text: "Trig"
+                highlight: false
+                onClicked: {
+                    ice.send('#DoEvent ' + global.evtLOffAddr, slot, null);
+                    getEvtLOffRow();
+                }
+                enabled: true
+            }
+        }
+
+        Column {
+            id: columnLOff
+            anchors.left: controlsLOff.right
+            anchors.right: parent.left
+            anchors.top: eventLOffTitle.bottom
+            anchors.bottom: parent.bottom
+            anchors.margins: 10
+            spacing: 5
+
+            Rectangle {
+                width: parent.width
+                height: 10
+
+                Text {
+                    x: 0
+                    anchors.top: parent.top
+                    text: "State"
+                    color: "#cccccc"
+                }
+
+                Text {
+                    x: 40
+                    anchors.top: parent.top
+                    text: "Laser"
+                    color: "#cccccc"
+                }
+            }
+
+            Rectangle {
+                id: rectEvtLoffState1
+                width: 70
+                height: 20
+                color: "#202020"
+                border.color: '#cccccc'
+                border.width: 1;
+                radius: 5
+
+                Text {
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: '1'
+                    color: "#cccccc"
+                }
+
+                Text {
+                    x: 40
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: 'On'
+                    color: "#FFFFFF"
+                }
+            }
+
+            Rectangle {
+                id: rectEvtLoffState2
+                width: 70
+                height: 20
+                color: "#202020"
+                border.color: '#cccccc'
+                border.width: 1;
+                radius: 5
+
+                Text {
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: '2'
+                    color: "#cccccc"
+                }
+
+                Text {
+                    x: 40
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: 'Off'
+                    color: "#FFFFFF"
+                }
+            }
+
+            Text {
+                text: "Note: TTL Event\ninputs may override\nGUI trigger button."
+                color: "#cccccc"
+            }
+        }
+    }
 }
