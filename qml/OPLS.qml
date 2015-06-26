@@ -1278,8 +1278,10 @@ Rectangle {
         var mode = parseInt(result);
         result = ice.send('EvtData? ' + row + ' 1', slot, null);
         var freq = parseFloat(result);
+        result = ice.send('EvtData? ' + row + ' 2', slot, null);
+        var gain = parseFloat(result);
 
-        return {mode: mode, intfreq: freq};
+        return {mode: mode, intfreq: freq, fforward: gain};
     }
 
     function readEvtData() {
@@ -1298,19 +1300,23 @@ Rectangle {
         for (var i = 0; i < global.evtNum; i++) {
             var rowData = getEvtDataRow(i+1);
             repeater.itemAt(i).children[1].text = rowData.mode;
-            repeater.itemAt(i).children[2].text = rowData.intfreq;
+            repeater.itemAt(i).children[2].text = rowData.intfreq.toFixed(6);
+            repeater.itemAt(i).children[3].text = rowData.fforward.toFixed(3);
         }
     }
 
     function pushEvtData() {
-        var step, mode, intfreq;
+        var step, mode, intfreq, fforward;
 
         for (var i = 0; i < global.evtNum; i++) {
             step = repeater.itemAt(i).children[0].text;
             mode = repeater.itemAt(i).children[1].text;
             intfreq = repeater.itemAt(i).children[2].text;
-            var command = 'EvtData ' + step + ' ' + mode + ' ' + intfreq;
-            ice.send(command, slot, null);
+            fforward = repeater.itemAt(i).children[3].text;
+            var command = 'EvtData ' + step + ' ';
+            ice.send(command + '0 ' + mode, slot, null);
+            ice.send(command + '1 ' + intfreq, slot, null);
+            ice.send(command + '2 ' + fforward, slot, null);
         }
     }
 
@@ -1362,7 +1368,7 @@ Rectangle {
                 anchors.top: eventJumpTitle.bottom
                 anchors.margins: 10
                 spacing: 5
-                width: 65
+                width: 60
 
                 Text {
                     text: '# States:'
@@ -1420,6 +1426,9 @@ Rectangle {
                     onClicked: {
                         ice.send('#DoEvent ' + global.evtJumpAddr, slot, null);
                         getEvtJumpRow();
+                        getNDiv();
+                        getIntFreq();
+                        getIntRef();
                     }
                     enabled: true
                 }
@@ -1483,7 +1492,14 @@ Rectangle {
                     Text {
                         x: 80
                         anchors.top: parent.top
-                        text: "Int. Frequency"
+                        text: "Int. Freq. (MHz)"
+                        color: "#cccccc"
+                    }
+
+                    Text {
+                        x: 180
+                        anchors.top: parent.top
+                        text: "F. Fwd (V)"
                         color: "#cccccc"
                     }
                 }
@@ -1493,7 +1509,7 @@ Rectangle {
                     model: 16
 
                     Rectangle {
-                        width: 175
+                        width: 240
                         height: 20
                         color: "#202020"
                         border.color: '#cccccc'
@@ -1527,10 +1543,27 @@ Rectangle {
                             x: 80
                             text: '100.000000'
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 120
+                            width: 50
                             color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
                             validator: DoubleValidator{decimals: 6; bottom: 50.0; top: 250.0}
                             maximumLength: 10
+                            selectByMouse: true
+                            selectionColor: '#3399ff'
+                            onFocusChanged: {
+                                if (this.focus === true) {
+                                    this.selectAll();
+                                }
+                            }
+                        }
+
+                        TextInput {
+                            x: 180
+                            text: '0'
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 50
+                            color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
+                            validator: DoubleValidator{decimals: 3; bottom: -2.5; top: 2.5}
+                            maximumLength: 7
                             selectByMouse: true
                             selectionColor: '#3399ff'
                             onFocusChanged: {
@@ -1551,14 +1584,14 @@ Rectangle {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             anchors.margins: 5
-            width: 165
+            width: 100
             color: "#505050"
             radius: 5
 
             Text {
                 id: eventLOffTitle
                 color: "#cccccc"
-                text: "Laser Pulse Events"
+                text: "Laser Pulse\nEvents"
                 anchors.left: parent.left
                 anchors.leftMargin: 10
                 anchors.top: parent.top
@@ -1611,88 +1644,85 @@ Rectangle {
                     }
                     enabled: true
                 }
+
+                Column {
+                    id: columnLOff
+                    anchors.left: parent.left
+                    spacing: 5
+
+                    Rectangle {
+                        width: parent.width
+                        height: 10
+                        color: 'transparent'
+
+                        Text {
+                            x: 0
+                            anchors.top: parent.top
+                            text: "State"
+                            color: "#cccccc"
+                        }
+
+                        Text {
+                            x: 40
+                            anchors.top: parent.top
+                            text: "Laser"
+                            color: "#cccccc"
+                        }
+                    }
+
+                    Rectangle {
+                        id: rectEvtLoffState1
+                        width: 70
+                        height: 20
+                        color: "#202020"
+                        border.color: '#cccccc'
+                        border.width: 1;
+                        radius: 5
+
+                        Text {
+                            x: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: '1'
+                            color: "#cccccc"
+                        }
+
+                        Text {
+                            x: 40
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: 'On'
+                            color: "#FFFFFF"
+                        }
+                    }
+
+                    Rectangle {
+                        id: rectEvtLoffState2
+                        width: 70
+                        height: 20
+                        color: "#202020"
+                        border.color: '#cccccc'
+                        border.width: 1;
+                        radius: 5
+
+                        Text {
+                            x: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: '2'
+                            color: "#cccccc"
+                        }
+
+                        Text {
+                            x: 40
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: 'Off'
+                            color: "#FFFFFF"
+                        }
+                    }
+
+                    Text {
+                        text: "Note: TTL Event\ninputs may\noverride GUI\ntrigger button."
+                        color: "#cccccc"
+                    }
             }
-
-            Column {
-                id: columnLOff
-                anchors.left: controlsLOff.right
-                anchors.right: parent.left
-                anchors.top: eventLOffTitle.bottom
-                anchors.bottom: parent.bottom
-                anchors.margins: 10
-                spacing: 5
-
-                Rectangle {
-                    width: parent.width
-                    height: 10
-
-                    Text {
-                        x: 0
-                        anchors.top: parent.top
-                        text: "State"
-                        color: "#cccccc"
-                    }
-
-                    Text {
-                        x: 40
-                        anchors.top: parent.top
-                        text: "Laser"
-                        color: "#cccccc"
-                    }
-                }
-
-                Rectangle {
-                    id: rectEvtLoffState1
-                    width: 70
-                    height: 20
-                    color: "#202020"
-                    border.color: '#cccccc'
-                    border.width: 1;
-                    radius: 5
-
-                    Text {
-                        x: 10
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: '1'
-                        color: "#cccccc"
-                    }
-
-                    Text {
-                        x: 40
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: 'On'
-                        color: "#FFFFFF"
-                    }
-                }
-
-                Rectangle {
-                    id: rectEvtLoffState2
-                    width: 70
-                    height: 20
-                    color: "#202020"
-                    border.color: '#cccccc'
-                    border.width: 1;
-                    radius: 5
-
-                    Text {
-                        x: 10
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: '2'
-                        color: "#cccccc"
-                    }
-
-                    Text {
-                        x: 40
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: 'Off'
-                        color: "#FFFFFF"
-                    }
-                }
-
-                Text {
-                    text: "Note: TTL Event\ninputs may\noverride GUI\ntrigger button."
-                    color: "#cccccc"
-                }
             }
         }
 	}
