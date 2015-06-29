@@ -82,6 +82,10 @@ Rectangle {
             }
 			*/
 
+			if (global.servoOn) {
+                runRamp(false);
+            }
+
             graphcomponent.refresh();
         }
         else {
@@ -400,13 +404,7 @@ Rectangle {
     function updateServoLock() {
         ice.send('ReadVolt 2', slot, function(result){
             var value = parseFloat(result);
-            var data = [];
-
-            for (var i = 0; i < 20; i++) {
-                data[i] = value;
-            }
-
-            graphcomponent.plotData(data, 0);
+            graphcomponent.addPoint(value, 0);
             return;
         });
     }
@@ -416,6 +414,8 @@ Rectangle {
             global.rampRun = true;
             toggleswitchRamp.enableSwitch(true);
 			setServo(false);
+			graphcomponent.clearData();
+			graphcomponent.rollMode = false;
             
             ice.send('#pauselcd t', slot, function(result){});
             
@@ -424,6 +424,8 @@ Rectangle {
         else {
             global.rampRun = false;
             toggleswitchRamp.enableSwitch(false);
+            graphcomponent.rollMode = true;
+            graphcomponent.clearData();
             
             ice.send('#pauselcd f', slot, function(result){});
         }

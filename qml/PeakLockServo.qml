@@ -92,6 +92,10 @@ Rectangle {
             }
 			*/
 
+			if (global.servoOn) {
+                runRamp(false);
+            }
+
             graphcomponent.refresh();
             graphcomponent2.refresh();
         }
@@ -415,26 +419,14 @@ Rectangle {
         // Read Error Input and plot
         ice.send('ReadVolt 4', slot, function(result){
             var value = parseFloat(result);
-            var data = [];
-
-            for (var i = 0; i < 20; i++) {
-                data[i] = value;
-            }
-
-            graphcomponent.plotData(data, 0);
+            graphcomponent.addPoint(value, 0);
             return;
         });
         
         // Read DC Error and plot
         ice.send('ReadVolt 3', slot, function(result){
             var value = parseFloat(result);
-            var data = [];
-
-            for (var i = 0; i < 20; i++) {
-                data[i] = value;
-            }
-
-            graphcomponent2.plotData(data, 0);
+            graphcomponent2.addPoint(value, 0);
             return;
         });
     }
@@ -444,6 +436,10 @@ Rectangle {
             global.rampRun = true;
             toggleswitchRamp.enableSwitch(true);
 			setServo(false);
+			graphcomponent.clearData();
+			graphcomponent.rollMode = false;
+			graphcomponent2.clearData();
+			graphcomponent2.rollMode = false;
             
             ice.send('#pauselcd t', slot, function(result){});
             
@@ -452,6 +448,10 @@ Rectangle {
         else {
             global.rampRun = false;
             toggleswitchRamp.enableSwitch(false);
+            graphcomponent.rollMode = true;
+            graphcomponent.clearData();
+            graphcomponent2.rollMode = true;
+            graphcomponent2.clearData();
 			
             ice.send('#pauselcd f', slot, function(result){});
         }
