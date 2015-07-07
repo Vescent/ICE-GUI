@@ -3,7 +3,7 @@
 // Settings
 var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
-var programVersion = '1.1 alpha';
+var programVersion = python.version;
 
 // Global Variables
 var currentWidget;
@@ -38,19 +38,19 @@ function onLoad() {
 
 function serialConnect() {
     if (appWindow.serialConnected == false) {
-        if (ice.serialOpen(comboComPorts.currentText)) {
-            console.log('Connected to serial port ' + comboComPorts.currentText);
+		if (ice.serialOpen(comboComPorts.currentText) === true) {
+            python.log('Connected to serial port ' + comboComPorts.currentText);
 
             ice.send('#version', 1, function(response){
                 var version = response;
 
-                console.log('ICE Master Controller Version ' + version);
+                python.log('ICE Master Controller Version ' + version);
                 appWindow.serialConnected = true;
                 buttonConnect.text = 'Disconnect';
                 buttonConnect.highlight = false;
 
                 ice.send('#status', 1, function(response){
-                    console.log('Power: ' + response);
+                    python.log('Power: ' + response);
 
                     if (response === 'On') {
                         //toggleswitchSystemPower.enableSwitch(true);
@@ -66,8 +66,8 @@ function serialConnect() {
             });
         }
         else {
-            console.log('Error connecting to serial port.');
-			appWindow.alert('Error connecting to serial port.')
+			python.log('Error connecting to serial port.');
+			appWindow.alert('Error connecting to serial port.');
         }
     }
     else {
@@ -76,7 +76,7 @@ function serialConnect() {
         appWindow.serialConnected = false;
         buttonConnect.text = 'Connect';
         buttonConnect.highlight = true;
-        console.log('Serial port disconnected.');
+        python.log('Serial port disconnected.');
     }
 }
 
@@ -104,7 +104,7 @@ function loadSlotWidget(slotNumber, deviceType) {
 		'slot': slotNumber
 	});
     widget.error.connect(function(msg) {
-        console.log(msg);
+        python.log(msg);
         commandResult.text = msg;
     });
 

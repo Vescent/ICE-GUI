@@ -71,14 +71,14 @@ Rectangle {
                 }
 
                 runRamp(global.rampOn)
-                //console.log('Ramp: ' + global.rampOn);
+                //python.log('Ramp: ' + global.rampOn);
             }
 
             if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
                 global.servoOn = appWindow.widgetState[slot].servoOn;
                 runRamp(false);
                 setServo(global.servoOn);
-                //console.log('Servo: ' + global.rampOn);
+                //python.log('Servo: ' + global.rampOn);
             }
 			*/
 
@@ -111,7 +111,7 @@ Rectangle {
                 maxCurrent = 500;
             }
             else {
-                console.log("Error getting feature ID");
+                python.log("Error getting feature ID");
             }
         });
     }
@@ -125,10 +125,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}
@@ -282,10 +282,10 @@ Rectangle {
 			//datainputIntFreq.setValue(val);
 			var num = parseFloat(val);
 			intfreq = num;
-			console.log(val);
-			console.log(num);
-			console.log(num.toFixed(6));
-			console.log(intfreq);
+			python.log(val);
+			python.log(num);
+			python.log(num.toFixed(6));
+			python.log(intfreq);
 			//datainputIntFreq.text = intfreq.toFixed(6);
 			*/
             return;
@@ -435,7 +435,7 @@ Rectangle {
         global.start = new Date();
         
 		if (ice.logging == true) {
-			console.log('Started: ' + global.start);
+			python.log('Started: ' + global.start);
 		}
 		
 		if (global.rampRun == false) {
@@ -471,11 +471,11 @@ Rectangle {
 		
 		if (ice.logging == true) {
 			var totalTime = global.stop - global.start;
-			console.log('Total Time (s): ' + totalTime/1000);
+			python.log('Total Time (s): ' + totalTime/1000);
 			var bulkTime = global.bulkStop - global.bulk;
-			console.log('- Bulk (s):  ' + bulkTime/1000);
+			python.log('- Bulk (s):  ' + bulkTime/1000);
 			var setupTime = totalTime - bulkTime;
-			console.log('- Setup (s): ' + setupTime/1000);
+			python.log('- Setup (s): ' + setupTime/1000);
 		}
 
         // Trim excess data
@@ -486,10 +486,10 @@ Rectangle {
         }
 		
 		if (ice.logging == true) {
-			console.log('Data Points: ' + data.length + '/' + global.numDataPoints);
+			python.log('Data Points: ' + data.length + '/' + global.numDataPoints);
 		}
 		
-        //console.log('Data: ' + dataErrInput);
+        //python.log('Data: ' + dataErrInput);
 
         if (global.rampRun === true) {
             setTimeout(doRamp, 50);

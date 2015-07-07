@@ -79,7 +79,7 @@ Rectangle {
                 }
 
                 runRamp(global.rampOn)
-                //console.log('Ramp: ' + global.rampOn);
+                //python.log('Ramp: ' + global.rampOn);
             }
 
             if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
@@ -88,7 +88,7 @@ Rectangle {
                     runRamp(false);
                 }
                 setServo(global.servoOn);
-                //console.log('Servo: ' + global.rampOn);
+                //python.log('Servo: ' + global.rampOn);
             }
 			*/
 
@@ -124,7 +124,7 @@ Rectangle {
                 maxCurrent = 500;
             }
             else {
-                console.log("Error getting feature ID");
+                python.log("Error getting feature ID");
             }
         });
     }
@@ -138,10 +138,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}
@@ -461,7 +461,7 @@ Rectangle {
         global.start = new Date();
 		
 		if (ice.logging == true) {
-			console.log('Started: ' + global.start);
+			python.log('Started: ' + global.start);
 		}
         
         if (global.rampRun == false) {
@@ -497,11 +497,11 @@ Rectangle {
         if (ice.logging == true) {
 			global.stop = new Date();
 			var totalTime = global.stop - global.start;
-			console.log('Total Time (s): ' + totalTime/1000);
+			python.log('Total Time (s): ' + totalTime/1000);
 			var bulkTime = global.bulkStop - global.bulk;
-			console.log('- Bulk (s):  ' + bulkTime/1000);
+			python.log('- Bulk (s):  ' + bulkTime/1000);
 			var setupTime = totalTime - bulkTime;
-			console.log('- Setup (s): ' + setupTime/1000);
+			python.log('- Setup (s): ' + setupTime/1000);
 		}
 
         // De-interlace the data if we're recording two data variables.
@@ -527,7 +527,7 @@ Rectangle {
             graphcomponent2.plotData(dataDCErr, 0);
 
             if (ice.logging == true) {
-				console.log('Data Points: ' + data.length + '/' + global.numDataPoints*2);
+				python.log('Data Points: ' + data.length + '/' + global.numDataPoints*2);
 			}
         }
         else {
@@ -538,7 +538,7 @@ Rectangle {
             graphcomponent2.clearData();
 
             if (ice.logging == true) {
-				console.log('Data Points: ' + data.length + '/' + global.numDataPoints);
+				python.log('Data Points: ' + data.length + '/' + global.numDataPoints);
 			}
         }
 

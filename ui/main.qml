@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.0
-import QtQuick.Dialogs 1.1
 import "application.js" as App
 
 Rectangle {
@@ -53,19 +52,71 @@ Rectangle {
 		}
     }
 	
-	MessageDialog {
-		id: messageDialog
-		title: ""
-		icon: StandardIcon.Warning
-		text: "Error"
-		onAccepted: {
-			return;
+	Rectangle {
+		id: alertBox
+		anchors.centerIn: parent
+		color: '#555'
+		width: 300
+		height: bodyText.contentHeight + 90
+		border.color: '#39F'
+        border.width: 2
+		property alias message: bodyText.text
+		property alias title: titleText.text
+		visible: false
+		z: 100
+		
+		Text {
+            id: titleText
+            text: "Title"
+            font.family: 'Helvetica'
+            font.pointSize: 12
+            anchors {
+                top: parent.top
+				left: parent.left
+                margins: 10
+            }
+            color: '#FFF'
+        }
+		
+		Text {
+            id: bodyText
+            text: "Message"
+            font.family: 'Helvetica'
+            font.pointSize: 10
+            anchors {
+                top: titleText.bottom
+				left: parent.left
+                margins: 10
+            }
+            color: '#FFF'
+			width: 280
+			wrapMode: Text.WordWrap
+        }
+		
+		ThemeButton {
+			id: okButton
+			width: 40
+			height: 26
+			text: "Ok"
+			pointSize: 12
+			textColor: "#ffffff"
+			borderWidth: 1
+			highlight: true
+			onClicked: {
+				alertBox.visible = false;
+			}
+			anchors {
+                bottom: parent.bottom
+				right: parent.right
+                margins: 10
+            }
 		}
 	}
 	
-	function alert(message) {
-		messageDialog.text = message;
-		messageDialog.open();
+	function alert(message, title) {
+		alertBox.title = typeof title !== 'undefined' ?  title : 'Error';
+		alertBox.message = message;
+		alertBox.visible = true;		
 	}
 
 	function commandSend(command) {
@@ -301,6 +352,10 @@ Rectangle {
             onClicked: {
                 appWindow.logMode = enableState;
                 ice.setLogging(enableState);
+				
+				if (enableState) {					
+					appWindow.alert('Log Mode Enabled. Serial commands will be logged to "log.txt" in the program directory.', 'Info');
+				}
             }
         }
     }

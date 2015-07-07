@@ -34,11 +34,11 @@ Item {
         var number = parseFloat(text);
 
         if (isNaN(number)) {
-            console.log('Result NaN:' + text);
+            python.log('Result NaN:' + text);
             return;
         }
 		
-		//console.log(number)
+		//python.log(number)
 		
 		// TODO: This fixed bug where number '100.000000' doesn't display properly.
 		if (number == 100.000000) {
@@ -85,7 +85,7 @@ Item {
                     widget.valueEntered(widget.value);
                 }
                 else {
-                    console.log('Value out of range');
+                    python.log('Value out of range');
                 }
             }
             readOnly: (widget.active) ? false : true

@@ -33,10 +33,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}

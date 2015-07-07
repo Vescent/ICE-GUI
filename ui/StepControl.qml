@@ -202,14 +202,14 @@ Item {
         var number = parseFloat(text);
 
         if (isNaN(number)) {
-            console.log('Result NaN:' + text);
+            python.log('Result NaN:' + text);
             return;
         }
 
         if (widget.useStepValues === true) {
             var pos = widget.stepValues.indexOf(number);
             if (pos === -1) {
-                console.log("Couldn't find index of " + text + " in StepControl");
+                python.log("Couldn't find index of " + text + " in StepControl");
             }
             else {
                 widget.value = pos;

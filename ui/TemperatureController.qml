@@ -44,10 +44,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}
@@ -222,14 +222,14 @@ Rectangle {
                 var success = ice.send('TError? ' + channel, slot, updateTError);
                 if (!success) {
                     timer1.stop();
-                    console.log('command failure');
+                    python.log('command failure');
                 }
             }
 
             function updateTError(result){
                 var error = parseFloat(result);
                 if (isNaN(error)) {
-                    console.log('System unresponsive.');
+                    python.log('System unresponsive.');
                     error('System Communications Error');
                     timer1.stop();
                     return;

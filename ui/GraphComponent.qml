@@ -114,7 +114,7 @@ Rectangle {
         }
 
         if (isNaN(point)) {
-            //console.log('Data Point NaN:' + dataPoint);
+            //python.log('Data Point NaN:' + dataPoint);
             return;
         }
 
@@ -137,8 +137,8 @@ Rectangle {
             datasets[series].yMaximum = max*1.1;
             datasets[series].yMinimum = min*1.1;
 
-            console.log('yMax: ' + datasets[series].yMaximum);
-            console.log('yMin: ' + datasets[series].yMinimum);
+            python.log('yMax: ' + datasets[series].yMaximum);
+            python.log('yMin: ' + datasets[series].yMinimum);
         }
         else {
             datasets[series].yMaximum = yMaximum;
@@ -179,8 +179,8 @@ Rectangle {
             datasets[series].yMaximum = max*1.1;
             datasets[series].yMinimum = min*1.1;
 
-            console.log('yMax: ' + datasets[series].yMaximum);
-            console.log('yMin: ' + datasets[series].yMinimum);
+            python.log('yMax: ' + datasets[series].yMaximum);
+            python.log('yMin: ' + datasets[series].yMinimum);
         }
         else {
             datasets[series].yMaximum = yMaximum;
@@ -318,7 +318,7 @@ Rectangle {
         graphWidget.yMaximum = graphWidget.vDivSteps[step];
         graphWidget.yMinimum = -graphWidget.yMaximum;
         //refresh();
-		//console.log(graphWidget.vDivSteps[step]);
+		//python.log(graphWidget.vDivSteps[step]);
     }
 
     MouseArea {
@@ -365,7 +365,7 @@ Rectangle {
              var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
              graphWidget.yOffset -= stepSize;
              refresh();
-             //console.log(graphWidget.yOffset);
+             //python.log(graphWidget.yOffset);
          }
     }
 
@@ -380,7 +380,7 @@ Rectangle {
          onDoubleClicked: {
              graphWidget.yOffset = 0.0;
              refresh();
-             //console.log(graphWidget.yOffset);
+             //python.log(graphWidget.yOffset);
          }
     }
 
@@ -396,7 +396,7 @@ Rectangle {
              var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
              graphWidget.yOffset += stepSize;
              refresh();
-             //console.log(graphWidget.yOffset);
+             //python.log(graphWidget.yOffset);
          }
     }
 
