@@ -7,6 +7,7 @@ import queue
 import serial
 from serial.tools import list_ports
 import time
+import logging
 
 
 class SerialPortThread(threading.Thread):
@@ -73,7 +74,6 @@ class SerialPortThread(threading.Thread):
                 self.serial_port.close()
             self.serial_port = serial.Serial(**self.serial_arg)
         except serial.SerialException as e:
-            print('List of Error')
             self.error_q.put(str(e))
             return
 
@@ -166,7 +166,7 @@ class Connection(object):
         # Check for connection error from thread
         com_error = self.get_item_from_queue(self.__error_q)
         if com_error is not None:
-            self.__com_monitor = None
+            self.disconnect() # clean up worker thread
             return com_error
         else:
             self.__serial_connected = True
@@ -193,14 +193,14 @@ class Connection(object):
         box. Otherwise, it will return None if non-blocking mode is used.
         """
         if self.__serial_connected is False:
-            return
+            return None
 
         if blocking is True:
             # Wait for any prior non-blocking queue items to finish
             self.__send_q.join()
 
         if self.logging:
-            print('TX: ' + command)
+            logging.debug('TX: ' + command)
 
         # Add line return to all commands
         command += '\r\n'
@@ -223,7 +223,7 @@ class Connection(object):
             # to keep the receive queue clean in case a response was dropped.
             for response in responses:
                 if self.logging:
-                    print('RX: ' + response['result'].rstrip())
+                    logging.debug('RX: ' + response['result'].rstrip())
 
                 if response['callback'] is not None:
                     self.async_q.put(response)
@@ -270,8 +270,8 @@ class Connection(object):
 
         for result in data:
             if self.logging:
-                print('RX: ' + result['result'].rstrip())
-                print(result)
+                logging.debug('RX: ' + result['result'].rstrip())
+                logging.debug(result)
             if result['callback'] is not None:
                 response = result.get('result', None).rstrip()
                 result['callback'](response)

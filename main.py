@@ -1,6 +1,6 @@
 #!python3.4
-__author__ = 'Vescent Photonics'
-__version__ = '1.0'
+__author__ = 'Vescent Photonics, Inc.'
+__version__ = '1.2 beta'
 
 # NOTE: PyQt5 depends on DirectX for doing OpenGL graphics, so
 # the deployment machine may require the Microsoft DirectX runtime
@@ -8,17 +8,22 @@ __version__ = '1.0'
 
 import sys
 import os
+import logging
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtQuick import QQuickView
+#from PyQt5.QtGui import QIcon
+from PyQt5 import QtQuick
 from PyQt5.QtQml import QJSValue
 import iceComm
 
 class PyConsole(QObject):
     @pyqtSlot(str)
     def log(self, s):
-        print(s)
+        logging.info('QML: ' + s)
+        
+    @pyqtProperty(str)
+    def version(self):
+        return __version__
 
 class iceController(QObject):
     def __init__(self):
@@ -40,10 +45,11 @@ class iceController(QObject):
             self.slot = slot
         
         data = self.iceRef.send(command)
-        #print(data[:9])
+        
         if data[:9] == 'I2C Error':
-            print('Error I2c!!!')
+            logging.error('Error I2c!!!')
             return
+            
         if callback.isCallable():
             callback.call({data})
             
@@ -81,6 +87,7 @@ class iceController(QObject):
         if result is None:
             return True
         else:
+            logging.error(result)
             return False
             
     @pyqtSlot(bool)
@@ -104,38 +111,68 @@ class iceController(QObject):
             portnames.append(port[0])
             
         return portnames
+        
+class StreamToLogger(object):
+    """
+    Fake file-like stream object that redirects writes to a logger instance.
+    """
+    def __init__(self, logger, log_level=logging.INFO):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ''
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.log_level, line.rstrip())
+
+    def flush(self):
+        pass
 
 def main():		
+    logging.basicConfig(filename='log.txt', 
+                        level=logging.DEBUG,
+                        filemode='w')
+                        
+    # Redirect stdout and stderr to our logging file
+    stdout_logger = logging.getLogger('STDOUT')
+    stderr_logger = logging.getLogger('STDERR')
+    sys.stdout = StreamToLogger(stdout_logger, logging.INFO)
+    sys.stderr = StreamToLogger(stderr_logger, logging.ERROR)
+    
+    logging.info('Started ICE Control v' + __version__)
+    
     app = QApplication(sys.argv) 
 
     app_name = 'ICE Control'
     app.setOrganizationName("Vescent Photonics, Inc.")
     app.setOrganizationDomain("www.vescent.com")
     app.setApplicationName(app_name)
-    app.setWindowIcon(QIcon("vescent.ico"))
+    #app.setWindowIcon(QIcon("vescent.ico"))
 
-    view = QQuickView()
+    view = QtQuick.QQuickView()
 
-    # The QML import paths also need to be changed to our local site-package paths,
-    # otherwise our qml files won't be able to import QtQuick by the qml interpreter.
-    qml_path = os.path.join(pyqt_path, 'qml')
-    view.engine().addImportPath(qml_path)
+    if getattr(sys, 'frozen', False):
+        # we are running in a |PyInstaller| bundle
+        basedir = sys._MEIPASS
+    else:
+        # we are running in a normal Python environment
+        basedir = os.path.dirname(os.path.abspath(__file__))       
+
     view.setTitle(app_name)
-
     context = view.rootContext()
     
-    console = PyConsole()
-    context.setContextProperty('PyConsole', console)
+    pyconsole = PyConsole()
+    context.setContextProperty('python', pyconsole)
 
     ice = iceController()
     context.setContextProperty('ice', ice)
 
-    view.setSource(QUrl("qml/main.qml"))
+    view.setSource(QUrl("ui/main.qml"))
+    view.engine().quit.connect(app.quit)
     view.show()
 
     app.exec_()
     ice.iceRef.disconnect()
-    sys.exit(0)
     
 if __name__ == "__main__":
     main()
