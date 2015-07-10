@@ -122,10 +122,10 @@ Rectangle {
         var row = 0;
 
         if (result.toUpperCase() == 'OFF') {
-            row = 1;
+            row = 2;
         }
         else {
-            row = 2;
+            row = 1;
         }
 
         setCurrentLOffRow(row);

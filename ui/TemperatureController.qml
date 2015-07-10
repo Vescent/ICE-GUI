@@ -146,6 +146,9 @@ Rectangle {
                 if (updateCycle == 2) {
                     getTemp(tempChannel);
                 }
+                else if (updateCycle == 3) {
+                    getServo(tempChannel);
+                }
                 else if (updateCycle == 4) {
                     getTecCurrent(tempChannel);
                     updateCycle = 0;

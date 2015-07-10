@@ -166,19 +166,21 @@ Rectangle {
         var result = ice.send('Laser? ' + channel, slot, null);
         var row = 0;
 
+        // Check if laser is on, else the next state we can go to is only ON
         if (result.toUpperCase() == 'ON') {
             result = ice.send('Current? ' + channel, slot, null);
             var current = parseFloat(result);
 
+            // If current is low, we're already in the fast off state
             if (current < 0.005) {
-                row = 2;
+                row = 1;
             }
             else {
-                row = 1;
+                row = 2;
             }
         }
         else {
-            row = 2;
+            row = 1;
         }
 
         setCurrentLOffRow(row, channel);
