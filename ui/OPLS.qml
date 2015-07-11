@@ -1306,6 +1306,7 @@ Rectangle {
             repeater.itemAt(i).children[1].text = rowData.mode;
             repeater.itemAt(i).children[2].text = rowData.intfreq.toFixed(6);
             repeater.itemAt(i).children[3].text = rowData.fforward.toFixed(3);
+            repeater.itemAt(i).children[3].color = (rowData.fforward < (2.4 - global.rampCenter) && rowData.fforward > (-2.4 - global.rampCenter)) ? '#FFFFFF' : '#ff0000';
         }
     }
 
@@ -1565,8 +1566,8 @@ Rectangle {
                             text: '0'
                             anchors.verticalCenter: parent.verticalCenter
                             width: 50
-                            color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
-                            validator: DoubleValidator{decimals: 3; bottom: -2.5; top: 2.5}
+                            color: (acceptableInput &&  parseFloat(this.text) < (2.4 - global.rampCenter) &&  parseFloat(this.text) > (-2.4 - global.rampCenter)) ? '#FFFFFF' : '#ff0000'
+                            validator: DoubleValidator{decimals: 3; bottom: -2.4; top: 2.4}
                             maximumLength: 7
                             selectByMouse: true
                             selectionColor: '#3399ff'
