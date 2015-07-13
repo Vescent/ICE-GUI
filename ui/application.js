@@ -3,7 +3,8 @@
 // Settings
 var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
-var programVersion = python.version;
+var buildNumber = 1;
+var programVersion = python.version + '.' + buildNumber;
 
 // Global Variables
 var currentWidget;

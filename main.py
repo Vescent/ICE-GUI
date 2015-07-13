@@ -11,7 +11,7 @@ import os
 import logging
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QApplication
-#from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon
 from PyQt5 import QtQuick
 from PyQt5.QtQml import QJSValue
 import iceComm
@@ -147,7 +147,7 @@ def main():
     app.setOrganizationName("Vescent Photonics, Inc.")
     app.setOrganizationDomain("www.vescent.com")
     app.setApplicationName(app_name)
-    #app.setWindowIcon(QIcon("vescent.ico"))
+    app.setWindowIcon(QIcon("ui/vescent.ico"))
 
     view = QtQuick.QQuickView()
 
