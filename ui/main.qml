@@ -92,7 +92,9 @@ Rectangle {
                 margins: 10
             }
             color: '#FFF'
+            linkColor: '#6BF'
 			wrapMode: Text.WordWrap
+			onLinkActivated: Qt.openUrlExternally(link)
         }
 		
 		ThemeButton {

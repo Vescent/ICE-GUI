@@ -181,11 +181,7 @@ function enumerateDevices() {
             else {
                 slotButtons[i].enabled = true;
             }
-        }
-    });
 
-    for (var i = 0; i < config.num_devices; i++) {
-        if (config.devices[i].id !== 0) {
             ice.send('#version ' + (i+1).toString(), 1, function(result){
                 var version = result.split(' ');
                 config.devices[i].version = {
@@ -196,28 +192,33 @@ function enumerateDevices() {
                 };
             });
         }
-    }
+    });
 }
 
 function getAllDeviceInfo() {
-    var infoStr = 'Vescent Photonics, Inc.\nWebsite: www.vescent.com\n\n';
-    infoStr += 'ICE GUI Version: ' + programVersion + '\n\n';
+    var infoStr = '<b>ICE GUI Version:</b> ' + programVersion + '<br/><br/>';
+    infoStr += '<b>Vescent Photonics, Inc.</b><br/>';
+    infoStr += 'Website: <a href="http://www.vescent.com">www.vescent.com</a><br/>';
+    infoStr += 'Manual: <a href="http://www.vescent.com/manuals/doku.php?id=ice">http://www.vescent.com/manuals/doku.php?id=ice</a><br/>';
+    infoStr += 'Source Code: <a href="https://github.com/Vescent/ICE-GUI">https://github.com/Vescent/ICE-GUI</a><br/>';
+    infoStr += 'Latest Release: <a href="https://github.com/Vescent/ICE-GUI/releases/latest">';
+    infoStr += 'https://github.com/Vescent/ICE-GUI/releases/latest</a>';
 
     if (appWindow.serialConnected == false) return infoStr;
 
-    infoStr += 'Version Info:\n';
+    infoStr += '<br/><br/><b>Hardware Version Info:</b><br/>';
     infoStr += 'Master: FW=' + config.master_ver.mcu;
     infoStr += ', HW=' + config.master_ver.pcb;
-    infoStr += ', SN=' + config.master_ver.serial + '\n';
+    infoStr += ', SN=' + config.master_ver.serial;
 
     for (var i = 0; i < config.num_devices; i++) {
         if (config.devices[i].id !== 0) {
-            infoStr += 'Slot ' + (i+1) + ': FW=' + config.devices[i].version.mcu;
+            infoStr += '<br/>Slot ' + (i+1) + ': FW=' + config.devices[i].version.mcu;
             infoStr += ', HW=' + config.devices[i].version.pcb;
-            infoStr += ', SN=' + config.devices[i].version.serial + '\n';
+            infoStr += ', SN=' + config.devices[i].version.serial;
         }
         else {
-            infoStr += 'Slot ' + (i+1) + ': n/a\n';
+            infoStr += '<br/>Slot ' + (i+1) + ': n/a';
         }
     }
 
