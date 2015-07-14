@@ -1,6 +1,6 @@
 #!python3.4
 __author__ = 'Vescent Photonics, Inc.'
-__version__ = '1.2 beta'
+__version__ = '1.1'
 
 # NOTE: PyQt5 depends on DirectX for doing OpenGL graphics, so
 # the deployment machine may require the Microsoft DirectX runtime
@@ -16,21 +16,40 @@ from PyQt5 import QtQuick
 from PyQt5.QtQml import QJSValue
 import iceComm
 
+
 class PyConsole(QObject):
+    def __init__(self, version):
+        super().__init__()
+        self.version_str = version
+
     @pyqtSlot(str)
     def log(self, s):
         logging.info('QML: ' + s)
-        
+
     @pyqtProperty(str)
     def version(self):
-        return __version__
+        return self.version_str
+
+    @pyqtSlot(str, str)
+    def writeFile(self, filename, data):
+        file = open(filename, 'w')
+        file.write(data)
+        file.close()
+
+    @pyqtSlot(str, result=str)
+    def readFile(self, filename):
+        file = open(filename, 'r')
+        data = file.read()
+        file.close()
+        return data
+
 
 class iceController(QObject):
     def __init__(self):
         super().__init__()
         self.slot = 0
         self._logging = False
-        self.iceRef = iceComm.Connection(logging=False)
+        self.iceRef = iceComm.Connection(log=False)
 
     @pyqtSlot(int)
     def setSlot(self, slot):
@@ -39,48 +58,48 @@ class iceController(QObject):
             self.slot = slot
 
     @pyqtSlot(str, int, 'QJSValue', result=str)
-    def send(self, command, slot, callback):        
+    def send(self, command, slot, callback):
         if slot != self.slot:
             self.iceRef.send('#slave ' + str(slot))
             self.slot = slot
-        
+
         data = self.iceRef.send(command)
-        
+
         if data[:9] == 'I2C Error':
             logging.error('Error I2c!!!')
             return
-            
+
         if callback.isCallable():
             callback.call({data})
-            
+
         return data
-        
+
     @pyqtSlot(str, 'QJSValue')
     def enqueue(self, command, callback):
         self.iceRef.send(command, blocking=False, callback=QJSValue(callback))
         return
 
     @pyqtSlot()
-    def processResponses(self):        
+    def processResponses(self):
         responses = self.iceRef.get_all_responses()
-        
+
         for response in responses:
             cbFunc = response.get('callback', None)
-            
+
             if cbFunc is not None:
                 self.callback = cbFunc
-                
+
                 if cbFunc.isCallable():
                     cbFunc.call({response['result'].rstrip()})
-    
+
         return
-        
+
     @pyqtSlot()
     def getResponses(self):
         responses = self.iceRef.get_all_responses()
         if len(responses) > 0:
             return responses[0]['callback']
-        
+
     @pyqtSlot(str, result=bool)
     def serialOpen(self, portname):
         result = self.iceRef.connect(portname, timeout=0.5)
@@ -89,16 +108,16 @@ class iceController(QObject):
         else:
             logging.error(result)
             return False
-            
+
     @pyqtSlot(bool)
     def setLogging(self, enabled):
         self.iceRef.logging = enabled
         self._logging = enabled
-        
+
     @pyqtProperty(bool)
     def logging(self):
         return self._logging
-            
+
     @pyqtSlot()
     def serialClose(self):
         self.iceRef.disconnect()
@@ -109,13 +128,15 @@ class iceController(QObject):
         portnames = []
         for port in ports:
             portnames.append(port[0])
-            
+
         return portnames
-        
+
+
 class StreamToLogger(object):
     """
     Fake file-like stream object that redirects writes to a logger instance.
     """
+
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
@@ -128,20 +149,21 @@ class StreamToLogger(object):
     def flush(self):
         pass
 
-def main():		
-    logging.basicConfig(filename='log.txt', 
+
+def main():
+    logging.basicConfig(filename='log.txt',
                         level=logging.DEBUG,
                         filemode='w')
-                        
+
     # Redirect stdout and stderr to our logging file
     stdout_logger = logging.getLogger('STDOUT')
     stderr_logger = logging.getLogger('STDERR')
     sys.stdout = StreamToLogger(stdout_logger, logging.INFO)
     sys.stderr = StreamToLogger(stderr_logger, logging.ERROR)
-    
+
     logging.info('Started ICE Control v' + __version__)
-    
-    app = QApplication(sys.argv) 
+
+    app = QApplication(sys.argv)
 
     app_name = 'ICE Control'
     app.setOrganizationName("Vescent Photonics, Inc.")
@@ -156,12 +178,12 @@ def main():
         basedir = sys._MEIPASS
     else:
         # we are running in a normal Python environment
-        basedir = os.path.dirname(os.path.abspath(__file__))       
+        basedir = os.path.dirname(os.path.abspath(__file__))
 
     view.setTitle(app_name)
     context = view.rootContext()
-    
-    pyconsole = PyConsole()
+
+    pyconsole = PyConsole(__version__)
     context.setContextProperty('python', pyconsole)
 
     ice = iceController()
@@ -173,6 +195,7 @@ def main():
 
     app.exec_()
     ice.iceRef.disconnect()
-    
+    sys.exit(0)
+
 if __name__ == "__main__":
     main()

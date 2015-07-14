@@ -13,6 +13,7 @@ Rectangle {
     property int currentSlot: 1
     property bool logMode: false
     property var widgetState: [{},{},{},{},{},{},{},{}]
+    property var app: App
 
     // Function that when paired with a QML Timer replicates functionality of window.setTimeout().
     function setTimeout(callback, interval) {
@@ -56,7 +57,7 @@ Rectangle {
 		id: alertBox
 		anchors.centerIn: parent
 		color: '#555'
-		width: 300
+		width: 400
 		height: bodyText.contentHeight + 90
 		border.color: '#39F'
         border.width: 2
@@ -70,6 +71,7 @@ Rectangle {
             text: "Title"
             font.family: 'Helvetica'
             font.pointSize: 12
+            font.bold: true
             anchors {
                 top: parent.top
 				left: parent.left
@@ -86,10 +88,10 @@ Rectangle {
             anchors {
                 top: titleText.bottom
 				left: parent.left
+				right: parent.right
                 margins: 10
             }
             color: '#FFF'
-			width: 280
 			wrapMode: Text.WordWrap
         }
 		
@@ -329,25 +331,28 @@ Rectangle {
             highlight: true
         }
 
-		Text {
-            id: textVersion
-            color: "#aaa"
-            text: 'v' + App.programVersion
-            verticalAlignment: Text.AlignVCenter
-            anchors.verticalCenter: parent.verticalCenter
+        ThemeButton {
+            id: buttonInfo
+            width: 50
+            height: 20
+            text: qsTr("Info")
             anchors.right: logMode.left
-            anchors.rightMargin: 10
-            font.pixelSize: 10
+            anchors.margins: 5
+            anchors.verticalCenter: parent.verticalCenter
+            onClicked: {
+                alert(app.getAllDeviceInfo(), 'System Information');
+            }
         }
 		
         ToggleSwitch {
             id: logMode
-            x: 864
-            y: 5
-            text: "LOG"
-            textOffState: "LOG"
-            textOnState: "LOG"
+            height: 22
+            width: 50
+            text: "Log"
+            textOffState: "Log"
+            textOnState: "Log"
             anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
             anchors.rightMargin: 10
             onClicked: {
                 appWindow.logMode = enableState;

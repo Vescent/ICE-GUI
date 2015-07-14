@@ -8,10 +8,14 @@ var programVersion = python.version + '.' + buildNumber;
 
 // Global Variables
 var currentWidget;
-var systemDevices = [0, 0, 0, 0, 0, 0, 0, 0];
 var slotButtons = [];
 var cmdHistory = [];
 var cmdHistoryIndex = 0;
+var config = {
+    master_ver: 0.0,
+    num_devices: 0,
+    devices: []
+};
 
 function onLoad() {
 	var comPorts = ice.getSerialPorts();
@@ -31,7 +35,6 @@ function onLoad() {
     }
 
     if (standaloneMode) {
-        //toggleswitchSystemPower.enableSwitch(true);
         appWindow.systemPower = true;
         loadSystemDevices();
     }
@@ -43,9 +46,16 @@ function serialConnect() {
             python.log('Connected to serial port ' + comboComPorts.currentText);
 
             ice.send('#version', 1, function(response){
-                var version = response;
+                var version = response.split(' ');
+                config.master_ver = {
+                    pcb: version[0],
+                    cpld: version[1],
+                    mcu: version[2],
+                    serial: version[3]
+                };
 
-                python.log('ICE Master Controller Version ' + version);
+                python.log('ICE Master Controller Version ' + response);
+
                 appWindow.serialConnected = true;
                 buttonConnect.text = 'Disconnect';
                 buttonConnect.highlight = false;
@@ -61,7 +71,7 @@ function serialConnect() {
                     else {
                         //toggleswitchSystemPower.enableSwitch(false);
                         appWindow.systemPower = false;
-						appWindow.alert('ICE box power is not enabled. Send #poweron command and then reconnecting.')
+						appWindow.alert('ICE box power is not enabled. Send #poweron command and then try reconnecting.')
                     }
                 });
             });
@@ -125,49 +135,93 @@ function switchSlot(slot) {
 
 function loadSystemDevices() {
     if (standaloneMode) {
-        systemDevices[0] = 1; // ICE-QT1
+        config.devices[0].id = 1; // ICE-QT1
         slotButtons[0].enabled = true;
-        systemDevices[1] = 2; // ICE-CS1
+        config.devices[1].id = 2; // ICE-CS1
         slotButtons[1].enabled = true;
-        systemDevices[2] = 3; // ICE-CP1
+        config.devices[2].id = 3; // ICE-CP1
         slotButtons[2].enabled = true;
-        systemDevices[3] = 6; // ICE-PB1
+        config.devices[3].id = 6; // ICE-PB1
         slotButtons[3].enabled = true;
-        systemDevices[4] = 4; // ICE-DC1
+        config.devices[4].id = 4; // ICE-DC1
         slotButtons[4].enabled = true;
     } else {
-        ice.send('#enumerate', 1, function(response) {
-            var devices = response.split(' ');
+        enumerateDevices();
 
-            for (var i = 0; i < devices.length; i++) {
-                var devID = parseInt(devices[i]);
+        textSlot.color = "#fff";
+        textSlot.font.bold = true;
 
-                if (isNaN(devID)) {
-                    continue;
-                }
+        // Load first slot that has a device
+        for (var i = 0; i < config.num_devices; i++) {
+            if (config.devices[i].id !== 0) {
+                switchSlot(i + 1);
+                break;
+            }
+        }
+    }
+}
 
-                systemDevices[i] = devID;
+function enumerateDevices() {
+    ice.send('#enumerate', 1, function(response) {
+        var devices = response.split(' ');
+        config.num_devices = devices.length;
 
-                if (devID === 0) {
-                    slotButtons[i].enabled = false;
-                }
-                else {
-                    slotButtons[i].enabled = true;
-                }
+        for (var i = 0; i < config.num_devices; i++) {
+            var devID = parseInt(devices[i]);
+
+            if (isNaN(devID)) {
+                continue;
             }
 
-            textSlot.color = "#fff";
-            textSlot.font.bold = true;
-			
-			// Load first slot that has a device
-			for (var i = 0; i < systemDevices.length; i++) {
-				if (systemDevices[i] !== 0) {
-					switchSlot(i + 1);
-					break;
-				}
-			}
-        });
+            config.devices[i] = {id: devID};
+
+            if (devID === 0) {
+                slotButtons[i].enabled = false;
+            }
+            else {
+                slotButtons[i].enabled = true;
+            }
+        }
+    });
+
+    for (var i = 0; i < config.num_devices; i++) {
+        if (config.devices[i].id !== 0) {
+            ice.send('#version ' + (i+1).toString(), 1, function(result){
+                var version = result.split(' ');
+                config.devices[i].version = {
+                    pcb: version[0],
+                    cpld: version[1],
+                    mcu: version[2],
+                    serial: version[3]
+                };
+            });
+        }
     }
+}
+
+function getAllDeviceInfo() {
+    var infoStr = 'Vescent Photonics, Inc.\nWebsite: www.vescent.com\n\n';
+    infoStr += 'ICE GUI Version: ' + programVersion + '\n\n';
+
+    if (appWindow.serialConnected == false) return infoStr;
+
+    infoStr += 'Version Info:\n';
+    infoStr += 'Master: FW=' + config.master_ver.mcu;
+    infoStr += ', HW=' + config.master_ver.pcb;
+    infoStr += ', SN=' + config.master_ver.serial + '\n';
+
+    for (var i = 0; i < config.num_devices; i++) {
+        if (config.devices[i].id !== 0) {
+            infoStr += 'Slot ' + (i+1) + ': FW=' + config.devices[i].version.mcu;
+            infoStr += ', HW=' + config.devices[i].version.pcb;
+            infoStr += ', SN=' + config.devices[i].version.serial + '\n';
+        }
+        else {
+            infoStr += 'Slot ' + (i+1) + ': n/a\n';
+        }
+    }
+
+    return infoStr;
 }
 
 function unloadSystemDevices() {
@@ -190,7 +244,7 @@ function setSlotActive(slotNumber) {
         }
     }
 
-    loadSlotWidget(slotNumber, systemDevices[slotNumber - 1]);
+    loadSlotWidget(slotNumber, config.devices[slotNumber - 1].id);
     currentWidget.active = true;
     currentSlot = slotNumber;
 }
