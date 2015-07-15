@@ -194,6 +194,9 @@ def main():
     view.show()
 
     app.exec_()
+
+    #Cleanup: Manually delete QQuickView to prevent app crash
+    del view
     ice.iceRef.disconnect()
     sys.exit(0)
 
