@@ -1,4 +1,6 @@
-// application.js - utility functions for main.qml window
+/*
+ * application.js - utility functions for main.qml window
+ */
 
 // Settings
 var debugMode = false; // Enables debugging messages
@@ -9,7 +11,7 @@ var programVersion = python.version + '.' + buildNumber;
 // Global Variables
 var currentWidget;
 var slotButtons = [];
-var cmdHistory = [];
+var cmdHistory = []; // Holds history of user commands entered
 var cmdHistoryIndex = 0;
 var config = {
     master_ver: 0.0,
@@ -17,6 +19,7 @@ var config = {
     devices: []
 };
 
+// Called when main QML file has loaded.
 function onLoad() {
 	var comPorts = ice.getSerialPorts();
     slotButtons = [
@@ -45,6 +48,7 @@ function serialConnect() {
 		if (ice.serialOpen(comboComPorts.currentText) === true) {
             python.log('Connected to serial port ' + comboComPorts.currentText);
 
+            // Send version command to see if an ICE box is responding on serial port.
             ice.send('#version', 1, function(response){
                 var version = response.split(' ');
                 config.master_ver = {
@@ -60,18 +64,17 @@ function serialConnect() {
                 buttonConnect.text = 'Disconnect';
                 buttonConnect.highlight = false;
 
+                // Check to see if ICE box system power is on to daughter boards
                 ice.send('#status', 1, function(response){
                     python.log('Power: ' + response);
 
                     if (response === 'On') {
-                        //toggleswitchSystemPower.enableSwitch(true);
                         appWindow.systemPower = true;
                         loadSystemDevices();
                     }
                     else {
-                        //toggleswitchSystemPower.enableSwitch(false);
                         appWindow.systemPower = false;
-						appWindow.alert('ICE box power is not enabled. Send #poweron command and then try reconnecting.')
+						appWindow.alert('ICE box power not enabled. Send #poweron command and then try reconnecting.')
                     }
                 });
             });
@@ -135,16 +138,11 @@ function switchSlot(slot) {
 
 function loadSystemDevices() {
     if (standaloneMode) {
-        config.devices[0].id = 1; // ICE-QT1
-        slotButtons[0].enabled = true;
-        config.devices[1].id = 2; // ICE-CS1
-        slotButtons[1].enabled = true;
-        config.devices[2].id = 3; // ICE-CP1
-        slotButtons[2].enabled = true;
-        config.devices[3].id = 6; // ICE-PB1
-        slotButtons[3].enabled = true;
-        config.devices[4].id = 4; // ICE-DC1
-        slotButtons[4].enabled = true;
+        config.num_devices = 8;
+        for (var i = 0; i < config.num_devices; i++) {
+            config.devices[i] = {id: (i+1)};
+            slotButtons[i].enabled = true;
+        }
     } else {
         enumerateDevices();
 
@@ -161,6 +159,7 @@ function loadSystemDevices() {
     }
 }
 
+// Queries ID and version of all ICE daughterboards
 function enumerateDevices() {
     ice.send('#enumerate', 1, function(response) {
         var devices = response.split(' ');
@@ -182,7 +181,8 @@ function enumerateDevices() {
                 slotButtons[i].enabled = true;
             }
 
-            ice.send('#version ' + (i+1).toString(), 1, function(result){
+            // Get version information for each daughterboard
+            ice.send('#version ' + (i+1), 1, function(result){
                 var version = result.split(' ');
                 config.devices[i].version = {
                     pcb: version[0],
@@ -195,6 +195,7 @@ function enumerateDevices() {
     });
 }
 
+// Returns displayable string for an about box
 function getAllDeviceInfo() {
     var infoStr = '<b>ICE GUI Version:</b> ' + programVersion + '<br/><br/>';
     infoStr += '<b>Vescent Photonics, Inc.</b><br/>';

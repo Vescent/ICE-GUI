@@ -116,13 +116,15 @@ Rectangle {
             }
 		}
 	}
-	
+
+	// Displays a message box
 	function alert(message, title) {
 		alertBox.title = typeof title !== 'undefined' ?  title : 'Error';
 		alertBox.message = message;
 		alertBox.visible = true;		
 	}
 
+    // Wrapper to send and user command and save it to history
 	function commandSend(command) {
 		App.pushCmdToHistory(command);
 
