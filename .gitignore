@@ -2,3 +2,5 @@
 __pycache__
 pkgs
 WinPython-64bit-3.4.2.3
+build
+dist

@@ -5,8 +5,9 @@
 // Settings
 var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
-var buildNumber = 1;
+var buildNumber = 0;
 var programVersion = python.version + '.' + buildNumber;
+var updateURL = 'http://www.vescent.com/api/ice.xml'; // URL to check for program updates
 
 // Global Variables
 var currentWidget;
@@ -41,6 +42,47 @@ function onLoad() {
         appWindow.systemPower = true;
         loadSystemDevices();
     }
+	
+	var newerAvail = checkForUpdate();
+	if (newerAvail === true) {
+		appWindow.showUpdateText();
+	}
+}
+
+function checkForUpdate() {
+	var info = python.getLatestVersion(updateURL);
+	
+	if (info.error == true) {
+		return false;
+	}
+	
+	var newVerInfo = info.version.split('.');
+	var currVerInfo = programVersion.split('.');
+	
+	for (var i = 0; i < currVerInfo.length; i++) {
+		var newVer = parseInt(newVerInfo[i]);
+		var currVer = parseInt(currVerInfo[i]);
+		if (newVer > currVer) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+function showProgramUpdateMsg() {
+	var info = python.getLatestVersion(updateURL);
+	
+	if (info.error == true) {
+		return;
+	}
+	
+	var message = 'A newer version of the program is available to download.<br/><br/>';
+	message += 'Current Version: ' + programVersion + '<br/>';
+	message += 'Latest Version: ' + info.version + '<br/><br/>';
+	message += '<b>Download new version here:</b><br/>';
+	message += '<a href="' + info.url + '">' + info.url + '</a>';
+	appWindow.alert(message, 'Program Update');
 }
 
 function serialConnect() {
@@ -197,7 +239,16 @@ function enumerateDevices() {
 
 // Returns displayable string for an about box
 function getAllDeviceInfo() {
-    var infoStr = '<b>ICE GUI Version:</b> ' + programVersion + '<br/><br/>';
+    var newerAvail = checkForUpdate();
+	if (newerAvail === true) {
+		appWindow.showUpdateText();
+	}
+	
+	var infoStr = '<b>ICE GUI Version:</b> ' + programVersion;
+	if (newerAvail === true) {
+		infoStr += ' <a href="https://github.com/Vescent/ICE-GUI/releases/latest">Update Available</a>';
+	}
+	infoStr += '<br/><br/>';
     infoStr += '<b>Vescent Photonics, Inc.</b><br/>';
     infoStr += 'Website: <a href="http://www.vescent.com">www.vescent.com</a><br/>';
     infoStr += 'Manual: <a href="http://www.vescent.com/manuals/doku.php?id=ice">http://www.vescent.com/manuals/doku.php?id=ice</a><br/>';

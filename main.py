@@ -15,7 +15,8 @@ from PyQt5.QtGui import QIcon
 from PyQt5 import QtQuick
 from PyQt5.QtQml import QJSValue
 import iceComm
-
+from xml.etree import ElementTree
+from urllib.request import urlopen
 
 class PyConsole(QObject):
     def __init__(self, version):
@@ -42,6 +43,38 @@ class PyConsole(QObject):
         data = file.read()
         file.close()
         return data
+        
+    @pyqtSlot(str, result=QVariant)
+    def getLatestVersion(self, xml_url):
+        data = {
+            'version': '0.0.0', 
+            'url':'https://github.com/Vescent/ICE-GUI/releases',
+            'error': False
+        }
+
+        try:
+            usock = urlopen(xml_url)
+            tree = ElementTree.parse(usock)
+            usock.close()             
+        except:
+            tree = None
+            data['error'] = True            
+         
+        if (tree):
+            node_latest = tree.find('latest')
+            version_node = node_latest.find('version')
+            
+            if (version_node is not None):
+                data['version'] = version_node.text
+            else:
+                data['error'] = True
+
+            url_node = node_latest.find('url')
+            
+            if (url_node is not None):
+                data['url'] = url_node.text
+            
+        return QVariant(data)
 
 
 class iceController(QObject):

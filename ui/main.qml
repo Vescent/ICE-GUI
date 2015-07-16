@@ -123,6 +123,10 @@ Rectangle {
 		alertBox.message = message;
 		alertBox.visible = true;		
 	}
+	
+	function showUpdateText() {
+		textInfo.visible = true;		
+	}
 
     // Wrapper to send and user command and save it to history
 	function commandSend(command) {
@@ -332,9 +336,32 @@ Rectangle {
             anchors.leftMargin: 6
             anchors.verticalCenter: parent.verticalCenter
             onClicked: App.serialConnect()
-            highlight: true
+            highlight: true					
         }
 
+		Text {
+            id: textInfo
+            height: 20
+			color: "#3AF"
+			font.underline: true
+			font.pointSize: 10
+            text: qsTr("Update Available")
+            anchors.right: buttonInfo.left
+            anchors.margins: 5
+            anchors.verticalCenter: parent.verticalCenter
+			verticalAlignment: Text.AlignVCenter
+			horizontalAlignment: Text.AlignRight
+			visible: false
+			
+			MouseArea {
+				anchors.fill: parent
+				onClicked: {
+					app.showProgramUpdateMsg();
+				}
+
+            }
+        }
+		
         ThemeButton {
             id: buttonInfo
             width: 50
