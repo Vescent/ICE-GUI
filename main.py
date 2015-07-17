@@ -17,6 +17,28 @@ from PyQt5.QtQml import QJSValue
 import iceComm
 from xml.etree import ElementTree
 from urllib.request import urlopen
+from collections import defaultdict
+
+# Converts XML ElementTree to Python dict
+def etree_to_dict(t):
+    d = {t.tag: {} if t.attrib else None}
+    children = list(t)
+    if children:
+        dd = defaultdict(list)
+        for dc in map(etree_to_dict, children):
+            for k, v in dc.items():
+                dd[k].append(v)
+        d = {t.tag: {k:v[0] if len(v) == 1 else v for k, v in dd.items()}}
+    if t.attrib:
+        d[t.tag].update(('@' + k, v) for k, v in t.attrib.items())
+    if t.text:
+        text = t.text.strip()
+        if children or t.attrib:
+            if text:
+              d[t.tag]['#text'] = text
+        else:
+            d[t.tag] = text
+    return d
 
 class PyConsole(QObject):
     def __init__(self, version):
@@ -42,37 +64,21 @@ class PyConsole(QObject):
         file = open(filename, 'r')
         data = file.read()
         file.close()
-        return data
+        return data        
         
     @pyqtSlot(str, result=QVariant)
-    def getLatestVersion(self, xml_url):
-        data = {
-            'version': '0.0.0', 
-            'url':'https://github.com/Vescent/ICE-GUI/releases',
-            'error': False
-        }
-
+    def getXML(self, source_url):
+        data = {}
+        
         try:
-            usock = urlopen(xml_url)
+            usock = urlopen(source_url)
             tree = ElementTree.parse(usock)
             usock.close()             
         except:
-            tree = None
-            data['error'] = True            
+            tree = None           
          
         if (tree):
-            node_latest = tree.find('latest')
-            version_node = node_latest.find('version')
-            
-            if (version_node is not None):
-                data['version'] = version_node.text
-            else:
-                data['error'] = True
-
-            url_node = node_latest.find('url')
-            
-            if (url_node is not None):
-                data['url'] = url_node.text
+            data = etree_to_dict(tree.getroot())
             
         return QVariant(data)
 

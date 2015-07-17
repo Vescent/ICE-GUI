@@ -7,7 +7,8 @@ var debugMode = false; // Enables debugging messages
 var standaloneMode = false; // Loads UI widgets without ICE box connected
 var buildNumber = 0;
 var programVersion = python.version + '.' + buildNumber;
-var updateURL = 'http://www.vescent.com/api/ice.xml'; // URL to check for program updates
+var apiURL = 'http://www.vescent.com/api/ice.xml'; // URL to check for program updates
+var updateUrl = 'https://github.com/Vescent/ICE-GUI/releases/latest' // Default URL for program download
 
 // Global Variables
 var currentWidget;
@@ -17,7 +18,12 @@ var cmdHistoryIndex = 0;
 var config = {
     master_ver: 0.0,
     num_devices: 0,
-    devices: []
+    devices: [],
+	icegui: {
+		latestVersion: '0.0.0',
+		updateUrl: updateUrl,
+		data: {}
+	}
 };
 
 // Called when main QML file has loaded.
@@ -43,20 +49,28 @@ function onLoad() {
         loadSystemDevices();
     }
 	
-	var newerAvail = checkForUpdate();
-	if (newerAvail === true) {
+	// Get latest config data from web server
+	config.icegui.data = python.getXML(apiURL);
+	
+	if (config.icegui.data.hasOwnProperty('icegui')) {
+		if (config.icegui.data.icegui.hasOwnProperty('latest')) {
+			if (config.icegui.data.icegui.latest.hasOwnProperty('version')) {
+				config.icegui.latestVersion = config.icegui.data.icegui.latest.version;
+			}
+			
+			if (config.icegui.data.icegui.latest.hasOwnProperty('url')) {
+				config.icegui.updateUrl = config.icegui.data.icegui.latest.url;
+			}
+		}
+	}
+	
+	if (checkForUpdate()) {
 		appWindow.showUpdateText();
 	}
 }
 
 function checkForUpdate() {
-	var info = python.getLatestVersion(updateURL);
-	
-	if (info.error == true) {
-		return false;
-	}
-	
-	var newVerInfo = info.version.split('.');
+	var newVerInfo = config.icegui.latestVersion.split('.');
 	var currVerInfo = programVersion.split('.');
 	
 	for (var i = 0; i < currVerInfo.length; i++) {
@@ -71,7 +85,7 @@ function checkForUpdate() {
 }
 
 function showProgramUpdateMsg() {
-	var info = python.getLatestVersion(updateURL);
+	var info = config.icegui;
 	
 	if (info.error == true) {
 		return;
@@ -79,9 +93,9 @@ function showProgramUpdateMsg() {
 	
 	var message = 'A newer version of the program is available to download.<br/><br/>';
 	message += 'Current Version: ' + programVersion + '<br/>';
-	message += 'Latest Version: ' + info.version + '<br/><br/>';
+	message += 'Latest Version: ' + info.latestVersion + '<br/><br/>';
 	message += '<b>Download new version here:</b><br/>';
-	message += '<a href="' + info.url + '">' + info.url + '</a>';
+	message += '<a href="' + info.url + '">' + info.updateUrl + '</a>';
 	appWindow.alert(message, 'Program Update');
 }
 
@@ -253,8 +267,8 @@ function getAllDeviceInfo() {
     infoStr += 'Website: <a href="http://www.vescent.com">www.vescent.com</a><br/>';
     infoStr += 'Manual: <a href="http://www.vescent.com/manuals/doku.php?id=ice">http://www.vescent.com/manuals/doku.php?id=ice</a><br/>';
     infoStr += 'Source Code: <a href="https://github.com/Vescent/ICE-GUI">https://github.com/Vescent/ICE-GUI</a><br/>';
-    infoStr += 'Latest Release: <a href="https://github.com/Vescent/ICE-GUI/releases/latest">';
-    infoStr += 'https://github.com/Vescent/ICE-GUI/releases/latest</a>';
+    infoStr += 'Latest Release: <a href="' + updateUrl + '">';
+    infoStr += updateUrl + '</a>';
 
     if (appWindow.serialConnected == false) return infoStr;
 
