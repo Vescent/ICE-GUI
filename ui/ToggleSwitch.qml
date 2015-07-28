@@ -12,8 +12,12 @@ Item {
     property bool active: true
     property string textOnState: 'ON'
     property string textOffState: 'OFF'
+    property color bgColor: '#666666'
     property color onColor: "#37ff00"
+    property color onBgColor: bgColor
     property color offColor: "#c8c8c8"
+    property color offBgColor: bgColor
+    property alias radius: rect1.radius
 
     Component.onCompleted: {
         enableSwitch(enableState);
@@ -52,12 +56,17 @@ Item {
         },
         State {
             name: "On"
-
-            PropertyChanges {
-                target: label
-                color: onColor
-                text: textOnState
-            }
+            changes: [
+                PropertyChanges {
+                    target: label
+                    color: onColor
+                    text: textOnState
+                },
+                PropertyChanges {
+                    target: rect1
+                    color: onBgColor
+                }
+            ]
         }
     ]
 
@@ -84,7 +93,7 @@ Item {
 
     Rectangle {
         id: rect1
-        color: '#666666'
+        color: offBgColor
         border.color: '#cccccc'
         border.width: 1
         radius: 5

@@ -104,11 +104,7 @@ Rectangle {
     function addPoint(dataPoint, series) {
         var point = parseFloat(dataPoint);
 
-        // Add vertical offset
-        point += graphWidget.yOffset;
-
         if (datasets.length < (series + 1)) {
-            //console.log('no dataset');
             datasets.push({
                 data: [],
                 size: minDatasetSize,
@@ -118,7 +114,7 @@ Rectangle {
         }
 
         if (isNaN(point)) {
-            //console.log('Data Point NaN:' + dataPoint);
+            //python.log('Data Point NaN:' + dataPoint);
             return;
         }
 
@@ -141,15 +137,12 @@ Rectangle {
             datasets[series].yMaximum = max*1.1;
             datasets[series].yMinimum = min*1.1;
 
-            console.log('yMax: ' + datasets[series].yMaximum);
-            console.log('yMin: ' + datasets[series].yMinimum);
+            python.log('yMax: ' + datasets[series].yMaximum);
+            python.log('yMin: ' + datasets[series].yMinimum);
         }
-
-        if (point > datasets[series].yMaximum) {
-            point = datasets[series].yMaximum;
-        }
-        else if (point < datasets[series].yMinimum) {
-            point = datasets[series].yMinimum;
+        else {
+            datasets[series].yMaximum = yMaximum;
+            datasets[series].yMinimum = yMinimum;
         }
 
         var index = datasets[series].data.push(point);
@@ -166,8 +159,6 @@ Rectangle {
             data: data,
             size: data.length
         }
-
-        //setVdiv(graphWidget.vDivSetting);
 
         if (autoScale) {
             var min = 0;
@@ -188,8 +179,8 @@ Rectangle {
             datasets[series].yMaximum = max*1.1;
             datasets[series].yMinimum = min*1.1;
 
-            console.log('yMax: ' + datasets[series].yMaximum);
-            console.log('yMin: ' + datasets[series].yMinimum);
+            python.log('yMax: ' + datasets[series].yMaximum);
+            python.log('yMin: ' + datasets[series].yMinimum);
         }
         else {
             datasets[series].yMaximum = yMaximum;
@@ -224,12 +215,20 @@ Rectangle {
 
         for (var i = 0; i < length; i++) {
             xx = x0 + i*di;
-            yy = scale*(datasets[series].data[i] + graphWidget.yOffset);
+            yy = y0 - scale*(datasets[series].data[i] + graphWidget.yOffset);
+
+            if (yy > axes.ymax) {
+                yy = axes.ymax;
+            }
+
+            if (yy < axes.ymin) {
+                yy = axes.ymin;
+            }
 
             if (i == 0)
-                ctx.moveTo(xx,y0-yy);
+                ctx.moveTo(xx,yy);
             else
-                ctx.lineTo(xx,y0-yy);
+                ctx.lineTo(xx,yy);
         }
 
         ctx.stroke();
@@ -319,7 +318,7 @@ Rectangle {
         graphWidget.yMaximum = graphWidget.vDivSteps[step];
         graphWidget.yMinimum = -graphWidget.yMaximum;
         //refresh();
-		//console.log(graphWidget.vDivSteps[step]);
+		//python.log(graphWidget.vDivSteps[step]);
     }
 
     MouseArea {
@@ -366,7 +365,7 @@ Rectangle {
              var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
              graphWidget.yOffset -= stepSize;
              refresh();
-             //console.log(graphWidget.yOffset);
+             //python.log(graphWidget.yOffset);
          }
     }
 
@@ -381,7 +380,7 @@ Rectangle {
          onDoubleClicked: {
              graphWidget.yOffset = 0.0;
              refresh();
-             //console.log(graphWidget.yOffset);
+             //python.log(graphWidget.yOffset);
          }
     }
 
@@ -397,7 +396,7 @@ Rectangle {
              var stepSize = graphWidget.vDivSteps[graphWidget.vDivSetting]/5.0;
              graphWidget.yOffset += stepSize;
              refresh();
-             //console.log(graphWidget.yOffset);
+             //python.log(graphWidget.yOffset);
          }
     }
 

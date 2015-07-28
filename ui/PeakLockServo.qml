@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.0
 
 Rectangle {
     id: widget
@@ -9,7 +8,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: "Peak Lock Servo and Current Controller"
+    property string widgetTitle: "ICE-CS1: Peak Lock Servo and Current Controller"
     property int slot: 1
     property bool active: false
     property int updateRate: 500
@@ -70,6 +69,7 @@ Rectangle {
 
             }
 
+			/*
             if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
                 global.rampOn = appWindow.widgetState[slot].rampOn;
 
@@ -78,7 +78,7 @@ Rectangle {
                 }
 
                 runRamp(global.rampOn)
-                //console.log('Ramp: ' + global.rampOn);
+                //python.log('Ramp: ' + global.rampOn);
             }
 
             if (typeof(appWindow.widgetState[slot].servoOn) === 'boolean') {
@@ -87,7 +87,12 @@ Rectangle {
                     runRamp(false);
                 }
                 setServo(global.servoOn);
-                //console.log('Servo: ' + global.rampOn);
+                //python.log('Servo: ' + global.rampOn);
+            }
+			*/
+
+			if (global.servoOn) {
+                runRamp(false);
             }
 
             graphcomponent.refresh();
@@ -118,7 +123,7 @@ Rectangle {
                 maxCurrent = 500;
             }
             else {
-                console.log("Error getting feature ID");
+                python.log("Error getting feature ID");
             }
         });
     }
@@ -132,10 +137,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}
@@ -283,9 +288,11 @@ Rectangle {
         ice.send('Servo?', slot, function(result){
             if (result === 'On') {
                 toggleswitchServo.enableSwitch(true);
+				global.servoOn = true;
             }
             else {
                 toggleswitchServo.enableSwitch(false);
+				global.servoOn = false;
             }
 
             return;
@@ -411,26 +418,14 @@ Rectangle {
         // Read Error Input and plot
         ice.send('ReadVolt 4', slot, function(result){
             var value = parseFloat(result);
-            var data = [];
-
-            for (var i = 0; i < 20; i++) {
-                data[i] = value;
-            }
-
-            graphcomponent.plotData(data, 0);
+            graphcomponent.addPoint(value, 0);
             return;
         });
         
         // Read DC Error and plot
         ice.send('ReadVolt 3', slot, function(result){
             var value = parseFloat(result);
-            var data = [];
-
-            for (var i = 0; i < 20; i++) {
-                data[i] = value;
-            }
-
-            graphcomponent2.plotData(data, 0);
+            graphcomponent2.addPoint(value, 0);
             return;
         });
     }
@@ -439,6 +434,11 @@ Rectangle {
         if (enableState) {
             global.rampRun = true;
             toggleswitchRamp.enableSwitch(true);
+			setServo(false);
+			graphcomponent.clearData();
+			graphcomponent.rollMode = false;
+			graphcomponent2.clearData();
+			graphcomponent2.rollMode = false;
             
             ice.send('#pauselcd t', slot, function(result){});
             
@@ -447,6 +447,11 @@ Rectangle {
         else {
             global.rampRun = false;
             toggleswitchRamp.enableSwitch(false);
+            graphcomponent.rollMode = true;
+            graphcomponent.clearData();
+            graphcomponent2.rollMode = true;
+            graphcomponent2.clearData();
+			
             ice.send('#pauselcd f', slot, function(result){});
         }
     }
@@ -455,10 +460,10 @@ Rectangle {
         global.start = new Date();
 		
 		if (ice.logging == true) {
-			console.log('Started: ' + global.start);
+			python.log('Started: ' + global.start);
 		}
         
-        if (global.rampRun === false) {
+        if (global.rampRun == false) {
 			return;
 		}
 
@@ -491,11 +496,11 @@ Rectangle {
         if (ice.logging == true) {
 			global.stop = new Date();
 			var totalTime = global.stop - global.start;
-			console.log('Total Time (s): ' + totalTime/1000);
+			python.log('Total Time (s): ' + totalTime/1000);
 			var bulkTime = global.bulkStop - global.bulk;
-			console.log('- Bulk (s):  ' + bulkTime/1000);
+			python.log('- Bulk (s):  ' + bulkTime/1000);
 			var setupTime = totalTime - bulkTime;
-			console.log('- Setup (s): ' + setupTime/1000);
+			python.log('- Setup (s): ' + setupTime/1000);
 		}
 
         // De-interlace the data if we're recording two data variables.
@@ -521,7 +526,7 @@ Rectangle {
             graphcomponent2.plotData(dataDCErr, 0);
 
             if (ice.logging == true) {
-				console.log('Data Points: ' + data.length + '/' + global.numDataPoints*2);
+				python.log('Data Points: ' + data.length + '/' + global.numDataPoints*2);
 			}
         }
         else {
@@ -532,7 +537,7 @@ Rectangle {
             graphcomponent2.clearData();
 
             if (ice.logging == true) {
-				console.log('Data Points: ' + data.length + '/' + global.numDataPoints);
+				python.log('Data Points: ' + data.length + '/' + global.numDataPoints);
 			}
         }
 
@@ -680,7 +685,9 @@ Rectangle {
 
     Rectangle {
         id: rampRect
-        x: 9
+        anchors.top: textWidgetTitle.bottom
+        anchors.left: parent.left
+        anchors.margins: 10
         y: 32
         width: 275
         height: 153
@@ -763,6 +770,7 @@ Rectangle {
             minVal: 1
             decimal: 0
             pointSize: 12
+            stepSize: 1
             onValueEntered: setRampNum(newVal)
         }
 
@@ -793,6 +801,7 @@ Rectangle {
             minVal: 1
             decimal: 0
             pointSize: 12
+            stepSize: 1
             onValueEntered: setDataChannel(newVal)
         }
 
@@ -870,10 +879,11 @@ Rectangle {
 
     Rectangle {
         id: servoRect
-        x: 10
-        y: 191
-        width: 273
-        height: 321
+        anchors.top: rampRect.bottom
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.margins: 10
+        width: 275
         color: "#00000000"
         radius: 7
         border.color: "#cccccc"
@@ -918,6 +928,7 @@ Rectangle {
             minVal: 0
             decimal: 1
             pointSize: 19
+            stepSize: 1
             onValueEntered: setCurrentLimit(newVal)
         }
 
@@ -936,7 +947,7 @@ Rectangle {
             useArc: true
             showRange: true
             value: 0
-            stepSize: 1
+            stepSize: .2
             minValue: 0
             maxValue: maxCurrent
             onNewValue: {
@@ -991,12 +1002,14 @@ Rectangle {
                 if (enableState) {
                     global.rampState = global.rampRun;
                     runRamp(false);
+					setServo(true);
                 }
                 else {
-                    runRamp(global.rampState); // restore old state of ramp
+                    setServo(false);
+					runRamp(global.rampState); // restore old state of ramp
                 }
                 
-                setServo(enableState);
+                //setServo(enableState);
             }
         }
 
@@ -1212,39 +1225,311 @@ Rectangle {
 
     }
 
-    GraphComponent {
-        id: graphcomponent
-        x: 289
-        y: 32
-        width: 443
-        height: 235
-        yMinimum: -0.8
-        yMaximum: 0.8
-        xMinimum: -128
-        xMaximum: 128
-        datasetFill: false
-        axisYLabel: "Error Input"
-        axisXLabel: "Ramp Voltage"
-        autoScale: false
-        vDivSetting: 4
-        adjustableYOffset: true
+    ToggleSwitch {
+		id: graphPanelBtn
+		width: 60
+		anchors.top: textWidgetTitle.bottom
+		anchors.margins: 0
+		anchors.topMargin: 10
+		anchors.leftMargin: 15
+		anchors.left: rampRect.right
+		text: "Graph"
+		textOnState: "Graph"
+		enableState: true
+		radius: 0
+		onClicked: {
+		    rectAllEvents.visible = !enableState;
+		    rectGraph.visible = enableState;
+		    evtPanelBtn.enableSwitch(!enableState);
+		    runRamp(global.rampState); // restore old state of ramp
+		}
+	}
+
+	ToggleSwitch {
+		id: evtPanelBtn
+		width: 60
+		anchors.top: textWidgetTitle.bottom
+		anchors.margins: 0
+		anchors.topMargin: 10
+		anchors.bottomMargin: 0
+		anchors.left: graphPanelBtn.right
+		text: "Events"
+		textOnState: "Events"
+		enableState: false
+		radius: 0
+		onClicked: {
+		    global.rampState = global.rampRun;
+		    runRamp(false);
+		    rectAllEvents.visible = enableState;
+		    rectGraph.visible = !enableState;
+		    graphPanelBtn.enableSwitch(!enableState);
+		}
+	}
+
+    Rectangle {
+        id: rectGraph
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+
+        GraphComponent {
+            id: graphcomponent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 5
+            height: 212
+            yOffset: 0
+            yMinimum: -0.8
+            yMaximum: 0.8
+            xMinimum: -128
+            xMaximum: 128
+            datasetFill: false
+            axisYLabel: "Error Input"
+            axisXLabel: "Ramp Voltage"
+            autoScale: false
+            vDivSetting: 5
+            adjustableYOffset: true
+        }
+
+        Text {
+            id: textGraphNote
+            color: "#ffff26"
+            text: qsTr("Note: Servo locks to <i>positive</i> slope.")
+            anchors.left: graphcomponent.left
+            anchors.top: graphcomponent.bottom
+            anchors.topMargin: 2
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 9
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        GraphComponent {
+            id: graphcomponent2
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: textGraphNote.bottom
+            anchors.margins: 5
+            height: 212
+            yMinimum: -0.2
+            yMaximum: 0.2
+            xMinimum: -128
+            xMaximum: 128
+            datasetFill: false
+            axisYLabel: "DC Error"
+            axisXLabel: "Ramp Voltage"
+            autoScale: false
+            vDivSetting: 4
+        }
     }
 
-    GraphComponent {
-        id: graphcomponent2
-        x: 289
-        y: 273
-        width: 443
-        height: 239
-        yMinimum: -0.2
-        yMaximum: 0.2
-        xMinimum: -128
-        xMaximum: 128
-        datasetFill: false
-        axisYLabel: "DC Error"
-        axisXLabel: "Ramp Voltage"
-        autoScale: false
-        vDivSetting: 2
+    function getEvtLOffRow() {
+        var result = ice.send('Laser?', slot, null);
+        var row = 0;
+
+        // Check if laser is on, else the next state we can go to is only ON
+        if (result.toUpperCase() == 'ON') {
+            result = ice.send('Readvolt 5', slot, null);
+            var current = parseFloat(result);
+
+            // If current is low, we're already in the fast off state
+            if (current < 0.005) {
+                row = 1;
+            }
+            else {
+                row = 2;
+            }
+        }
+        else {
+            row = 1;
+        }
+
+        setCurrentLOffRow(row);
+        return row;
     }
 
+    function setCurrentLOffRow(row) {
+        if (row === 1) {
+            var rect1 = rectEvtLoffState2;
+            var rect2 = rectEvtLoffState1;
+        }
+        else {
+            var rect1 = rectEvtLoffState1;
+            var rect2 = rectEvtLoffState2;
+        }
+
+        var item1 = rect1.children[0];
+        var item2 = rect2.children[0];
+        rect1.border.color = '#CCCCCC'
+        item1.color = '#FFFFFF';
+        item1.font.bold = false;
+        rect2.border.color = '#3399ff'
+        item2.color = '#3399ff';
+        item2.font.bold = true;
+    }
+
+    Rectangle {
+        id: rectAllEvents
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+        visible: false
+        onVisibleChanged: {
+            if (visible) {
+                getEvtLOffRow();
+            }
+        }
+
+        Text {
+            id: eventLOffTitle
+            color: "#cccccc"
+            text: "Laser Pulse Events"
+            anchors.left: parent.left
+            anchors.leftMargin: 10
+            anchors.top: parent.top
+            anchors.topMargin: 7
+            styleColor: "#ffffff"
+            font.bold: true
+            font.pointSize: 10
+        }
+
+        Column {
+            id: controlsLOff
+            anchors.left: parent.left
+            anchors.top: eventLOffTitle.bottom
+            anchors.margins: 10
+            spacing: 5
+            width: 60
+
+            Text {
+                text: 'Address:'
+                color: "#ffffff"
+                font.pointSize: 10
+            }
+
+            DataInput {
+                id: laserAddrTextField
+                width: 40
+                useInt: true
+                pointSize: 12
+                maxVal: 7
+                minVal: 0
+                value: 0
+                decimal: 0
+                stepSize: 1
+                onValueEntered: {
+                    global.evtLOffAddr = newVal;
+                    ice.send('EvtLOff ' + global.evtLOffAddr, slot, null);
+                }
+            }
+
+            ThemeButton {
+                id: trigLOffBtn
+                y: 7
+                width: 50
+                height: 30
+                text: "Trig"
+                highlight: false
+                onClicked: {
+                    ice.send('#DoEvent ' + global.evtLOffAddr, slot, null);
+                    getEvtLOffRow();
+                }
+                enabled: true
+            }
+        }
+
+        Column {
+            id: columnLOff
+            anchors.left: controlsLOff.right
+            anchors.right: parent.left
+            anchors.top: eventLOffTitle.bottom
+            anchors.bottom: parent.bottom
+            anchors.margins: 10
+            spacing: 5
+
+            Rectangle {
+                width: parent.width
+                height: 10
+
+                Text {
+                    x: 0
+                    anchors.top: parent.top
+                    text: "State"
+                    color: "#cccccc"
+                }
+
+                Text {
+                    x: 40
+                    anchors.top: parent.top
+                    text: "Laser"
+                    color: "#cccccc"
+                }
+            }
+
+            Rectangle {
+                id: rectEvtLoffState1
+                width: 70
+                height: 20
+                color: "#202020"
+                border.color: '#cccccc'
+                border.width: 1;
+                radius: 5
+
+                Text {
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: '1'
+                    color: "#cccccc"
+                }
+
+                Text {
+                    x: 40
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: 'On'
+                    color: "#FFFFFF"
+                }
+            }
+
+            Rectangle {
+                id: rectEvtLoffState2
+                width: 70
+                height: 20
+                color: "#202020"
+                border.color: '#cccccc'
+                border.width: 1;
+                radius: 5
+
+                Text {
+                    x: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: '2'
+                    color: "#cccccc"
+                }
+
+                Text {
+                    x: 40
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: 'Off'
+                    color: "#FFFFFF"
+                }
+            }
+
+            Text {
+                text: "Note: TTL Event\ninputs may override\nGUI trigger button."
+                color: "#cccccc"
+            }
+        }
+    }
 }

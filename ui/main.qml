@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.0
-import QtQuick.Dialogs 1.1
 import "application.js" as App
 
 Rectangle {
@@ -14,6 +13,7 @@ Rectangle {
     property int currentSlot: 1
     property bool logMode: false
     property var widgetState: [{},{},{},{},{},{},{},{}]
+    property var app: App
 
     // Function that when paired with a QML Timer replicates functionality of window.setTimeout().
     function setTimeout(callback, interval) {
@@ -53,20 +53,89 @@ Rectangle {
 		}
     }
 	
-	MessageDialog {
-		id: messageDialog
-		title: ""
-		icon: StandardIcon.Warning
-		text: "Error"
-		onAccepted: {
-			return;
+	Rectangle {
+		id: alertBox
+		anchors.centerIn: parent
+		color: '#555'
+		width: 400
+		height: bodyText.contentHeight + 90
+		border.color: '#39F'
+        border.width: 2
+		property alias message: bodyText.text
+		property alias title: titleText.text
+		visible: false
+		z: 100
+		
+		Text {
+            id: titleText
+            text: "Title"
+            font.family: 'Helvetica'
+            font.pointSize: 12
+            font.bold: true
+            anchors {
+                top: parent.top
+				left: parent.left
+                margins: 10
+            }
+            color: '#FFF'
+        }
+		
+		Text {
+            id: bodyText
+            text: "Message"
+            font.family: 'Helvetica'
+            font.pointSize: 10
+            anchors {
+                top: titleText.bottom
+				left: parent.left
+				right: parent.right
+                margins: 10
+            }
+            color: '#FFF'
+            linkColor: '#6BF'
+			wrapMode: Text.WordWrap
+			onLinkActivated: Qt.openUrlExternally(link)
+        }
+		
+		ThemeButton {
+			id: okButton
+			width: 40
+			height: 26
+			text: "Ok"
+			pointSize: 12
+			textColor: "#ffffff"
+			borderWidth: 1
+			highlight: true
+			onClicked: {
+				alertBox.visible = false;
+			}
+			anchors {
+                bottom: parent.bottom
+				right: parent.right
+                margins: 10
+            }
 		}
 	}
-	
-	function alert(message) {
-		messageDialog.text = message;
-		messageDialog.open();
+
+	// Displays a message box
+	function alert(message, title) {
+		alertBox.title = typeof title !== 'undefined' ?  title : 'Error';
+		alertBox.message = message;
+		alertBox.visible = true;		
 	}
+	
+	function showUpdateText() {
+		textInfo.visible = true;		
+	}
+
+    // Wrapper to send and user command and save it to history
+	function commandSend(command) {
+		App.pushCmdToHistory(command);
+
+		ice.send(command, currentSlot, function(response){
+            commandResult.text = response;
+        });
+    }
 
     Item {
         id: slotSwitcher
@@ -267,58 +336,62 @@ Rectangle {
             anchors.leftMargin: 6
             anchors.verticalCenter: parent.verticalCenter
             onClicked: App.serialConnect()
-            highlight: true
+            highlight: true					
         }
-
-		/*
-        ToggleSwitch {
-            id: toggleswitchSystemPower
-            y: 5
-            anchors.left: textSystemPower.right
-            anchors.leftMargin: 6
-            onClicked: App.toggleSystemPower(enableState)
-            opacity: serialConnected ? 1.0 : 0;
-        }
-
-        Text {
-            id: textSystemPower
-            y: 8
-            width: 77
-            color: "#ffffff"
-            text: qsTr("System Power:")
-            anchors.left: buttonConnect.right
-            anchors.leftMargin: 12
-            anchors.verticalCenterOffset: 0
-            font.pixelSize: 12
-            anchors.verticalCenter: parent.verticalCenter
-            verticalAlignment: Text.AlignVCenter
-            opacity: serialConnected ? 1.0 : 0;
-        }
-		*/
 
 		Text {
-            id: textVersion
-            color: "#aaa"
-            text: 'v' + App.programVersion
-            verticalAlignment: Text.AlignVCenter
+            id: textInfo
+            height: 20
+			color: "#3AF"
+			font.underline: true
+			font.pointSize: 10
+            text: qsTr("Update Available")
+            anchors.right: buttonInfo.left
+            anchors.margins: 5
             anchors.verticalCenter: parent.verticalCenter
+			verticalAlignment: Text.AlignVCenter
+			horizontalAlignment: Text.AlignRight
+			visible: false
+			
+			MouseArea {
+				anchors.fill: parent
+				onClicked: {
+					app.showProgramUpdateMsg();
+				}
+
+            }
+        }
+		
+        ThemeButton {
+            id: buttonInfo
+            width: 50
+            height: 20
+            text: qsTr("Info")
             anchors.right: logMode.left
-            anchors.rightMargin: 10
-            font.pixelSize: 10
+            anchors.margins: 5
+            anchors.verticalCenter: parent.verticalCenter
+            onClicked: {
+                alert(app.getAllDeviceInfo(), 'System Information');
+            }
         }
 		
         ToggleSwitch {
             id: logMode
-            x: 864
-            y: 5
-            text: "LOG"
-            textOffState: "LOG"
-            textOnState: "LOG"
+            height: 22
+            width: 50
+            text: "Log"
+            textOffState: "Log"
+            textOnState: "Log"
             anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
             anchors.rightMargin: 10
             onClicked: {
                 appWindow.logMode = enableState;
                 ice.setLogging(enableState);
+				
+				if (enableState) {					
+					appWindow.alert('Log Mode Enabled. Serial commands will be logged to "log.txt" in the program directory.', 'Info');
+				}
             }
         }
     }
@@ -337,12 +410,6 @@ Rectangle {
         spacing: 10
     }
 
-    function commandSend(command) {
-		ice.send(command, currentSlot, function(response){
-            commandResult.text = response;
-        });
-    }
-
     TextField {
         id: commandEntry
         x: 55
@@ -354,6 +421,13 @@ Rectangle {
         placeholderText: "Enter Command"
         onAccepted: commandSend(commandEntry.text)
         readOnly: !appWindow.serialConnected
+        Keys.onUpPressed: commandEntry.text = App.getPrevCmdFromHistory()
+        Keys.onDownPressed: commandEntry.text = App.getNextCmdFromHistory()
+        onFocusChanged: {
+            if (commandEntry.focus === true) {
+                commandEntry.selectAll();
+            }
+        }
     }
 
     TextField {

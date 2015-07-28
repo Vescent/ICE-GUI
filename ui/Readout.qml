@@ -19,7 +19,7 @@ Item {
         var number = parseFloat(text);
 
         if (isNaN(number)) {
-            console.log('Result NaN:' + text);
+            python.log('Result NaN:' + text);
             return false;
         }
 

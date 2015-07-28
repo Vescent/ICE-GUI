@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.0
 
 Rectangle {
     id: widget
@@ -9,7 +8,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: 'Power Breakout'
+    property string widgetTitle: 'ICE-PB1: Power Breakout'
     property int slot: 1
     property int updateRate: 1000
     property bool active: false
@@ -33,10 +32,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}

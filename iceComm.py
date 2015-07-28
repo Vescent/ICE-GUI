@@ -7,6 +7,7 @@ import queue
 import serial
 from serial.tools import list_ports
 import time
+import logging
 
 
 class SerialPortThread(threading.Thread):
@@ -24,7 +25,7 @@ class SerialPortThread(threading.Thread):
             serial port fails to open for some reason, an error
             is placed into this queue.
 
-        :param port:
+        :param port_num:
             The COM port to open. Must be recognized by the
             system.
 
@@ -41,31 +42,32 @@ class SerialPortThread(threading.Thread):
             Set to True to enable timestamps to be added to each transaction
             on the error queue.
     """
-    def __init__(    self,
-                    send_q,
-                    receive_q,
-                    error_q,
-                    port_num,
-                    port_baud,
-                    port_stopbits=serial.STOPBITS_ONE,
-                    port_parity=serial.PARITY_NONE,
-                    port_timeout=0.1,
-                    debug=False):
+
+    def __init__(self,
+                 send_q,
+                 receive_q,
+                 error_q,
+                 port_num,
+                 port_baud,
+                 port_stopbits=serial.STOPBITS_ONE,
+                 port_parity=serial.PARITY_NONE,
+                 port_timeout=0.1,
+                 debug=False):
         threading.Thread.__init__(self)
 
         self.serial_port = None
-        self.serial_arg = dict( port=port_num,
-                                baudrate=port_baud,
-                                stopbits=port_stopbits,
-                                parity=port_parity,
-                                timeout=port_timeout)
+        self.serial_arg = dict(port=port_num,
+                               baudrate=port_baud,
+                               stopbits=port_stopbits,
+                               parity=port_parity,
+                               timeout=port_timeout)
         self.debug = debug
         self.send_q = send_q
         self.receive_q = receive_q
         self.error_q = error_q
 
         self.alive = threading.Event()
-        self.alive.set()        
+        self.alive.set()
 
     def run(self):
         try:
@@ -73,7 +75,6 @@ class SerialPortThread(threading.Thread):
                 self.serial_port.close()
             self.serial_port = serial.Serial(**self.serial_arg)
         except serial.SerialException as e:
-            print('List of Error')
             self.error_q.put(str(e))
             return
 
@@ -81,7 +82,7 @@ class SerialPortThread(threading.Thread):
         if self.debug is True:
             time.clock()
 
-        while self.alive.isSet():            
+        while self.alive.isSet():
             try:
                 data = self.send_q.get(True, 0.05)
 
@@ -89,11 +90,11 @@ class SerialPortThread(threading.Thread):
                 if self.debug is True:
                     timestamp = time.clock()
                     self.error_q.put((data, timestamp))
-                
+
                 # Write serial data
                 if 'command' in data:
-                    self.serial_port.write(bytes(data['command'], 'ascii')) # PySerial >2.5
-                    #self.serial_port.write(data['command'])
+                    self.serial_port.write(bytes(data['command'], 'ascii'))  # PySerial >2.5
+                    # self.serial_port.write(data['command'])
                 else:
                     continue
 
@@ -108,7 +109,7 @@ class SerialPortThread(threading.Thread):
                         self.error_q.put((data, timestamp))
 
                     data['result'] = response.decode('ascii')  # PySerial >2.5
-                    #data['result'] = response
+                    # data['result'] = response
                     self.receive_q.put(data)
 
                     # The following allows blocking on the main thread to implemented
@@ -128,18 +129,19 @@ class SerialPortThread(threading.Thread):
 
 class Connection(object):
     """Creates a connection object to send commands to an ICE box.
-    :param logging: Set to True to print log information to the standard out.
-    :param maxQueueSize: Maximum number of items queue can hold. Insertions
+    :param log: Set to True to print log information to the standard out.
+    :param size: Maximum number of items queue can hold. Insertions
     will block when queue is full.
     """
-    def __init__(self, logging=False, maxQueueSize=20):
-        self.__send_q = queue.Queue(maxQueueSize)
-        self.__receive_q = queue.Queue(maxQueueSize)
-        self.async_q = queue.Queue(maxQueueSize)
-        self.__error_q = queue.Queue(maxQueueSize)
+
+    def __init__(self, log=False, size=20):
+        self.__send_q = queue.Queue(size)
+        self.__receive_q = queue.Queue(size)
+        self.async_q = queue.Queue(size)
+        self.__error_q = queue.Queue(size)
         self.__serial_connected = False
         self.__com_monitor = None
-        self.logging = logging
+        self.logging = log
 
     def connect(self, port, baud=115200, timeout=0.1):
         """
@@ -160,13 +162,13 @@ class Connection(object):
             port,
             baud,
             port_timeout=timeout,
-            debug = False)
+            debug=False)
         self.__com_monitor.start()
 
         # Check for connection error from thread
         com_error = self.get_item_from_queue(self.__error_q)
         if com_error is not None:
-            self.__com_monitor = None
+            self.disconnect()  # clean up worker thread
             return com_error
         else:
             self.__serial_connected = True
@@ -193,14 +195,14 @@ class Connection(object):
         box. Otherwise, it will return None if non-blocking mode is used.
         """
         if self.__serial_connected is False:
-            return
+            return None
 
         if blocking is True:
             # Wait for any prior non-blocking queue items to finish
             self.__send_q.join()
 
         if self.logging:
-            print('TX: ' + command)
+            logging.debug('TX: ' + command)
 
         # Add line return to all commands
         command += '\r\n'
@@ -212,6 +214,7 @@ class Connection(object):
         self.__send_q.put(data, True, 2.0)
 
         if blocking is True:
+            result = None
             self.__send_q.join()
 
             responses = list(self.get_all_from_queue(self.__receive_q))
@@ -223,7 +226,7 @@ class Connection(object):
             # to keep the receive queue clean in case a response was dropped.
             for response in responses:
                 if self.logging:
-                    print('RX: ' + response['result'].rstrip())
+                    logging.debug('RX: ' + response['result'].rstrip())
 
                 if response['callback'] is not None:
                     self.async_q.put(response)
@@ -240,7 +243,7 @@ class Connection(object):
         :return: Returns either response object or None if queue was empty.
         """
         return self.get_item_from_queue(self.__receive_q)
-        
+
     def get_all_responses(self):
         """
         Gets all command responses off of the receive queue.
@@ -270,8 +273,8 @@ class Connection(object):
 
         for result in data:
             if self.logging:
-                print('RX: ' + result['result'].rstrip())
-                print(result)
+                logging.debug('RX: ' + result['result'].rstrip())
+                logging.debug(result)
             if result['callback'] is not None:
                 response = result.get('result', None).rstrip()
                 result['callback'](response)
@@ -332,6 +335,7 @@ class Connection(object):
 
         return item
 
+
 def _main():
     """
     Main function only to be called for testing this library. Also provides
@@ -343,8 +347,8 @@ def _main():
 
     # Instantiate a connection object to communicate with ICE. Logging
     # is set to True only for testing purposes.
-    ice = Connection(logging=True)
-    port = 'COM3' # Change to correct COM port
+    ice = Connection(log=True)
+    port = 'COM3'  # Change to correct COM port
 
     # Print list of system COM ports
     print(ice.list_serial_ports())
@@ -387,6 +391,7 @@ def _main():
     ice.disconnect()
     print('All tests done.')
 
+
 def _callbackFn(data):
     """
     Example of a callback function.
@@ -394,6 +399,7 @@ def _callbackFn(data):
     :return: None.
     """
     print("callback response: " + str(data))
+
 
 # Only executes if this module is run directly instead of imported.
 if __name__ == "__main__":

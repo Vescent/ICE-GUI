@@ -1,22 +1,27 @@
-## Python GUI for ICE
+# ICE Control
 
-This project is a GUI for communicating with [Integrated Control Electronics (ICE)][ICE]. Serial communications are encapsulated in the iceComm.py library.
+This project is a GUI for controlling the [Integrated Control Electronics (ICE)][ICE] product. The program is based on 
+Python 3.4 and PyQt5. For convenience, it is released as binaries as well.
+
+The program entry point, main.py, creates a QtQuick application and sets up the QML environment with hooks for
+serial communication. The application GUI and logic are contained in the QML files in the UI sub-directory. 
+Serial communications are encapsulated in the iceComm.py module.
 
 [ICE]: http://www.vescent.com/products/electronics/icetm-integrated-control-electronics/
 
-## Code Example
+## Current Release
 
-TBD
+The current release of ICE Control is [here](https://github.com/Vescent/ICE-GUI/releases/latest).
 
-## Binary Installer Instructions (Windows)
+It includes a ZIP package with a Windows binary with additional instructions for dependencies for older OSes.
 
-The GUI relies on the PyQt5 GUI toolkit to run. To ease deployment, we've created a binary installer that will install Python 3.4.2
- (this can be skipped if the user already has a Python 3.4 install on their machine) and our Python files to a user specified
- directory. 
+## Installation Instructions (Windows)
  
-### DirectX Runtime Install
+### DirectX Runtime Install (Optional)
+
+> NOTE: This step is optional and only needs to be done if you have an older operating system and the program doesn't run.
  
- PyQt5 depends on DirectX for graphics and some older versions of Windows 7 don't have the necessary files included.
+ PyQt5 depends on DirectX and OpenGL for graphics and some older versions of Windows 7 or XP don't have the necessary files included.
  In this case, the user will need to run the Microsoft DirectX runtime installer before the ICE GUI will run.
  
  If the ICE GUI program fails to start, usually an update to DirectX 9.0c is needed. Download the DirectX update utility and install.
@@ -24,24 +29,92 @@ The GUI relies on the PyQt5 GUI toolkit to run. To ease deployment, we've create
  
  Download: [DirectX Runtime Web Installer](http://www.microsoft.com/en-US/download/details.aspx?id=35)
  
- There is also a copy of the full update utility located in the [releases section](https://github.com/Vescent/ICE-GUI/releases).
- When running the installer, it will ask for a temporary location to decompress the files to. Once this is done, go to that folder
- and run the setup.exe file to finish the install.
- 
-### ICE GUI Installer
+### ICE GUI
 
-1. Download the binary installer for the ICE GUI from the [releases section](https://github.com/Vescent/ICE-GUI/releases).
-2. Run the installer and click Next.
-3. You may uncheck "Python 3.4.2" if you already have Python 3.4 installed on your system.
-4. Choose a location for the install. It doesn't necessarily have to be in Program Files, any folder will work.
-5. The installer will place a shortcut to ICE Control in your Start Menu programs. Use this to run the program.
+1. Download the binary zip for the ICE GUI from the [releases section](https://github.com/Vescent/ICE-GUI/releases).
+2. Unzip the file to a lcoation of your choice.
+3. Run ice_control.exe.
 
-The ICE GUI program may be uninstalled by using the Windows Add-Remove programs tool in the Control Panel.
+> You may edit and tweak the user interface without any development tools. The user interface files are located
+in the 'ui' subfolder and can be edited with a text editor. Changes will be reflected the next time ice_control.exe
+is run. The user interface is programmed using QtQuick QML and javascript.
 
-## Contributors
+## Setting Up the Development Environment
 
-TBD
+Setting up the environment should be needed only when you want to develop or change the ICE Control python
+program. Most of the user interface is contained in the *.qml files distributed with the program and doesn't require 
+a development environment setup to edit. 
+
+The main dependencies are [Python 3.4](https://www.python.org/downloads/),
+[QT5.4](http://doc.qt.io/qt-5/gettingstarted.html),
+[SIP4.6](http://www.riverbankcomputing.com/software/sip/download)
+and [PyQt5.4](http://www.riverbankcomputing.com/software/pyqt/download5).
+
+### Installing on Windows
+The following sections describe how to install the requirements for a development version of ICE Control on Windows.
+
+#### Install Git
+
+Download and install git from: https://git-scm.com/download/win
+
+#### Install Python 3.4
+
+Download and install Python 3.4.latest for windows from: https://www.python.org/downloads/
+
+#### Install PyQt5.4
+
+Download and install binary packages for Windows from: http://www.riverbankcomputing.com/software/pyqt/download5
+
+#### Install Python Libraries
+
+The only required python library is PySerial version 2.5 or greater. Install using:
+
+
+```pip install pyserial```
+
+#### Clone ICE Control
+
+Start git bash, and clone ICE Control:
+
+```git clone https://github.com/Vescent/ICE-GUI.git```
+
+The main program entry point is main.py. The application can be started by runnning:
+
+```python main.py```
+
+### Building Windows Binaries
+
+#### Install PyInstaller
+
+If you want to build binaries for ICE Control, install PyInstaller as detailed below:
+
+Download and install pywin32 from http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/
+
+> Make sure to download pywin32 for Python 3.4, 64bit or 32bit version depending on which version of Python you installed.
+
+Clone the 'vescent' branch of PyInstaller from https://github.com/jtshugrue/pyinstaller.git. This fork of the development 
+version of PyInstaller contains bug fixes to build QtQuick binaries on Windows.
+
+```git clone https://github.com/jtshugrue/pyinstaller.git```
+
+Extract the ZIP file.
+
+In command prompt, navigate where pyinstaller is unzipped and run:
+
+```python setup.py install```
+
+#### Build
+
+Navigate where ICE Control is cloned and run:
+
+```pyinstaller --onefile --icon="ui\vescent.ico" --windowed --name="ice_control" main.py```
+
+#### Copy GUI Support Files
+
+Copy the folder "UI" to the same directory as the resulting binary from the previous step. This folder contains application resources 
+such as the user interface QML files. We choose to not bundle these resources into the executable so that a user may easily tweak or 
+modify the user interface without needing to recompile.
 
 ## License
 
-Python ICE GUI is published under the GPLv2 license.
+Python ICE GUI is published under the [GPLv2 license](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).

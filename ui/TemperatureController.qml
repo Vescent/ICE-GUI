@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.0
 
 Rectangle {
     id: widget
@@ -9,7 +8,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: "Quad Temp Controller"
+    property string widgetTitle: "ICE-QT1: Temp Controller"
     property int slot: 1
     property bool active: false
     property int updateRate: 125
@@ -44,10 +43,10 @@ Rectangle {
 	function save(value) {
 		ice.send('Save', slot, function(result){
 			if (result == "Success") {
-				console.log('Successfully saved settings.');
+				python.log('Successfully saved settings.');
 			}
 			else {
-				console.log('Error saving settings.');
+				python.log('Error saving settings.');
 			}
 		});
 	}
@@ -146,6 +145,9 @@ Rectangle {
                 if (updateCycle == 2) {
                     getTemp(tempChannel);
                 }
+                else if (updateCycle == 3) {
+                    getServo(tempChannel);
+                }
                 else if (updateCycle == 4) {
                     getTecCurrent(tempChannel);
                     updateCycle = 0;
@@ -222,14 +224,14 @@ Rectangle {
                 var success = ice.send('TError? ' + channel, slot, updateTError);
                 if (!success) {
                     timer1.stop();
-                    console.log('command failure');
+                    python.log('command failure');
                 }
             }
 
             function updateTError(result){
                 var error = parseFloat(result);
                 if (isNaN(error)) {
-                    console.log('System unresponsive.');
+                    python.log('System unresponsive.');
                     error('System Communications Error');
                     timer1.stop();
                     return;
@@ -394,6 +396,7 @@ Rectangle {
                         precision: 5
                         minVal: 0.0
                         maxVal: 100.0
+                        stepSize: 0.1
                         anchors.verticalCenter: parent.verticalCenter
                         onValueEntered: setTemp(channel1.tempChannel, newVal)
                         active: widget.active
@@ -571,6 +574,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 0
                         precision: 5
+                        stepSize: 1
                         onValueEntered: setGain(channel1.tempChannel, newVal)
                     }
 
@@ -595,14 +599,15 @@ Rectangle {
                         width: 50
                         height: 20
                         text: "50"
-                        minVal: 0.2
-                        maxVal: 1.0
+                        minVal: 0.00
+                        maxVal: 1.51
                         background: "#333"
                         active: widget.active
                         anchors.horizontalCenter: parent.horizontalCenter
                         pointSize: 12
                         decimal: 2
                         precision: 5
+                        stepSize: 0.1
                         onValueEntered: setTecMaxCurrent(channel1.tempChannel, newVal)
                     }
 
@@ -657,6 +662,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 1
                         precision: 5
+                        stepSize: 1
                         onValueEntered: setTempMin(channel1.tempChannel, newVal)
                     }
 
@@ -689,6 +695,7 @@ Rectangle {
                         pointSize: 12
                         decimal: 1
                         precision: 5
+                        stepSize: 1
                         onValueEntered: setTempMax(channel1.tempChannel, newVal)
                     }
                 }

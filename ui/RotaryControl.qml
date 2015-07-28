@@ -2,7 +2,7 @@ import QtQuick 2.0
 
 Item {
     id: widget
-    anchors.centerIn: parent
+    //anchors.centerIn: parent
     width: widget.height
     height: 100
     property color background: '#202020'
@@ -15,26 +15,24 @@ Item {
     property double displayTextRatio: 0.20
     property double zeroAngle: 270
     property double maxAngle: 270
-    property double minValue: 0
-    property double maxValue: 1
-    property double value: 0
+    property double minValue: -100
+    property double maxValue: 100
+    property double value: 50
     property double stepSize: 1
     property int decimalPlaces: 0
     property bool useArc: true
-    property bool useCursor: true
+    property bool useCursor: false
     property bool displayInput: true
     property bool showFineControl: false
     property bool showLabel: false
     property bool showRange: false
     property bool readOnly: false
-    property bool useStepValues: true
-    property var stepValues: []
 
     signal newValue(double value)
 
     onValueChanged: {
         update();
-        dataInput.text = getValue().toFixed(widget.decimalPlaces);
+        dataInput.text = widget.value.toFixed(widget.decimalPlaces);
     }
     onMaxValueChanged: update()
     onMinValueChanged: update()
@@ -64,9 +62,9 @@ Item {
                  onClicked: {
                      var newVal = widget.value;
                      newVal += widget.stepSize;
-                     if (newVal <= widget.maxValue) {
+                     if (newVal < widget.maxValue) {
                         widget.value = newVal;
-                        widget.newValue(getValue());
+                        widget.newValue(widget.value);
                      }
                  }
 
@@ -90,9 +88,9 @@ Item {
                  onClicked: {
                      var newVal = widget.value;
                      newVal -= widget.stepSize;
-                     if (newVal >= widget.minValue) {
+                     if (newVal > widget.minValue) {
                         widget.value = newVal;
-                        widget.newValue(getValue());
+                        widget.newValue(widget.value);
                      }
                  }
 
@@ -104,7 +102,7 @@ Item {
             x: 12
             y: widget.height/2*(1 + widget.displayTextRatio)
             color: (acceptableInput) ? widget.displayTextColor : '#ff0000'
-            text: widget.stepValues[0]
+            text: '0'
             anchors.verticalCenterOffset: 0
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -112,18 +110,44 @@ Item {
             horizontalAlignment: TextInput.AlignHCenter
             verticalAlignment: TextInput.AlignVCenter
             font.pixelSize: widget.displayTextRatio*widget.height
+            validator: DoubleValidator{decimals: widget.decimalPlaces; bottom: widget.minValue; top: widget.maxValue}
             selectByMouse: true
             selectionColor: '#3399ff'
-            readOnly: true
+            readOnly: widget.readOnly
+            onAccepted: {
+                if (dataInput.acceptableInput === true) {
+                    widget.value = parseFloat(dataInput.text);
+                    widget.newValue(widget.value);
+                }
+                else {
+                    dataInput.text = widget.value.toFixed(widget.decimalPlaces);
+                }
+
+                dataInput.focus = false;
+            }
             onFocusChanged: {
                 canvas.requestPaint();
 
                 if (dataInput.focus === false) {
-                    dataInput.text = getValue().toFixed(widget.decimalPlaces);
+                    dataInput.text = widget.value.toFixed(widget.decimalPlaces);
+                }
+                else {
+                    dataInput.selectAll();
+                }
+            }
+            Keys.onUpPressed: {
+                if (widget.value < widget.maxValue) {
+                    widget.value += widget.stepSize;
+                    widget.newValue(widget.value)
+                }
+            }
+            Keys.onDownPressed: {
+                if (widget.value > widget.minValue) {
+                    widget.value -= widget.stepSize;
+                    widget.newValue(widget.value)
                 }
             }
         }
-
     }
 
     MouseArea {
@@ -135,7 +159,7 @@ Item {
         property bool centerClick
 
         onWheel: {
-            if (ringClick === false) {
+            if (dataInput.focus === false) {
                 return;
             }
 
@@ -149,12 +173,12 @@ Item {
             }
 
             // Check if value is already at limits
-            if (newVal >= widget.maxValue || newVal <= widget.minValue) {
+            if (newVal > widget.maxValue || newVal < widget.minValue) {
                 return;
             }
 
             widget.value = newVal;
-            //widget.newValue(getValue());
+            widget.newValue(widget.value);
         }
 
         onPressed: {
@@ -166,14 +190,13 @@ Item {
                 centerClick = true;
                 mouse.accepted = false;
             }
-            else {
-                dataInput.focus = false;
-            }
+
+            dataInput.focus = true;
         }
 
         onReleased: {
             if (ringClick === true) {
-                widget.newValue(getValue());
+                widget.newValue(widget.value);
                 mouse.accepted = true;
             }
             else {
@@ -197,36 +220,19 @@ Item {
         }
     }
 
-
     function setValue(text) {
         var number = parseFloat(text);
 
         if (isNaN(number)) {
-            console.log('Result NaN:' + text);
+            python.log('Result NaN:' + text);
             return;
         }
 
-        if (widget.useStepValues === true) {
-            var pos = widget.stepValues.indexOf(number);
-            if (pos === -1) {
-                console.log("Couldn't find index of " + text + " in StepControl");
-            }
-            else {
-                widget.value = pos;
-            }
-        }
-        else {
-            widget.value = number.toFixed(widget.decimalPlaces);
-        }
+        widget.value = number.toFixed(widget.decimalPlaces);
     }
 
     function getValue() {
-        if (widget.useStepValues === true) {
-            return widget.stepValues[widget.value];
-        }
-        else {
-            return widget.value;
-        }
+        return widget.value;
     }
 
     function update() {
