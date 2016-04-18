@@ -1099,7 +1099,7 @@ Rectangle {
             width: 170
             height: 25
             text: datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000
-            pointSize: 16
+            pointSize: 10
             decimal: 6
             textColor: "#ffffff"
         }
