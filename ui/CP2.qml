@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.4
 
 Rectangle {
     id: widget
@@ -1776,12 +1777,6 @@ Rectangle {
         border.color: '#CCCCCC'
         radius: 5
         visible: false
-        onVisibleChanged: {
-            if (visible) {
-                readEvtData();
-                getEvtLOffRow();
-            }
-        }
 
         Rectangle {
             id: rectDDSQueuePlaylist
@@ -1998,11 +1993,11 @@ Rectangle {
                     y: 7
                     width: 90
                     height: 30
-                    text: "Program Dev."
+                    text: "PRGM DEVICE"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        //Send the profiles and ddsq playlist to device
+                        ddsqDefineProfileBox.visible = true
                     }
                 }
 
@@ -2036,5 +2031,343 @@ Rectangle {
         
     }
 
+    Rectangle {
+        id: ddsqDefineProfileBox
+        anchors.centerIn: rectDDSQueue
+        color: '#333333'
+        width: 400
+        height: 400
+        border.color: '#39F'
+        border.width: 2
+        visible: false
+        z: 100
+        
+        Text {
+            id: titleText
+            text: "Modify DDS Queue Profile"
+            font.family: 'Helvetica'
+            font.pointSize: 12
+            font.bold: true
+            anchors {
+                top: parent.top
+                left: parent.left
+                margins: 10
+            }
+            color: '#FFF'
+        }
+        
+        Rectangle {
+            id: ddsqDefineProfileClassBox
+            anchors {
+                top: titleText.bottom
+                left: parent.left
+                margins: 10
+            }
+            width: 380
+            height: 85
+            color: '#555'
+            border.color: '#39F'
+            border.width: 2
+            
+
+            Column{
+                id: ddsqProfileClassLCol
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: 10
+                spacing: 10
+
+                Text{
+                    text: "Profile Name: "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "Profile Type: "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "Duration* [micro-s]: "
+                    color: '#FFF'
+                }
+
+            }
+        
+            Column {
+
+                anchors.left: ddsqProfileClassLCol.right
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 10
+                spacing: 6
+
+                TextInput {
+                    text: "My New DDS Profile"
+                    cursorVisible: true
+                }
+                
+
+                ComboBox {
+                    editable: false
+                    model: ListModel {
+                        id: model
+                        ListElement { text: "Single Frequency" }
+                        ListElement { text: "Frequency Ramp" }
+                    }
+                }
+
+                DataInput {
+                    id: stpDuration
+                    value: 1000
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 65535
+                    precision: 8
+                }
+            }
+        }
+
+        Text {
+            id: durationWarning
+            color: "#FFFFFF"
+            text: "* Duration only applies if \"Go to next step\" is used as the\ninterrupt trigger for this profile."
+            anchors {
+                top: ddsqDefineProfileClassBox.bottom
+                left: parent.left
+                margins: 10
+            }
+        }
+
+        Rectangle {
+            id: ddsqDefineSTPProfileParamsBox
+            anchors {
+                top: durationWarning.bottom
+                left: parent.left
+                margins: 10
+            }
+            width: 380
+            height: 90
+            color: '#555'
+            border.color: '#39F'
+            border.width: 2
+            visible: false
+
+            Column {
+                id: ddsqProfileSTPParamsLCol
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    margins: 10
+                }
+                spacing: 14
+
+                Text{
+                    text: "Frequency [Hz]: "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "N [8, 16, 32, or 64]: "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "Offset DAC [V]: "
+                    color: '#FFF'
+                }
+
+            }
+        
+            Column {
+                anchors {
+                    left: ddsqProfileSTPParamsLCol.right
+                    right: parent.right
+                    top: parent.top    
+                    margins: 10
+                }
+                spacing: 2
+
+                DataInput {
+                    id: stpFrequency
+                    value: 125000000
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 250000000
+                    precision: 12
+                }
+
+                DataInput {
+                    id: stpNValue
+                    value: 8
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 64
+                    precision: 2
+                }
+
+                DataInput {
+                    id: stpOffsetDac
+                    value: 0.0
+                    pointSize: 8
+                    radius: 0
+                    minVal: -10.0
+                    maxVal: 10.0
+                    precision: 5
+                    decimal: 3
+                }
+            }
+        }
+
+        Rectangle {
+            id: ddsqDefineDRGProfileParamsBox
+            anchors {
+                top: durationWarning.bottom
+                left: parent.left
+                margins: 10
+            }
+            width: 380
+            height: 170
+            color: '#555'
+            border.color: '#39F'
+            border.width: 2
+            visible: true
+            
+
+            Column {
+                id: ddsqProfileDRGParamsLCol
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    margins: 10
+                }
+                spacing: 12
+
+                Text{
+                    text: "Ramp Direction: "
+                    color: '#FFF'
+                }
+
+                Text{
+                    text: "Lower Limit [Hz]: "
+                    color: '#FFF'
+                }
+
+                Text{
+                    text: "Upper Limit [Hz]: "
+                    color: '#FFF'
+                }
+
+                Text{
+                    text: "Ramp Duration [micro-s]: "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "N [8, 16, 32, or 64]: "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "Offset DAC [V]: "
+                    color: '#FFF'
+                }
+
+            }
+        
+            Column {
+                anchors {
+                    left: ddsqProfileDRGParamsLCol.right
+                    right: parent.right
+                    top: parent.top    
+                    margins: 10
+                }
+                spacing: 3
+
+                ComboBox {
+                    editable: false
+                    model: ListModel {
+                        id: drgDirectionModel
+                        ListElement { text: "Lower -> Upper" }
+                        ListElement { text: "Upper -> Lower" }
+                    }
+                }
+
+                DataInput {
+                    id: drgLowerLimit
+                    value: 100000000
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 250000000
+                    precision: 12
+                }
+
+                DataInput {
+                    id: drgUpperLimit
+                    value: 150000000
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 250000000
+                    precision: 12
+                }
+
+                DataInput {
+                    id: drgRampDuration
+                    value: 0.0
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 65535
+                    precision: 5
+                }
+
+                DataInput {
+                    id: drgNValue
+                    value: 0.0
+                    pointSize: 8
+                    radius: 0
+                    minVal: 0
+                    maxVal: 64
+                    precision: 5
+                    decimal: 3
+                }
+
+                DataInput {
+                    id: drgOffsetDAC
+                    value: 0.0
+                    pointSize: 8
+                    radius: 0
+                    minVal: -10.0
+                    maxVal: 10.0
+                    precision: 5
+                    decimal: 3
+                }
+            }
+        }
+        
+        ThemeButton {
+            id: okButton
+            width: 40
+            height: 26
+            text: "Ok"
+            pointSize: 12
+            textColor: "#ffffff"
+            borderWidth: 1
+            highlight: true
+            onClicked: {
+                ddsqDefineProfileBox.visible = false;
+            }
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
+                margins: 10
+            }
+        }
+    }
 }
 
