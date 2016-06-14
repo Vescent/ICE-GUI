@@ -158,7 +158,7 @@ function loadSlotWidget(slotNumber, deviceType) {
                 break;
         case 2: sourceFile = 'PeakLockServo.qml';
                 break;
-        case 3: sourceFile = 'OPLS.qml';
+        case 3: sourceFile = 'OPL1.qml';
                 break;
         case 4: sourceFile = 'SOA.qml';
                 break;
