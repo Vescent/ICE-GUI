@@ -1195,6 +1195,14 @@ Rectangle {
         }
     }
 
+    ListModel {
+        id: availableProfiles
+    }
+
+    ListModel {
+        id: playlistProfiles
+    }
+
     Rectangle {
         id: rectDDSQueue
         anchors.top: graphPanelBtn.bottom
@@ -1221,7 +1229,7 @@ Rectangle {
             Text {
                 id: ddsqProfilesTitle
                 color: "#cccccc"
-                text: "DDS Queue Profiles To Execute"
+                text: "Playlist - DDS Queue Profiles To Execute"
                 anchors.left: parent.left
                 anchors.leftMargin: 10
                 anchors.top: parent.top
@@ -1241,19 +1249,21 @@ Rectangle {
                 spacing: 5
 
                 Rectangle {
+                    id: ddsqPlaylistLabels
+                    visible: false
                     width: parent.width
                     height: 10
                     color: "#505050"
 
                     Text {
-                        x: 0
+                        x: 10
                         anchors.top: parent.top
                         text: "Profile"
                         color: "#cccccc"
                     }
 
                     Text {
-                        x: 120
+                        x: 162
                         anchors.top: parent.top
                         text: "Interrupt Trigger"
                         color: "#cccccc"
@@ -1261,24 +1271,109 @@ Rectangle {
 
                 }
 
+                Rectangle{
+                    id: ddsqPlaylistStartupHelp
+                    width: parent.width
+                    height: 50
+                    color: "#333333"
+                    Text {
+                        anchors.centerIn: parent
+                        color: "#cccccc"
+                        text: "Create at least one profile and hit, 'Add New Element'\nto start building the series of events you want the\nDDS to perform."
+                    }
+                }
+
                 Repeater {
                     id: playlistRepeater
-                    model: 4
+                    // model: global.ddsqPlaylist.length
+                    model: playlistProfiles.count
 
                     Row {
+                        Text {
+                            y: 3
+                            text: index + " "
+                            color: "#cccccc"
+                        }
+
                         ComboBox {
-                            model: ListModel {
-                                id: playlistProfileComboBoxList
+                            textRole: 'name'
+                            model: availableProfiles
+                        }
+
+                        Rectangle {
+                            y: 3
+                            height: 15
+                            width: 30
+                            color: 'transparent'
+                            Text {
+                                color: "#cccccc"
+                                text: "[edit]"
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    var test = playlistRepeater.itemAt(index)
+                                    var cbox = test.children[1]
+                                    ddsqSetProfileBoxParamsToProfileVals(cbox.currentIndex);
+                                    ddsqEditProfileSelectionBox.visible = false;
+                                    ddsqDefineProfileBox.visible = true;
+                                    
+                                }
                             }
                         }
 
                         ComboBox {
                             model: ListModel {
                                 ListElement {text: "Event System"}
-                                ListElement {text: "Go To"}
+                                ListElement {text: "Go To Next Profile"}
                             }
                         }
                     }
+                }
+            }
+
+            ThemeButton {
+                id: addProfileToPlaylist
+                height: 30
+                width: 120
+                anchors {
+                    bottom: parent.bottom
+                    left: parent.left
+                    margins: 10
+                }
+                text: "Add New Element"
+
+                onClicked: {
+                    //turn off help and turn on labels!
+                    if(0 < global.ddsqProfiles.length){
+                        ddsqPlaylistStartupHelp.visible = false
+                        ddsqPlaylistLabels.visible =true
+                    }
+
+                    var profile_indices = []
+                    var interrupt_indices = []
+                    var original_count = playlistProfiles.count
+                    for(var i=0; i<original_count; i++){
+                        var test = playlistRepeater.itemAt(i)
+
+                        var profile_cbox = test.children[1]
+                        profile_indices[profile_indices.length] = profile_cbox.currentIndex
+
+                        var interrupt_cbox = test.children[3]
+                        interrupt_indices[interrupt_indices.length] = interrupt_cbox.currentIndex
+                    }
+                    playlistProfiles.append({"name": global.ddsqProfiles[0]["name"]})
+
+                    for(var i=0; i<original_count; i++){
+                        var test = playlistRepeater.itemAt(i)
+
+                        var profile_cbox = test.children[1]
+                        profile_cbox.currentIndex = profile_indices[i]
+
+                        var interrupt_cbox = test.children[3]
+                        interrupt_cbox.currentIndex = interrupt_indices[i]
+                    }
+
                 }
             }
 
@@ -1350,10 +1445,6 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        editProfileSelectionComboBoxList.clear()
-                        for(var i=0; i < global.ddsqProfiles.length; i++){
-                            editProfileSelectionComboBoxList.append({"name": global.ddsqProfiles[i]["name"]})
-                        }
                         editProfileSelectionComboBox.currentIndex = -1
                         ddsqEditProfileSelectionBox.visible = true
                     }
@@ -1455,13 +1546,13 @@ Rectangle {
         profileDuration.value = 1000.0
 
         //Single Tone Profile parameters
-        stpFrequency.value = 100000000
+        stpFrequency.value = 100.000000
         stpNValue.value = 8
         stpOffsetDac.value = 0.0
 
         //Ramp Profile Parameters
-        drgUpperLimit.value = 150000000
-        drgLowerLimit.value = 100000000
+        drgUpperLimit.value = 150.000000
+        drgLowerLimit.value = 100.000000
         drgDirectionComboBox.currentIndex = 0
         drgRampDuration.value = 1000
         drgNValue.value = 8
@@ -1548,10 +1639,12 @@ Rectangle {
 
         if(already_defined == false){
             global.ddsqProfiles[global.ddsqProfiles.length] = new_entry
+            availableProfiles.append({"name": new_entry["name"]})
         }
         else{
             global.ddsqProfiles[existing_index] = new_entry   
         }
+
     }
 
     Rectangle {
@@ -1588,9 +1681,7 @@ Rectangle {
                 right: parent.right
                 margins: 10
             }
-            model: ListModel {
-                id: editProfileSelectionComboBoxList
-            }
+            model: availableProfiles
         }
 
         ThemeButton {
@@ -1717,6 +1808,7 @@ Rectangle {
                     text: "My New DDS Profile"
                     cursorVisible: true
                     height: 12
+                    color: '#FFF'
                 }
                 
 
@@ -1788,12 +1880,12 @@ Rectangle {
                 spacing: 14
 
                 Text{
-                    text: "Frequency [Hz]: "
+                    text: "Frequency [MHz]: "
                     color: '#FFF'
                 }
 
                 Text {
-                    text: "N [8, 16, 32, or 64]: "
+                    text: "N Div [integer]"
                     color: '#FFF'
                 }
 
@@ -1808,7 +1900,7 @@ Rectangle {
                 id: stpData
                 anchors {
                     left: ddsqProfileSTPParamsLCol.right
-                    right: parent.right
+                    // right: stpLimits.left
                     top: parent.top    
                     margins: 10
                 }
@@ -1816,11 +1908,11 @@ Rectangle {
 
                 DataInput {
                     id: stpFrequency
-                    value: 125000000
+                    value: 125.000000
                     pointSize: 8
                     radius: 0
                     minVal: 0
-                    maxVal: 250000000
+                    maxVal: 250.000000
                     precision: 12
                     fixedPrecision: true
                 }
@@ -1846,6 +1938,32 @@ Rectangle {
                     precision: 5
                     decimal: 3
                     fixedPrecision: true
+                }
+            }
+
+            Column {
+                id: stpLimits
+                spacing: 14
+                anchors {
+                    left: stpData.right
+                    right: parent.right
+                    top: parent.top
+                    margins: 10
+                }
+
+                Text{                   
+                    text: "[0, 250.0]"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "{8, 16, 32, 64}"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "[-10.0, 10.0]"
+                    color: '#FFF'
                 }
             }
         }
@@ -1880,12 +1998,12 @@ Rectangle {
                 }
 
                 Text{
-                    text: "Lower Limit [Hz]: "
+                    text: "Lower Limit [MHz]: "
                     color: '#FFF'
                 }
 
                 Text{
-                    text: "Upper Limit [Hz]: "
+                    text: "Upper Limit [MHz]: "
                     color: '#FFF'
                 }
 
@@ -1895,7 +2013,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "N [8, 16, 32, or 64]: "
+                    text: "N Div [integer]"
                     color: '#FFF'
                 }
 
@@ -1907,9 +2025,10 @@ Rectangle {
             }
         
             Column {
+                id: drgData
                 anchors {
                     left: ddsqProfileDRGParamsLCol.right
-                    right: parent.right
+                    // right: drgLimits.right
                     top: parent.top    
                     margins: 10
                 }
@@ -1927,22 +2046,22 @@ Rectangle {
 
                 DataInput {
                     id: drgLowerLimit
-                    value: 100000000
+                    value: 100.000000
                     pointSize: 8
                     radius: 0
                     minVal: 0
-                    maxVal: 250000000
+                    maxVal: 250.000000
                     precision: 12
                     fixedPrecision: true
                 }
 
                 DataInput {
                     id: drgUpperLimit
-                    value: 150000000
+                    value: 150.000000
                     pointSize: 8
                     radius: 0
                     minVal: 0
-                    maxVal: 250000000
+                    maxVal: 250.000000
                     precision: 12
                     fixedPrecision: true
                 }
@@ -1981,6 +2100,48 @@ Rectangle {
                     decimal: 3
                     fixedPrecision: true
                 }
+            }
+
+            Column {
+                id: drgLimits
+                spacing: 14
+                anchors {
+                    left: drgData.right
+                    right: parent.right
+                    top: parent.top
+                    margins: 10
+                }
+
+                Text{
+                    text: " "
+                    color: '#FFF'
+                }
+
+                Text{
+                    text: "[0, 250.0]"
+                    color: '#FFF'
+                }
+
+                Text{
+                    text: "[0, 250.0] (g.t. low lim)"
+                    color: '#FFF'
+                }
+
+                Text{
+                    text: "[100, 65535]"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "{8, 16, 32, 64}"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "[-10.0, 10.0]"
+                    color: '#FFF'
+                }
+
             }
         }
         
