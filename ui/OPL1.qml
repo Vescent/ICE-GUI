@@ -23,9 +23,8 @@ Rectangle {
                               servoOn: false,
                               rampCenter: 0,
 							  rampSwp: 10,
-							  evtLOffAddr: 0,
-                              evtJumpAddr: 0,
-                              evtNum: 0
+                              ddsqPlaylist: [],
+                              ddsqProfiles: []
                           })
 	property double intfreq: 100
 
@@ -1263,71 +1262,20 @@ Rectangle {
                 }
 
                 Repeater {
-                    id: _repeater
-                    model: 8
+                    id: playlistRepeater
+                    model: 4
 
-                    Rectangle {
-                        width: 240
-                        height: 20
-                        color: "#202020"
-                        border.color: '#cccccc'
-                        border.width: 1;
-                        radius: 5
-
-                        Text {
-                            x: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: (index + 1).toString()
-                            color: "#cccccc"
-                        }
-
-                        TextInput {
-                            x: 40
-                            text: '0'
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 30
-                            color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
-                            validator: IntValidator{bottom: 0; top: 15}
-                            selectByMouse: true
-                            selectionColor: '#3399ff'
-                            onFocusChanged: {
-                                if (this.focus === true) {
-                                    this.selectAll();
-                                }
+                    Row {
+                        ComboBox {
+                            model: ListModel {
+                                id: playlistProfileComboBoxList
                             }
                         }
 
-                        TextInput {
-                            x: 80
-                            text: '100.000000'
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 50
-                            color: (acceptableInput) ? '#FFFFFF' : '#ff0000'
-                            validator: DoubleValidator{decimals: 6; bottom: 50.0; top: 250.0}
-                            maximumLength: 10
-                            selectByMouse: true
-                            selectionColor: '#3399ff'
-                            onFocusChanged: {
-                                if (this.focus === true) {
-                                    this.selectAll();
-                                }
-                            }
-                        }
-
-                        TextInput {
-                            x: 180
-                            text: '0'
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 50
-                            color: (acceptableInput &&  parseFloat(this.text) < (2.4 - global.rampCenter) &&  parseFloat(this.text) > (-2.4 - global.rampCenter)) ? '#FFFFFF' : '#ff0000'
-                            validator: DoubleValidator{decimals: 3; bottom: -2.4; top: 2.4}
-                            maximumLength: 7
-                            selectByMouse: true
-                            selectionColor: '#3399ff'
-                            onFocusChanged: {
-                                if (this.focus === true) {
-                                    this.selectAll();
-                                }
+                        ComboBox {
+                            model: ListModel {
+                                ListElement {text: "Event System"}
+                                ListElement {text: "Go To"}
                             }
                         }
                     }
@@ -1388,6 +1336,7 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
+                        ddsqSetProfileBoxParamsToDefaults();
                         ddsqDefineProfileBox.visible = true
                     }
                 }
@@ -1401,7 +1350,12 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        //Send the profiles and ddsq playlist to device
+                        editProfileSelectionComboBoxList.clear()
+                        for(var i=0; i < global.ddsqProfiles.length; i++){
+                            editProfileSelectionComboBoxList.append({"name": global.ddsqProfiles[i]["name"]})
+                        }
+                        editProfileSelectionComboBox.currentIndex = -1
+                        ddsqEditProfileSelectionBox.visible = true
                     }
                 }
 
@@ -1494,6 +1448,199 @@ Rectangle {
         
     }
 
+    function ddsqSetProfileBoxParamsToDefaults(){
+        //Profile class box, common to all profile types
+        profileName.text = "My New Profile"
+        ddsqProfileTypeComboBox.currentIndex = 0
+        profileDuration.value = 1000.0
+
+        //Single Tone Profile parameters
+        stpFrequency.value = 100000000
+        stpNValue.value = 8
+        stpOffsetDac.value = 0.0
+
+        //Ramp Profile Parameters
+        drgUpperLimit.value = 150000000
+        drgLowerLimit.value = 100000000
+        drgDirectionComboBox.currentIndex = 0
+        drgRampDuration.value = 1000
+        drgNValue.value = 8
+        drgOffsetDAC.value = 0.0
+    }
+
+    function ddsqSetProfileBoxParamsToProfileVals(profile_index){
+        if(profile_index < global.ddsqProfiles.length){
+            var profile = global.ddsqProfiles[profile_index]
+
+            //Profile class box, common to all profile types
+            profileName.text = profile["name"]
+            ddsqProfileTypeComboBox.currentIndex = profile["type"]
+            profileDuration.value = profile["duration"]
+
+            //Single Tone Profile parameters
+            stpFrequency.value = profile["stpFrequency"]
+            stpNValue.value = profile["stpNValue"]
+            stpOffsetDac.value = profile["stpOffsetDac"]
+
+            //Ramp Profile Parameters
+            drgUpperLimit.value = profile["drgUpperLimit"]
+            drgLowerLimit.value = profile["drgLowerLimit"]
+            drgDirectionComboBox.currentIndex = profile["drgDirection"]
+            drgRampDuration.value = profile["drgRampDuration"]
+            drgNValue.value = profile["drgNValue"]
+            drgOffsetDAC.value = profile["drgOffsetDAC"]
+
+            ddsqPrintProfileVals(profile_index)
+        }
+    }
+
+    function ddsqPrintProfileVals(profile_index){
+        if(profile_index < global.ddsqProfiles.length){
+            var profile = global.ddsqProfiles[profile_index]
+
+            //Profile class box, common to all profile types
+            print("name  " + profile["name"])
+            print( "type  " + profile["type"])
+            print( "duration  " + profile["duration"])
+
+            //Single Tone Profile parameters
+            print( "stpFrequency  " + profile["stpFrequency"])
+            print( "stpNValue  " + profile["stpNValue"])
+            print( "stpOffsetDac  " + profile["stpOffsetDac"])
+
+            //Ramp Profile Parameters
+            print( "drgUpperLimit  " + profile["drgUpperLimit"])
+            print( "drgLowerLimit  " + profile["drgLowerLimit"])
+            print( "drgDirection  " + profile["drgDirection"])
+            print( "drgRampDuration  " + profile["drgRampDuration"])
+            print( "drgNValue  " + profile["drgNValue"])
+            print( "drgOffsetDAC  " + profile["drgOffsetDAC"])
+        }
+    }
+
+    function ddsqAddProfileDefinition(force_write){
+        //Check if we already have a profile by this neame
+        var already_defined = false;
+        var existing_index = -1;
+        for(var i=0; i < global.ddsqProfiles.length; i++){
+            var profile = global.ddsqProfiles[i]
+            if(profileName.text == profile["name"]){
+                already_defined = true;
+                existing_index = i;
+            }
+        }        
+        var new_entry = {
+            "name": profileName.text,
+            "type": ddsqProfileTypeComboBox.currentIndex,
+            "duration": profileDuration.value,
+            
+            "stpFrequency": stpFrequency.value,
+            "stpNValue": stpNValue.value,
+            "stpOffsetDac": stpOffsetDac.value,
+
+            "drgUpperLimit": drgUpperLimit.value,
+            "drgLowerLimit": drgLowerLimit.value,
+            "drgDirection": drgDirectionComboBox.currentIndex,
+            "drgRampDuration": drgRampDuration.value,
+            "drgNValue": drgNValue.value,
+            "drgOffsetDAC": drgOffsetDAC.value,
+        }
+
+        if(already_defined == false){
+            global.ddsqProfiles[global.ddsqProfiles.length] = new_entry
+        }
+        else{
+            global.ddsqProfiles[existing_index] = new_entry   
+        }
+    }
+
+    Rectangle {
+        id: ddsqEditProfileSelectionBox
+        anchors.centerIn: rectDDSQueue
+        color: '#333333'
+        width: 250
+        height: 100
+        border.color: '#39F'
+        border.width: 2
+        visible: false
+        z: 100
+
+        Text {
+            id: ddsqEditProfileSelectionTitle
+            text: "Select Profile To Modify"
+            font.family: 'Helvetica'
+            font.pointSize: 12
+            font.bold: true
+            anchors {
+                top: parent.top
+                left: parent.left
+                margins: 10
+            }
+            color: '#FFF'
+        }
+
+        ComboBox {
+            id: editProfileSelectionComboBox
+            textRole: 'name'
+            anchors {
+                top: ddsqEditProfileSelectionTitle.bottom
+                left: parent.left
+                right: parent.right
+                margins: 10
+            }
+            model: ListModel {
+                id: editProfileSelectionComboBoxList
+            }
+        }
+
+        ThemeButton {
+            id: editProfileOKButton
+            width: 40
+            height: 26
+            text: "Ok"
+            pointSize: 12
+            textColor: "#ffffff"
+            borderWidth: 1
+            highlight: true
+            onClicked: {
+                //if a profile is selected, set the values to that profile and open the edit box
+                if(editProfileSelectionComboBox.currentIndex != -1){
+                    ddsqSetProfileBoxParamsToProfileVals(editProfileSelectionComboBox.currentIndex);
+                    ddsqEditProfileSelectionBox.visible = false;
+                    ddsqDefineProfileBox.visible = true;
+                }
+                else{
+                    ddsqEditProfileSelectionBox.visible = false;
+                }
+            }
+            anchors {
+                bottom: parent.bottom
+                right: editProfileCancelButton.left
+                margins: 10
+            }
+        }
+
+        ThemeButton {
+            id: editProfileCancelButton
+            width: 60
+            height: 26
+            text: "Cancel"
+            pointSize: 12
+            textColor: "#ffffff"
+            borderWidth: 1
+            highlight: true
+            onClicked: {
+                ddsqEditProfileSelectionBox.visible = false;
+            }
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
+                margins: 10
+            }
+        }
+
+    }
+
     Rectangle {
         id: ddsqDefineProfileBox
         anchors.centerIn: rectDDSQueue
@@ -1558,7 +1705,7 @@ Rectangle {
             }
         
             Column {
-
+                id: commonProfileData
                 anchors.left: ddsqProfileClassLCol.right
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -1566,6 +1713,7 @@ Rectangle {
                 spacing: 6
 
                 TextInput {
+                    id: profileName
                     text: "My New DDS Profile"
                     cursorVisible: true
                     height: 12
@@ -1593,7 +1741,7 @@ Rectangle {
                 }
 
                 DataInput {
-                    id: stpDuration
+                    id: profileDuration
                     value: 1000
                     pointSize: 8
                     radius: 0
@@ -1657,6 +1805,7 @@ Rectangle {
             }
         
             Column {
+                id: stpData
                 anchors {
                     left: ddsqProfileSTPParamsLCol.right
                     right: parent.right
@@ -1767,6 +1916,7 @@ Rectangle {
                 spacing: 3
 
                 ComboBox {
+                    id: drgDirectionComboBox
                     editable: false
                     model: ListModel {
                         id: drgDirectionModel
@@ -1844,6 +1994,27 @@ Rectangle {
             borderWidth: 1
             highlight: true
             onClicked: {
+                ddsqAddProfileDefinition(true);
+                ddsqDefineProfileBox.visible = false;
+            }
+            anchors {
+                bottom: parent.bottom
+                right: cancelButton.left
+                margins: 10
+            }
+        }
+
+        ThemeButton {
+            id: cancelButton
+            width: 60
+            height: 26
+            text: "Cancel"
+            pointSize: 12
+            textColor: "#ffffff"
+            borderWidth: 1
+            highlight: true
+            onClicked: {
+                ddsqSetProfileBoxParamsToDefaults();
                 ddsqDefineProfileBox.visible = false;
             }
             anchors {
