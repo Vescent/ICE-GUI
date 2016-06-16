@@ -1929,7 +1929,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Duration* [micro-s]: "
+                    text: "Total Duration* [micro-s]: "
                     color: '#FFF'
                 }
 
@@ -1980,9 +1980,8 @@ Rectangle {
                     radius: 0
                     minVal: 0
                     maxVal: 65535
-                    precision: 6
+                    precision: 5
                     decimal: 0
-                    fixedPrecision: true
                 }
             }
         }
@@ -2056,8 +2055,8 @@ Rectangle {
                     radius: 0
                     minVal: 0
                     maxVal: 250.000000
-                    precision: 12
-                    fixedPrecision: true
+                    decimal: 6
+                    precision: 10
                 }
 
                 DataInput {
@@ -2068,8 +2067,8 @@ Rectangle {
                     radius: 0
                     minVal: 0
                     maxVal: 64
+                    decimal: 0
                     precision: 2
-                    fixedPrecision: true
                 }
 
                 DataInput {
@@ -2080,9 +2079,8 @@ Rectangle {
                     radius: 0
                     minVal: -10.0
                     maxVal: 10.0
-                    precision: 5
-                    decimal: 3
-                    fixedPrecision: true
+                    precision: 6
+                    decimal: 2
                 }
             }
 
@@ -2097,7 +2095,7 @@ Rectangle {
                 }
 
                 Text{                   
-                    text: "[0, 250.0]"
+                    text: "(0, 250.000000]"
                     color: '#FFF'
                 }
 
@@ -2107,7 +2105,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "[-10.0, 10.0]"
+                    text: "[-10.00, 10.00]"
                     color: '#FFF'
                 }
             }
@@ -2182,8 +2180,8 @@ Rectangle {
                     radius: 0
                     minVal: 0
                     maxVal: 250.000000
-                    precision: 12
-                    fixedPrecision: true
+                    precision: 10
+                    decimal: 6
                 }
 
                 DataInput {
@@ -2194,8 +2192,8 @@ Rectangle {
                     radius: 0
                     minVal: 0
                     maxVal: 250.000000
-                    precision: 12
-                    fixedPrecision: true
+                    precision: 10
+                    decimal: 6
                 }
 
                 DataInput {
@@ -2204,10 +2202,10 @@ Rectangle {
                     text: "0.0"
                     pointSize: 8
                     radius: 0
-                    minVal: 0
+                    minVal: 100
                     maxVal: 65535
                     precision: 5
-                    fixedPrecision: true
+                    decimal: 0
                 }
 
                 DataInput {
@@ -2218,9 +2216,8 @@ Rectangle {
                     radius: 0
                     minVal: 0
                     maxVal: 64
-                    precision: 5
-                    decimal: 3
-                    fixedPrecision: true
+                    precision: 2
+                    decimal: 0
                 }
 
                 DataInput {
@@ -2231,9 +2228,8 @@ Rectangle {
                     radius: 0
                     minVal: -10.0
                     maxVal: 10.0
-                    precision: 5
-                    decimal: 3
-                    fixedPrecision: true
+                    precision: 6
+                    decimal: 2
                 }
             }
 
@@ -2248,12 +2244,12 @@ Rectangle {
                 }
 
                 Text{
-                    text: "[0, 250.0]"
+                    text: "(0, 250.000000]"
                     color: '#FFF'
                 }
 
                 Text{
-                    text: "[0, 250.0]"
+                    text: "(0, 250.000000]"
                     color: '#FFF'
                 }
 
@@ -2268,7 +2264,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "[-10.0, 10.0]"
+                    text: "[-10.00, 10.00]"
                     color: '#FFF'
                 }
 
