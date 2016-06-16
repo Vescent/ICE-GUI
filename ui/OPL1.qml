@@ -1678,9 +1678,8 @@ Rectangle {
         stpOffsetDac.value = 0.0
 
         //Ramp Profile Parameters
-        drgUpperLimit.value = 150.000000
-        drgLowerLimit.value = 100.000000
-        drgDirectionComboBox.currentIndex = 0
+        drgStopFreq.value = 150.000000
+        drgStartFreq.value = 100.000000
         drgRampDuration.value = 1000
         drgNValue.value = 8
         drgOffsetDAC.value = 0.0
@@ -1696,14 +1695,21 @@ Rectangle {
             profileDuration.value = profile["duration"]
 
             //Single Tone Profile parameters
-            stpFrequency.value = profile["stpFrequency"]
+            stpFrequency.value = profile["stpFrequency"] / 1000000.0 //convert back to MHz
             stpNValue.value = profile["stpNValue"]
             stpOffsetDac.value = profile["stpOffsetDac"]
 
             //Ramp Profile Parameters
-            drgUpperLimit.value = profile["drgUpperLimit"]
-            drgLowerLimit.value = profile["drgLowerLimit"]
-            drgDirectionComboBox.currentIndex = profile["drgDirection"]
+            if(profile["drgDirection"] == 0){ //lower -> upper
+                drgStopFreq.value = profile["drgUpperLimit"] / 1000000.0 //convert back to MHz
+                drgStartFreq.value = profile["drgLowerLimit"] / 1000000.0 //convert back to MHz
+            }
+            else{
+                drgStopFreq.value = profile["drgLowerLimit"] / 1000000.0 //convert back to MHz
+                drgStartFreq.value = profile["drgUpperLimit"]    / 1000000.0 //convert back to MHz
+            }
+            
+
             drgRampDuration.value = profile["drgRampDuration"]
             drgNValue.value = profile["drgNValue"]
             drgOffsetDAC.value = profile["drgOffsetDAC"]
@@ -1756,12 +1762,19 @@ Rectangle {
             "stpNValue": stpNValue.value,
             "stpOffsetDac": stpOffsetDac.value,
 
-            "drgUpperLimit": drgUpperLimit.value * 1000000, //convert to Hz
-            "drgLowerLimit": drgLowerLimit.value * 1000000, //convert to Hz
-            "drgDirection": drgDirectionComboBox.currentIndex,
             "drgRampDuration": drgRampDuration.value,
             "drgNValue": drgNValue.value,
-            "drgOffsetDAC": drgOffsetDAC.value,
+            "drgOffsetDAC": drgOffsetDAC.value,            
+        }
+
+        if(drgStartFreq.value < drgStopFreq.value){
+                new_entry["drgUpperLimit"] = drgStopFreq.value * 1000000, //convert to Hz
+                new_entry["drgLowerLimit"] = drgStartFreq.value * 1000000, //convert to Hz
+                new_entry["drgDirection"] = 0
+        }else{
+                new_entry["drgUpperLimit"] = drgStartFreq.value * 1000000, //convert to Hz
+                new_entry["drgLowerLimit"] = drgStopFreq.value * 1000000, //convert to Hz
+                new_entry["drgDirection"] = 1
         }
 
         if(already_defined == false){
@@ -2125,17 +2138,12 @@ Rectangle {
                 spacing: 12
 
                 Text{
-                    text: "Ramp Direction: "
+                    text: "Start Frequency [MHz]: "
                     color: '#FFF'
                 }
 
                 Text{
-                    text: "Lower Limit [MHz]: "
-                    color: '#FFF'
-                }
-
-                Text{
-                    text: "Upper Limit [MHz]: "
+                    text: "End Frequency [MHz]: "
                     color: '#FFF'
                 }
 
@@ -2166,18 +2174,8 @@ Rectangle {
                 }
                 spacing: 3
 
-                ComboBox {
-                    id: drgDirectionComboBox
-                    editable: false
-                    model: ListModel {
-                        id: drgDirectionModel
-                        ListElement { text: "Lower -> Upper" }
-                        ListElement { text: "Upper -> Lower" }
-                    }
-                }
-
                 DataInput {
-                    id: drgLowerLimit
+                    id: drgStartFreq
                     value: 100.000000
                     text: "100.000000"
                     pointSize: 8
@@ -2189,7 +2187,7 @@ Rectangle {
                 }
 
                 DataInput {
-                    id: drgUpperLimit
+                    id: drgStopFreq
                     value: 150.000000
                     text: "150.000000"
                     pointSize: 8
@@ -2250,17 +2248,12 @@ Rectangle {
                 }
 
                 Text{
-                    text: " "
-                    color: '#FFF'
-                }
-
-                Text{
                     text: "[0, 250.0]"
                     color: '#FFF'
                 }
 
                 Text{
-                    text: "[0, 250.0] (g.t. low)"
+                    text: "[0, 250.0]"
                     color: '#FFF'
                 }
 
