@@ -1237,7 +1237,81 @@ Rectangle {
         //Put the playlsit help box back up if there are no profiles
         if(playlistProfiles.count == 0){
             ddsqPlaylistStartupHelp.visible = true
+            ddsqPlaylistLabels.visible = false
         }
+    }
+
+    function sendPlaylistToDevice(){
+        //Because of the way the DDSQ works on OPL1 board, we need 
+        // to count the number of STP and DRG profiles we send.
+        var cnt_drg = 0
+        var cnt_stp = 0
+        var profile_mapping = {} //will contain the mapping of each profile to where it's stored
+                                 //in the microcontroller memory.  format is:
+                                 // { str::profileName : {"type": <number indicating type>, "index": <index of that profile>} }
+
+        //Clear the ddsq.  We start with a clean slate every time we send the program.
+        ice.send("ddsqclr", slot, null) //no callback
+
+        //Program each profile, step by step
+        for(var i=0; i<availableProfiles.count; i++){
+            //Get the profile corresponding to this playlist entry
+            var profile = global.ddsqProfiles[i]
+
+            //Things diverge here, depending on the profile type
+            if(profile["type"] == 0){ //Single frequency
+                var idx = cnt_stp //The index where we'll store our info in the device
+                cnt_stp += 1
+                var base_int_str = "ddsqmpi 2 " + idx + " " //2 is the type -- STP
+                var base_float_str = "ddsqmpf 2 " + idx + " "
+
+                //Send all the STP things 
+                ice.send(base_int_str + "0 " + profile["stpNValue"], slot, null) 
+                ice.send(base_float_str + "1 " + profile["stpOffsetDac"], slot, null)
+                //ice.send(base_float_str + "2 " + profile["stpAuxDac"], slot, null) //Unused AUX DAC option
+                ice.send(base_int_str + "3 " + profile["duration"], slot, null) 
+                ice.send(base_int_str + "4 " + profile["stpFrequency"], slot, null)
+
+                //Now save the mapping of this profile to the 
+                var new_mapping = {"type": 2, "index": idx}
+                profile_mapping[profile["name"]] = new_mapping
+            }
+            else if(profile["type"] == 1){ //Ramp profile type
+                var idx = cnt_drg 
+                cnt_drg += 1
+                var base_int_str = "ddsqmpi 1 " + idx + " " //1 is the type -- DRG
+                var base_float_str = "ddsqmpf 1 " + idx + " "
+
+                //Send all the DRG things --many of the argument indexes are the same as STP
+                ice.send(base_int_str + "0 " + profile["drgNValue"], slot, null) 
+                ice.send(base_float_str + "1 " + profile["drgOffsetDAC"], slot, null)
+                //ice.send(base_float_str + "2 " + profile["drgAuxDac"], slot, null) //Unused AUX DAC option
+                ice.send(base_int_str + "3 " + profile["drgRampDuration"], slot, null)
+                ice.send(base_int_str + "4 " + profile["drgDirection"], slot, null)
+                ice.send(base_int_str + "5 0", slot, null) //Ramp destination is frequency.  Hard coded for now (also default setting on board)
+                ice.send(base_float_str + "6 " + profile["drgLowerLimit"], slot, null)
+                ice.send(base_float_str + "7 " + profile["drgUpperLimit"], slot, null)
+
+                //Now save the mapping of this profile to the 
+                var new_mapping = {"type": 1, "index": idx}
+                profile_mapping[profile["name"]] = new_mapping
+            }
+        } //end profile programming
+
+
+        //Now program the device's playlist.  For each playlist element, send the  
+        for(var i=0; i<playlistProfiles.count; i++){
+            //First, get the profile attached to this playlist entry
+            var playlist_entry = playlistRepeater.itemAt(i)
+            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
+            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
+
+            var profile_key = global.ddsqProfiles[prof_idx]["name"]
+
+            ice.send("ddsqadde " + profile_mapping[profile_key]["type"] + " " + profile_mapping[profile_key]["index"] + " " + interrupt_type, slot, null)
+            //i.e. ddsqadde 2 0 1
+        }
+            
     }
 
     Rectangle {
@@ -1377,8 +1451,8 @@ Rectangle {
 
                         ComboBox {
                             model: ListModel {
-                                ListElement {text: "Event System"}
                                 ListElement {text: "Go To Next Profile"}
+                                ListElement {text: "Event System"}
                             }
                         }
                     }
@@ -1443,7 +1517,7 @@ Rectangle {
                     margins: 10
                 }
                 onClicked: {
-                    //Send playlist to device
+                    sendPlaylistToDevice()
                 }
             }
         }
@@ -1678,12 +1752,12 @@ Rectangle {
             "type": ddsqProfileTypeComboBox.currentIndex,
             "duration": profileDuration.value,
             
-            "stpFrequency": stpFrequency.value,
+            "stpFrequency": stpFrequency.value * 1000000, //convert to Hz
             "stpNValue": stpNValue.value,
             "stpOffsetDac": stpOffsetDac.value,
 
-            "drgUpperLimit": drgUpperLimit.value,
-            "drgLowerLimit": drgLowerLimit.value,
+            "drgUpperLimit": drgUpperLimit.value * 1000000, //convert to Hz
+            "drgLowerLimit": drgLowerLimit.value * 1000000, //convert to Hz
             "drgDirection": drgDirectionComboBox.currentIndex,
             "drgRampDuration": drgRampDuration.value,
             "drgNValue": drgNValue.value,
@@ -2186,7 +2260,7 @@ Rectangle {
                 }
 
                 Text{
-                    text: "[0, 250.0] (g.t. low lim)"
+                    text: "[0, 250.0] (g.t. low)"
                     color: '#FFF'
                 }
 
