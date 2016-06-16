@@ -2032,7 +2032,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Offset DAC [V]: "
+                    text: "Servo Offset [V]: "
                     color: '#FFF'
                 }
 
