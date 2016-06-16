@@ -1,5 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.4
+import QtQml.Models 2.2
+
 
 Rectangle {
     id: widget
@@ -1203,6 +1205,41 @@ Rectangle {
         id: playlistProfiles
     }
 
+    function deleteProfileFromPlaylist(del_index){
+        var new_prof_indices = []
+        var new_intpt_indices = []
+
+        for(var i=0; i<playlistProfiles.count; i++){
+            //Save every profile info EXCEPT the one w'ere deleting
+            if(i != del_index){
+                var row = playlistRepeater.itemAt(i)
+                var profile_cbox = row.children[1]
+                new_prof_indices[new_prof_indices.length] = profile_cbox.currentIndex
+
+                var interrupt_cbox = row.children[3]
+                new_intpt_indices[new_intpt_indices.length] = interrupt_cbox.currentIndex
+
+            }
+        }
+
+        playlistProfiles.remove(del_index, 1)
+
+        //Restore the original settings to each profile box
+        for(var i=0; i<playlistProfiles.count; i++){
+            var row = playlistRepeater.itemAt(i)
+            var profile_cbox = row.children[1]
+            profile_cbox.currentIndex = new_prof_indices[i]
+
+            var interrupt_cbox = row.children[3]
+            interrupt_cbox.currentIndex = new_intpt_indices[i] 
+        }
+
+        //Put the playlsit help box back up if there are no profiles
+        if(playlistProfiles.count == 0){
+            ddsqPlaylistStartupHelp.visible = true
+        }
+    }
+
     Rectangle {
         id: rectDDSQueue
         anchors.top: graphPanelBtn.bottom
@@ -1289,12 +1326,28 @@ Rectangle {
                     model: playlistProfiles.count
 
                     Row {
-                        Text {
+
+                        // Button to delete a profile from the playlist
+                        Rectangle {
                             y: 3
-                            text: index + " "
-                            color: "#cccccc"
+                            height: 15
+                            width: 30
+                            color: 'transparent'
+                            Text {
+                                y: 3
+                                text: "[X] "
+                                color: "#cccccc"
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    deleteProfileFromPlaylist(index)
+                                }
+                            }
                         }
 
+                        
+                        // Selection box for picking which profile should be executed
                         ComboBox {
                             textRole: 'name'
                             model: availableProfiles
@@ -1834,12 +1887,14 @@ Rectangle {
 
                 DataInput {
                     id: profileDuration
-                    value: 1000
+                    value: 10000
+                    text: "10000"
                     pointSize: 8
                     radius: 0
                     minVal: 0
                     maxVal: 65535
-                    precision: 8
+                    precision: 6
+                    decimal: 0
                     fixedPrecision: true
                 }
             }
@@ -1909,6 +1964,7 @@ Rectangle {
                 DataInput {
                     id: stpFrequency
                     value: 125.000000
+                    text: "125.000000"
                     pointSize: 8
                     radius: 0
                     minVal: 0
@@ -1920,6 +1976,7 @@ Rectangle {
                 DataInput {
                     id: stpNValue
                     value: 8
+                    text: "8"
                     pointSize: 8
                     radius: 0
                     minVal: 0
@@ -1931,6 +1988,7 @@ Rectangle {
                 DataInput {
                     id: stpOffsetDac
                     value: 0.0
+                    text: "0.0"
                     pointSize: 8
                     radius: 0
                     minVal: -10.0
@@ -2047,6 +2105,7 @@ Rectangle {
                 DataInput {
                     id: drgLowerLimit
                     value: 100.000000
+                    text: "100.000000"
                     pointSize: 8
                     radius: 0
                     minVal: 0
@@ -2058,6 +2117,7 @@ Rectangle {
                 DataInput {
                     id: drgUpperLimit
                     value: 150.000000
+                    text: "150.000000"
                     pointSize: 8
                     radius: 0
                     minVal: 0
@@ -2069,6 +2129,7 @@ Rectangle {
                 DataInput {
                     id: drgRampDuration
                     value: 0.0
+                    text: "0.0"
                     pointSize: 8
                     radius: 0
                     minVal: 0
@@ -2080,6 +2141,7 @@ Rectangle {
                 DataInput {
                     id: drgNValue
                     value: 0.0
+                    text: "0.0"
                     pointSize: 8
                     radius: 0
                     minVal: 0
@@ -2092,6 +2154,7 @@ Rectangle {
                 DataInput {
                     id: drgOffsetDAC
                     value: 0.0
+                    text: "0.0"
                     pointSize: 8
                     radius: 0
                     minVal: -10.0
