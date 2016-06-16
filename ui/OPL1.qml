@@ -1293,14 +1293,14 @@ Rectangle {
                     color: "#505050"
 
                     Text {
-                        x: 10
+                        x: 14
                         anchors.top: parent.top
                         text: "Profile"
                         color: "#cccccc"
                     }
 
                     Text {
-                        x: 162
+                        x: 168
                         anchors.top: parent.top
                         text: "Interrupt Trigger"
                         color: "#cccccc"
@@ -1329,13 +1329,13 @@ Rectangle {
 
                         // Button to delete a profile from the playlist
                         Rectangle {
-                            y: 3
+                            y: 0
                             height: 15
-                            width: 30
+                            width: 15
                             color: 'transparent'
                             Text {
                                 y: 3
-                                text: "[X] "
+                                text: "[X]"
                                 color: "#cccccc"
                             }
                             MouseArea {
