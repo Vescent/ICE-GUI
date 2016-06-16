@@ -91,6 +91,11 @@ Item {
             readOnly: (widget.active) ? false : true
             onFocusChanged: {
                 if (text1.focus === false) {
+                    if (text1.acceptableInput === true) {
+                        widget.value = parseFloat(text1.text);
+                        text1.focus = false;
+                        widget.valueEntered(widget.value);
+                    }   
                     text1.text = widget.value.toFixed(widget.decimal);
                 }
                 else {
