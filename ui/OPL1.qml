@@ -1645,7 +1645,7 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        //Send the profiles and ddsq playlist to device
+                        ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
                     }
                 }
 
