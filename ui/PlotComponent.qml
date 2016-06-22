@@ -4,6 +4,11 @@ import QtQuick 2.0
 This is a fork of the GraphComponent widget, which is menat for a stream of data.  I'm
 modifying this component to behave more like a 2D plot, where points are explicitly defined.
 Many of the features of the GraphComponent will be removed.
+
+The primary difference is that the datasets will be a list of points rather than a list of values,
+
+This component is a major kludge.  I've only modfied the components necessary to give me the ability
+to plot points in 2D, but that may break other functionality.  Should refactor this more completely in the future.
 */
 
 Rectangle {
@@ -51,6 +56,8 @@ Rectangle {
     property var vDivSteps: [0.01,0.02,0.05,0.1,0.2,0.5,1.0,2.0,5.0,10.0]
     property int vDivSetting: 4
     property real yOffset: 0.0
+    property real xAxisPosition: 0.5
+    property real yAxisPosition: 0.5
 
     function draw(ctx) {
         var axes={};
@@ -60,8 +67,10 @@ Rectangle {
         axes.xmax = xPadding + axes.pixelWidth;
         axes.ymin = yPadding;
         axes.ymax = yPadding + axes.pixelHeight;
-        axes.x0 = 0.5 + 0.5*axes.pixelWidth + xPadding;  // x0 pixels from left to x=0
-        axes.y0 = 0.5 + 0.5*axes.pixelHeight + yPadding; // y0 pixels from top to y=0        
+        axes.x0 = 0.5 + xAxisPosition*axes.pixelWidth + xPadding;  // x0 pixels from left to x=0
+        axes.y0 = 0.5 + yAxisPosition*axes.pixelHeight + yPadding; // y0 pixels from top to y=0 
+        axes.x_mid = 0.5 + 0.5*axes.pixelWidth + xPadding;  // x0 pixels from left to x=0
+        axes.y_mid = 0.5 + 0.5*axes.pixelHeight + yPadding; // y0 pixels from top to y=0        
 
         // Clear graph
         ctx.fillStyle = graphWidget.graphBackground;
@@ -108,7 +117,8 @@ Rectangle {
     }
 
     function addPoint(dataPoint, series) {
-        var point = parseFloat(dataPoint);
+        var point_x = parseFloat(dataPoint[0]);
+        var point_y = parseFloat(dataPoint[1]);
 
         if (datasets.length < (series + 1)) {
             datasets.push({
@@ -119,7 +129,7 @@ Rectangle {
             });
         }
 
-        if (isNaN(point)) {
+        if (isNaN(point_x) || isNaN(point_y)) {
             //python.log('Data Point NaN:' + dataPoint);
             return;
         }
@@ -151,7 +161,7 @@ Rectangle {
             datasets[series].yMinimum = yMinimum;
         }
 
-        var index = datasets[series].data.push(point);
+        var index = datasets[series].data.push([point_x, point_y]);
 
         if (datasets[series].data.length > datasets[series].size) {
             datasets[series].data.shift();
@@ -205,7 +215,8 @@ Rectangle {
         var di = axes.pixelWidth/datasets[series].size;
         var y0 = axes.y0;
         //var scale = (axes.pixelHeight - 0.5)/Math.abs(datasets[series].yMaximum - datasets[series].yMinimum); // 40 pixels from x=0 to x=1
-		var scale = (axes.pixelHeight - 0.5)/Math.abs(graphWidget.yMaximum - graphWidget.yMinimum); // 40 pixels from x=0 to x=1
+		var x_scale = (axes.pixelWidth - 0.5)/Math.abs(graphWidget.xMaximum - graphWidget.xMinimum); // 40 pixels from x=0 to x=1
+        var y_scale = (axes.pixelHeight - 0.5)/Math.abs(graphWidget.yMaximum - graphWidget.yMinimum); // 40 pixels from x=0 to x=1
         var length = datasets[series].data.length;
 
         ctx.beginPath();
@@ -220,8 +231,8 @@ Rectangle {
         }
 
         for (var i = 0; i < length; i++) {
-            xx = x0 + i*di;
-            yy = y0 - scale*(datasets[series].data[i] + graphWidget.yOffset);
+            xx = x_scale*datasets[series].data[i][0] + x0
+            yy = y0 - y_scale*(datasets[series].data[i][1] + graphWidget.yOffset);
 
             if (yy > axes.ymax) {
                 yy = axes.ymax;
@@ -264,7 +275,7 @@ Rectangle {
             ctx.textBaseline = 'top';
 
             // Draw X axis label
-            ctx.fillText(axisXLabel, axes.x0, axes.ymax);
+            ctx.fillText(axisXLabel, axes.x_mid, axes.ymax);
 
             // Draw Y axis label
             if (graphWidget.adjustableVdiv) {
@@ -277,7 +288,7 @@ Rectangle {
             }
 
             ctx.rotate(-90*Math.PI/180);
-            ctx.fillText(ylabel, -axes.y0, 0);
+            ctx.fillText(ylabel, -axes.y_mid, 0);
             ctx.rotate(90*Math.PI/180);
         }
     }
