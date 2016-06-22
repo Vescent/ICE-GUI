@@ -1206,6 +1206,11 @@ Rectangle {
         id: playlistProfiles
     }
 
+    function showDDSQComponents(state){
+        rectDDSQueuePlaylist.visible = state
+        rectDDSQueueCommands.visible = state
+    }
+
     function setGUIPlaylistFromGlobalPlaylist(){
         playlistProfiles.clear()
         for(var i=0; i<global.ddsqPlaylist.length; i++){
@@ -1470,7 +1475,7 @@ Rectangle {
                                     ddsqSetProfileBoxParamsToProfileVals(cbox.currentIndex);
                                     ddsqEditProfileSelectionBox.visible = false;
                                     ddsqDefineProfileBox.visible = true;
-                                    
+                                    showDDSQComponents(false)
                                 }
                             }
                         }
@@ -1623,6 +1628,7 @@ Rectangle {
                     onClicked: {
                         ddsqSetProfileBoxParamsToDefaults();
                         ddsqDefineProfileBox.visible = true
+                        showDDSQComponents(false)
                     }
                 }
 
@@ -1636,7 +1642,13 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
                         editProfileSelectionComboBox.currentIndex = -1
-                        ddsqEditProfileSelectionBox.visible = true
+                        if(0 == global.ddsqProfiles.length){
+                            showAlert("You must create a profile\nbefore you can edit a profile.")
+                        }
+                        else{
+                            ddsqEditProfileSelectionBox.visible = true
+                            showDDSQComponents(false)
+                        }
                     }
                 }
 
@@ -1916,9 +1928,11 @@ Rectangle {
                     ddsqSetProfileBoxParamsToProfileVals(editProfileSelectionComboBox.currentIndex);
                     ddsqEditProfileSelectionBox.visible = false;
                     ddsqDefineProfileBox.visible = true;
+                    showDDSQComponents(false)
                 }
                 else{
                     ddsqEditProfileSelectionBox.visible = false;
+                    showDDSQComponents(true)
                 }
             }
             anchors {
@@ -1939,6 +1953,7 @@ Rectangle {
             highlight: true
             onClicked: {
                 ddsqEditProfileSelectionBox.visible = false;
+                showDDSQComponents(true)
             }
             anchors {
                 bottom: parent.bottom
@@ -2360,6 +2375,7 @@ Rectangle {
             onClicked: {
                 ddsqAddProfileDefinition(true);
                 ddsqDefineProfileBox.visible = false;
+                showDDSQComponents(true)
             }
             anchors {
                 bottom: parent.bottom
@@ -2380,6 +2396,7 @@ Rectangle {
             onClicked: {
                 ddsqSetProfileBoxParamsToDefaults();
                 ddsqDefineProfileBox.visible = false;
+                showDDSQComponents(true)
             }
             anchors {
                 bottom: parent.bottom
@@ -2518,6 +2535,48 @@ Rectangle {
             rollMode: false 
             adjustableVdiv: false
             adjustableYOffset: false
+        }
+    }
+
+    function showAlert(text){
+        rectAlert.visible = true
+        alertText.text = text
+        showDDSQComponents(false)
+    }
+
+    Rectangle {
+        id: rectAlert
+        anchors.centerIn: rectDDSQueue
+        color: '#333333'
+        width: 250
+        height: 250
+        border.color: '#39F'
+        border.width: 2
+        visible: false
+        z: 100
+
+        Text {
+            id: alertText
+            anchors.centerIn: parent
+            text: "No message."
+            color: "#cccccc"
+            font.bold: true
+            font.pointSize: 10
+            font.family: "MS Shell Dlg 2"
+        }
+
+        ThemeButton {
+            id: alertOkButton
+            text: "Ok"
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
+                margins: 10
+            }
+            onClicked: {
+                rectAlert.visible = false
+                showDDSQComponents(true)
+            }
         }
     }
 }
