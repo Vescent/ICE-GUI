@@ -1578,12 +1578,19 @@ Rectangle {
             selectExisting: true
             nameFilters: ["DDS Queue Settings (*.ddsq-settings)"]
             onAccepted: {
-                console.log("You chose: " + ddsqLoadPlaylistDialog.fileUrl)
                 var loaded_data = ice.loadData(ddsqLoadPlaylistDialog.fileUrl)
                 global.ddsqProfiles = loaded_data["profiles"]
                 global.ddsqPlaylist = loaded_data["playlist"]
                 setGUIPlaylistFromGlobalPlaylist()
                 setAvailableProfilesFromGlobalProfileList()
+                if(0 < global.ddsqPlaylist.length){
+                    ddsqPlaylistStartupHelp.visible = false
+                    ddsqPlaylistLabels.visible = true
+                }
+                else{
+                    ddsqPlaylistStartupHelp.visible = true
+                    ddsqPlaylistLabels.visible = false
+                }
             }
             onRejected: {
                 console.log("Canceled load operation")
@@ -2113,7 +2120,7 @@ Rectangle {
                 spacing: 14
 
                 Text{
-                    text: "Frequency [MHz]: "
+                    text: "Int. Ref. Frequency [MHz]: "
                     color: '#FFF'
                 }
 
@@ -2228,12 +2235,12 @@ Rectangle {
                 spacing: 12
 
                 Text{
-                    text: "Start Frequency [MHz]: "
+                    text: "Start Int. Ref. Frequency [MHz]: "
                     color: '#FFF'
                 }
 
                 Text{
-                    text: "End Frequency [MHz]: "
+                    text: "End Int. Ref. Frequency [MHz]: "
                     color: '#FFF'
                 }
 
@@ -2248,7 +2255,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Offset DAC [V]: "
+                    text: "Servo Offset [V]: "
                     color: '#FFF'
                 }
 
