@@ -1577,6 +1577,20 @@ Rectangle {
                     }
                 }
 
+                ThemeButton {
+                    id: ddsqPreviewButton
+                    y: 7
+                    width: 90
+                    height: 30
+                    text: "Preview"
+                    highlight: false
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        ddsqPreviewRect.visible = true
+                        ddsqWriteDataToPlaylist()                 
+                    }
+                }
+
                 Text {
                     color: "#cccccc"
                     text: "---------"
@@ -2309,6 +2323,96 @@ Rectangle {
                 right: parent.right
                 margins: 10
             }
+        }
+    }
+
+    function ddsqWriteDataToPlaylist(){
+        ddsqPreviewGraph.clearData()
+
+        for(var i=0; i<playlistProfiles.count; i++){
+            //First, get the profile attached to this playlist entry
+            var playlist_entry = playlistRepeater.itemAt(i)
+            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
+            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
+
+            var profile = global.ddsqProfiles[prof_idx]
+            print(profile["stpFrequency"])
+
+            ddsqPreviewGraph.addPoint(profile["stpFrequency"] / 1000000.0, 0)
+        }
+    }
+
+    Rectangle{
+        id: ddsqPreviewRect
+        color: "#333333"
+        radius: 15
+        border.width: 2
+        border.color: (active) ? '#3399ff' : "#666666";
+        visible: false
+        anchors {
+            fill: parent
+            margins: 20
+        }
+        
+        Text {
+            id: ddsqPreviewTitle
+            color: "#cccccc"
+            text: "DDS Queue Playlist Preview"
+            height: 20
+            anchors {
+                top: parent.top
+                left: parent.left
+                margins: 10
+            }
+            font {
+                pointSize: 12
+                bold: true
+            }
+        }
+
+        ThemeButton {
+            id: ddsqPreviewExit
+            text: "Close"
+            textColor: "#ffffff"
+            width: 40
+            height: 20
+            borderWidth: 1
+            anchors {
+                top: parent.top
+                right: parent.right
+                margins: 10
+            }
+            onClicked: {
+                ddsqPreviewRect.visible = false
+            }
+        }
+
+        GraphComponent{
+            id: ddsqPreviewGraph
+            anchors {
+                top: ddsqPreviewTitle.bottom
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
+                margins: 10
+            }            
+            gridYDiv: 10
+            yMinimum: 0
+            yMaximum: 250
+            axisYLabel: "Frequency"
+            axisYUnits: "MHz"
+            gridXDiv: 100
+            xMinimum: 0
+            xMaximum: 1000
+            axisXLabel: "Time"
+            axisXUnits: "us"
+
+            datasetFill: false
+            autoScale: false
+            vDivSetting: 6
+            rollMode: false 
+            adjustableVdiv: false
+            adjustableYOffset: false
         }
     }
 }
