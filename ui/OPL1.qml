@@ -1561,7 +1561,6 @@ Rectangle {
             selectExisting: false
             nameFilters: ["DDS Queue Settings (*.ddsq-settings)"]
             onAccepted: {
-                console.log("You chose: " + ddsqSavePlaylistDialog.fileUrl)
                 ddsqUpdateGlobalPlaylistFromGUI()
                 ice.saveData(ddsqSavePlaylistDialog.fileUrl, {"profiles": global.ddsqProfiles, "playlist": global.ddsqPlaylist})
             }
@@ -2464,6 +2463,8 @@ Rectangle {
         //Now set the x_scale to the appropriate value
         ddsqPreviewGraph.xMinimum = 0
         ddsqPreviewGraph.xMaximum = time_offset
+        ddsqPreviewGraph.gridXDiv = time_offset / 1000 //Each div is 1 ms
+        ddsqPreviewGraph.axisXLabel = "Total Time = " + time_offset + "[micro-s] [1 ms/div]"
 
         ddsqPreviewGraph.refresh()
 
@@ -2526,7 +2527,7 @@ Rectangle {
             gridYDiv: 10
             yMinimum: 0
             yMaximum: 250
-            axisYLabel: "Frequency"
+            axisYLabel: "Frequency [MHz] [0-250.0 MHz]"
             axisYUnits: "MHz"
             gridXDiv: 100
             xMinimum: 0
