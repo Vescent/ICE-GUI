@@ -18,6 +18,7 @@ import iceComm
 from xml.etree import ElementTree
 from urllib.request import urlopen
 from collections import defaultdict
+import json
 
 # Converts XML ElementTree to Python dict
 def etree_to_dict(t):
@@ -169,6 +170,16 @@ class iceController(QObject):
             portnames.append(port[0])
 
         return portnames
+
+    @pyqtSlot(str, 'QVariant')
+    def saveData(self, file_path, file_data):
+        file_path = file_path.lstrip("file:///")
+        print(file_path)
+        print(file_data)   
+        print(file_data.toVariant())     
+        with open(file_path, 'w') as f:
+            # f.write("OLOL")
+            f.write(json.dumps(file_data.toVariant(), sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 class StreamToLogger(object):

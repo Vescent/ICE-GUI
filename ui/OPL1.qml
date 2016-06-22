@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.4
 import QtQml.Models 2.2
+import QtQuick.Dialogs 1.2
 
 
 Rectangle {
@@ -1522,6 +1523,38 @@ Rectangle {
             }
         }
 
+        FileDialog {
+            id: ddsqSavePlaylistDialog
+            title: "Select a location to save your settings"
+            visible: false
+            selectMultiple: false
+            selectExisting: false
+            nameFilters: ["DDS Queue Settings (*.ddsq-settings)"]
+            onAccepted: {
+                console.log("You chose: " + ddsqSavePlaylistDialog.fileUrl)
+                ddsqUpdateGlobalPlaylist()
+                ice.saveData(ddsqSavePlaylistDialog.fileUrl, {"profiles": global.ddsqProfiles, "playlist": global.ddsqPlaylist})
+            }
+            onRejected: {
+                console.log("Canceled save operation")
+            }
+        }
+
+        FileDialog {
+            id: ddsqLoadPlaylistDialog
+            title: "Select a DDS Queue Settings file to load"
+            visible: false
+            selectMultiple: false
+            selectExisting: true
+            nameFilters: ["DDS Queue Settings (*.ddsq-settings)"]
+            onAccepted: {
+                console.log("You chose: " + fileDialog.fileUrl)
+            }
+            onRejected: {
+                console.log("Canceled load operation")
+            }
+        }
+
         Rectangle {
             id: rectDDSQueueCommands
             anchors.top: parent.top
@@ -1616,7 +1649,7 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        //Save Settings code
+                        ddsqSavePlaylistDialog.open()
                     }
                     enabled: true
                 }
@@ -1630,7 +1663,7 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        //Load settings code
+                        ddsqLoadPlaylistDialog.open()
                     }
                 }
 
@@ -2323,6 +2356,17 @@ Rectangle {
                 right: parent.right
                 margins: 10
             }
+        }
+    }
+
+    function ddsqUpdateGlobalPlaylist(){
+        //TODO: Refactor functions that operate on playlsit to use this function.
+        global.ddsqPlaylist = []
+        for(var i=0; i<playlistProfiles.count; i++){
+            var playlist_entry = playlistRepeater.itemAt(i)
+            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
+            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
+            global.ddsqPlaylist[i] = {"profile_idx": prof_idx, "interrupt_idx": interrupt_type}
         }
     }
 
