@@ -1587,7 +1587,7 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
                         ddsqPreviewRect.visible = true
-                        ddsqWriteDataToPlaylist()                 
+                        ddsqUpdatePlaylistPreview()                 
                     }
                 }
 
@@ -2326,8 +2326,9 @@ Rectangle {
         }
     }
 
-    function ddsqWriteDataToPlaylist(){
+    function ddsqUpdatePlaylistPreview(){
         ddsqPreviewGraph.clearData()
+        var time_offset = 0
 
         for(var i=0; i<playlistProfiles.count; i++){
             //First, get the profile attached to this playlist entry
@@ -2338,8 +2339,36 @@ Rectangle {
             var profile = global.ddsqProfiles[prof_idx]
             print(profile["stpFrequency"])
 
-            ddsqPreviewGraph.addPoint(profile["stpFrequency"] / 1000000.0, 0)
+            if(profile["type"] == 0){ //STP profile
+                ddsqPreviewGraph.addPoint([time_offset, profile["stpFrequency"] / 1000000.0], 0)
+                time_offset = time_offset + profile["duration"]
+                ddsqPreviewGraph.addPoint([time_offset, profile["stpFrequency"] / 1000000.0], 0)
+            }
+            else if(profile["type"] == 1){ //DRG profile
+                if(profile["drgDirection"] == 0){ // positive direction, start w/ lower limit
+                    ddsqPreviewGraph.addPoint([time_offset, profile["drgLowerLimit"] / 1000000.0], 0)
+                    time_offset = time_offset + profile["drgRampDuration"]
+                    ddsqPreviewGraph.addPoint([time_offset, profile["drgUpperLimit"] / 1000000.0], 0)
+                    time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
+                    ddsqPreviewGraph.addPoint([time_offset, profile["drgUpperLimit"] / 1000000.0], 0)
+                }
+                else if(profile["drgDirection"] == 1){ //negative direction
+                    ddsqPreviewGraph.addPoint([time_offset, profile["drgUpperLimit"] / 1000000.0], 0)
+                    time_offset = time_offset + profile["drgRampDuration"]
+                    ddsqPreviewGraph.addPoint([time_offset, profile["drgLowerLimit"] / 1000000.0], 0)
+                    time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
+                    ddsqPreviewGraph.addPoint([time_offset, profile["drgLowerLimit"] / 1000000.0], 0)
+                }
+            }
+
         }
+
+        //Now set the x_scale to the appropriate value
+        ddsqPreviewGraph.xMinimum = 0
+        ddsqPreviewGraph.xMaximum = time_offset
+
+        ddsqPreviewGraph.refresh()
+
     }
 
     Rectangle{
@@ -2387,7 +2416,7 @@ Rectangle {
             }
         }
 
-        GraphComponent{
+        PlotComponent{
             id: ddsqPreviewGraph
             anchors {
                 top: ddsqPreviewTitle.bottom
@@ -2406,6 +2435,8 @@ Rectangle {
             xMaximum: 1000
             axisXLabel: "Time"
             axisXUnits: "us"
+            xAxisPosition: 0.0
+            yAxisPosition: 1.0
 
             datasetFill: false
             autoScale: false
