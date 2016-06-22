@@ -1206,6 +1206,29 @@ Rectangle {
         id: playlistProfiles
     }
 
+    function setGUIPlaylistFromGlobalPlaylist(){
+        playlistProfiles.clear()
+        for(var i=0; i<global.ddsqPlaylist.length; i++){
+            playlistProfiles.append({"name": global.ddsqProfiles[0]["name"]})
+        }
+
+        for(var i=0; i<global.ddsqPlaylist.length; i++){
+            var row = playlistRepeater.itemAt(i)
+            var profile_cbox = row.children[1]
+            profile_cbox.currentIndex = global.ddsqPlaylist[i]["profile_idx"]
+
+            var interrupt_cbox = row.children[3]
+            interrupt_cbox.currentIndex = global.ddsqPlaylist[i]["interrupt_idx"]
+        }
+    }
+
+    function setAvailableProfilesFromGlobalProfileList(){
+        availableProfiles.clear()
+        for(var i=0; i<global.ddsqProfiles.length; i++){
+            availableProfiles.append({"name": global.ddsqProfiles[i]["name"]})
+        }
+    }
+
     function deleteProfileFromPlaylist(del_index){
         var new_prof_indices = []
         var new_intpt_indices = []
@@ -1240,6 +1263,8 @@ Rectangle {
             ddsqPlaylistStartupHelp.visible = true
             ddsqPlaylistLabels.visible = false
         }
+
+
     }
 
     function sendPlaylistToDevice(){
@@ -1532,7 +1557,7 @@ Rectangle {
             nameFilters: ["DDS Queue Settings (*.ddsq-settings)"]
             onAccepted: {
                 console.log("You chose: " + ddsqSavePlaylistDialog.fileUrl)
-                ddsqUpdateGlobalPlaylist()
+                ddsqUpdateGlobalPlaylistFromGUI()
                 ice.saveData(ddsqSavePlaylistDialog.fileUrl, {"profiles": global.ddsqProfiles, "playlist": global.ddsqPlaylist})
             }
             onRejected: {
@@ -1548,7 +1573,12 @@ Rectangle {
             selectExisting: true
             nameFilters: ["DDS Queue Settings (*.ddsq-settings)"]
             onAccepted: {
-                console.log("You chose: " + fileDialog.fileUrl)
+                console.log("You chose: " + ddsqLoadPlaylistDialog.fileUrl)
+                var loaded_data = ice.loadData(ddsqLoadPlaylistDialog.fileUrl)
+                global.ddsqProfiles = loaded_data["profiles"]
+                global.ddsqPlaylist = loaded_data["playlist"]
+                setGUIPlaylistFromGlobalPlaylist()
+                setAvailableProfilesFromGlobalProfileList()
             }
             onRejected: {
                 console.log("Canceled load operation")
@@ -2359,7 +2389,7 @@ Rectangle {
         }
     }
 
-    function ddsqUpdateGlobalPlaylist(){
+    function ddsqUpdateGlobalPlaylistFromGUI(){
         //TODO: Refactor functions that operate on playlsit to use this function.
         global.ddsqPlaylist = []
         for(var i=0; i<playlistProfiles.count; i++){

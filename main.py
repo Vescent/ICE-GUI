@@ -174,12 +174,19 @@ class iceController(QObject):
     @pyqtSlot(str, 'QVariant')
     def saveData(self, file_path, file_data):
         file_path = file_path.lstrip("file:///")
-        print(file_path)
-        print(file_data)   
-        print(file_data.toVariant())     
         with open(file_path, 'w') as f:
             # f.write("OLOL")
             f.write(json.dumps(file_data.toVariant(), sort_keys=True, indent=4, separators=(',', ': ')))
+
+    @pyqtSlot(str, result='QVariant')
+    def loadData(self, file_path):
+        file_path = file_path.lstrip("file:///")
+        data = {}
+        with open(file_path, 'r') as f:
+            data = json.loads(f.read())
+            print(data)
+        return data
+
 
 
 class StreamToLogger(object):
