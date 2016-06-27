@@ -1292,11 +1292,10 @@ Rectangle {
 
 
         //Now program the device's playlist.  For each playlist element, send the  
-        for(var i=0; i<playlistProfiles.count; i++){
+        for(var i=0; i<global.ddsqPlaylist.length; i++){
             //First, get the profile attached to this playlist entry
-            var playlist_entry = playlistRepeater.itemAt(i)
-            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
-            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
+            var prof_idx = global.ddsqPlaylist[i]["profile_idx"] //index of combobox that has the profile
+            var interrupt_type = global.ddsqPlaylist[i]["interrupt_idx"] //Will use this later, grab it now
 
             var profile_key = global.ddsqProfiles[prof_idx]["name"]
 
@@ -2365,16 +2364,15 @@ Rectangle {
 
     function ddsqUpdatePlaylistPreview(){
         ddsqPreviewGraph.clearData()
+        ddsqUpdateGlobalPlaylistFromGUI()
         var time_offset = 0
 
-        for(var i=0; i<playlistProfiles.count; i++){
+        for(var i=0; i<global.ddsqPlaylist.length; i++){
             //First, get the profile attached to this playlist entry
-            var playlist_entry = playlistRepeater.itemAt(i)
-            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
-            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
+            var prof_idx = global.ddsqPlaylist[i]["profile_idx"] //index of combobox that has the profile
+            var interrupt_type = global.ddsqPlaylist[i]["interrupt_idx"] //Will use this later, grab it now
 
             var profile = global.ddsqProfiles[prof_idx]
-            print(profile["stpFrequency"])
 
             if(profile["type"] == 0){ //STP profile
                 ddsqPreviewGraph.addPoint([time_offset, profile["stpFrequency"] / 1000000.0], 0)
