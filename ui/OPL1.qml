@@ -1223,11 +1223,14 @@ Rectangle {
 
     function deleteProfileFromPlaylist(del_index){
         ddsqUpdateGlobalPlaylistFromGUI()
-
         global.ddsqPlaylist.splice(del_index, 1)
-
         setGUIPlaylistFromGlobalPlaylist()
+    }
 
+    function insertProfileIntoPlaylist(insert_index){
+        ddsqUpdateGlobalPlaylistFromGUI()
+        global.ddsqPlaylist.splice(insert_index, 0, {"profile_idx": 0, "interrupt_idx": 0})
+        setGUIPlaylistFromGlobalPlaylist()   
     }
 
     function sendPlaylistToDevice(){
@@ -1379,7 +1382,7 @@ Rectangle {
                     Text {
                         anchors.centerIn: parent
                         color: "#cccccc"
-                        text: "Create at least one profile and hit, 'Add New Element'\nto start building the series of events you want the\nDDS to perform."
+                        text: "Create at least one profile and hit, 'Add Element'\nto start building the series of events you want the\nDDS to perform."
                     }
                 }
 
@@ -1451,48 +1454,36 @@ Rectangle {
             ThemeButton {
                 id: addProfileToPlaylist
                 height: 30
-                width: 120
+                width: 105
                 anchors {
                     bottom: parent.bottom
                     left: parent.left
                     margins: 10
                 }
-                text: "Add New Element"
+                text: "Add Element at:"
 
                 onClicked: {
                     //turn off help and turn on labels!
                     if(0 < global.ddsqProfiles.length){
-                        ddsqPlaylistStartupHelp.visible = false
-                        ddsqPlaylistLabels.visible =true
-
-                        var profile_indices = []
-                        var interrupt_indices = []
-                        var original_count = playlistProfiles.count
-                        for(var i=0; i<original_count; i++){
-                            var test = playlistRepeater.itemAt(i)
-
-                            var profile_cbox = test.children[1]
-                            profile_indices[profile_indices.length] = profile_cbox.currentIndex
-
-                            var interrupt_cbox = test.children[3]
-                            interrupt_indices[interrupt_indices.length] = interrupt_cbox.currentIndex
-                        }
-                        playlistProfiles.append({"name": global.ddsqProfiles[0]["name"]})
-
-                        for(var i=0; i<original_count; i++){
-                            var test = playlistRepeater.itemAt(i)
-
-                            var profile_cbox = test.children[1]
-                            profile_cbox.currentIndex = profile_indices[i]
-
-                            var interrupt_cbox = test.children[3]
-                            interrupt_cbox.currentIndex = interrupt_indices[i]
-                        }
+                        insertProfileIntoPlaylist(addProfileToPlaylistIndexBox.value)
                     } else { //no profiles to add!
                         showAlert("You must create at least one profile\nbefore adding a profile to\nthe DDS Playlist")
                     }
 
                 }
+            }
+
+            DataInput {
+                id: addProfileToPlaylistIndexBox
+                height: 30
+                width: 30
+                pointSize: 10
+                anchors {
+                    bottom: parent.bottom
+                    left: addProfileToPlaylist.right
+                    margins: 10
+                }
+                value: 0
             }
 
             ThemeButton {
