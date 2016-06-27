@@ -2503,6 +2503,7 @@ Rectangle {
         ddsqPreviewGraph.clearData()
         ddsqUpdateGlobalPlaylistFromGUI()
         var time_offset = 0
+        var max_value = 0
 
         for(var i=0; i<global.ddsqPlaylist.length; i++){
             //First, get the profile attached to this playlist entry
@@ -2512,24 +2513,32 @@ Rectangle {
             var profile = global.ddsqProfiles[prof_idx]
 
             if(profile["type"] == 0){ //STP profile
-                ddsqPreviewGraph.addPoint([time_offset, profile["stpFrequency"] / 1000000.0], 0)
+                var n_value = profile["stpNValue"]
+                ddsqPreviewGraph.addPoint([time_offset, n_value * profile["stpFrequency"] / 1000000.0], 0)
                 time_offset = time_offset + profile["duration"]
-                ddsqPreviewGraph.addPoint([time_offset, profile["stpFrequency"] / 1000000.0], 0)
+                ddsqPreviewGraph.addPoint([time_offset, n_value * profile["stpFrequency"] / 1000000.0], 0)
+                if(max_value < n_value * profile["stpFrequency"]){
+                    max_value = n_value * profile["stpFrequency"]
+                }
             }
             else if(profile["type"] == 1){ //DRG profile
+                var n_value = profile["drgNValue"]
                 if(profile["drgDirection"] == 0){ // positive direction, start w/ lower limit
-                    ddsqPreviewGraph.addPoint([time_offset, profile["drgLowerLimit"] / 1000000.0], 0)
+                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
                     time_offset = time_offset + profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, profile["drgUpperLimit"] / 1000000.0], 0)
+                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
                     time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, profile["drgUpperLimit"] / 1000000.0], 0)
+                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
                 }
                 else if(profile["drgDirection"] == 1){ //negative direction
-                    ddsqPreviewGraph.addPoint([time_offset, profile["drgUpperLimit"] / 1000000.0], 0)
+                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
                     time_offset = time_offset + profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, profile["drgLowerLimit"] / 1000000.0], 0)
+                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
                     time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, profile["drgLowerLimit"] / 1000000.0], 0)
+                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
+                }
+                if(max_value < n_value * profile["drgUpperLimit"]){
+                    max_value = n_value * profile["drgUpperLimit"]
                 }
             }
 
@@ -2540,6 +2549,11 @@ Rectangle {
         ddsqPreviewGraph.xMaximum = time_offset
         ddsqPreviewGraph.gridXDiv = time_offset / 1000 //Each div is 1 ms
         ddsqPreviewGraph.axisXLabel = "Total Time = " + time_offset + "[micro-s] [1 ms/div]"
+
+        ddsqPreviewGraph.yMinimum = 0
+        ddsqPreviewGraph.yMaximum = max_value / 1000000.0 //convert to MHz
+        ddsqPreviewGraph.gridYDiv = 10 //1000 Mhz / div
+        ddsqPreviewGraph.axisYLabel = "Output Frequency [0 - " + max_value / 1000000.0 + " MHz] [" + max_value / 1000000 / 10 +" MHz/div]"
 
         ddsqPreviewGraph.refresh()
 
@@ -2603,7 +2617,7 @@ Rectangle {
             gridYDiv: 10
             yMinimum: 0
             yMaximum: 250
-            axisYLabel: "Frequency [MHz] [0-250.0 MHz]"
+            axisYLabel: "Frequency [MHz] [0-16.0 MHz]"
             axisYUnits: "MHz"
             gridXDiv: 100
             xMinimum: 0
