@@ -22,9 +22,9 @@ Rectangle {
 
 	Rectangle {
 		id: light
-		width: 15
-		height: 15
-		radius: 7
+		width: parent.height - 5
+		height: parent.height - 5
+		radius: parent.height / 2
 		color: "#00CC00"
 		border.color: "#CCCCCC"
 		border.width: 1
