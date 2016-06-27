@@ -1222,40 +1222,11 @@ Rectangle {
     }
 
     function deleteProfileFromPlaylist(del_index){
-        var new_prof_indices = []
-        var new_intpt_indices = []
+        ddsqUpdateGlobalPlaylistFromGUI()
 
-        for(var i=0; i<playlistProfiles.count; i++){
-            //Save every profile info EXCEPT the one w'ere deleting
-            if(i != del_index){
-                var row = playlistRepeater.itemAt(i)
-                var profile_cbox = row.children[1]
-                new_prof_indices[new_prof_indices.length] = profile_cbox.currentIndex
+        global.ddsqPlaylist.splice(del_index, 1)
 
-                var interrupt_cbox = row.children[3]
-                new_intpt_indices[new_intpt_indices.length] = interrupt_cbox.currentIndex
-
-            }
-        }
-
-        playlistProfiles.remove(del_index, 1)
-
-        //Restore the original settings to each profile box
-        for(var i=0; i<playlistProfiles.count; i++){
-            var row = playlistRepeater.itemAt(i)
-            var profile_cbox = row.children[1]
-            profile_cbox.currentIndex = new_prof_indices[i]
-
-            var interrupt_cbox = row.children[3]
-            interrupt_cbox.currentIndex = new_intpt_indices[i] 
-        }
-
-        //Put the playlsit help box back up if there are no profiles
-        if(playlistProfiles.count == 0){
-            ddsqPlaylistStartupHelp.visible = true
-            ddsqPlaylistLabels.visible = false
-        }
-
+        setGUIPlaylistFromGlobalPlaylist()
 
     }
 
