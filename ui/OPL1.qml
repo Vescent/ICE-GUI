@@ -1611,12 +1611,32 @@ Rectangle {
                     }
                 }
 
-                Text {
-                    color: "#cccccc"
-                    text: "---------"
-                    font.pointSize: 10
+                ThemeButton {
+                    id: ddsqDeleteProfileBtn
+                    y: 7
+                    width: 90
+                    height: 30
+                    text: "Delete Profile"
+                    highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        editProfileSelectionComboBox.currentIndex = -1
+                        if(0 == global.ddsqProfiles.length){
+                            showAlert("You must create a profile\nbefore you can delete a profile.")
+                        }
+                        else{
+                            ddsqDeleteProfileSelectionBox.visible = true
+                            showDDSQComponents(false)
+                        }
+                    }
                 }
+
+                // Text {
+                //     color: "#cccccc"
+                //     text: "---------"
+                //     font.pointSize: 10
+                //     anchors.horizontalCenter: parent.horizontalCenter
+                // }
 
                 Text {
                     color: "#cccccc"
@@ -1663,18 +1683,23 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        ddsqPreviewRect.visible = true
-                        showDDSQComponents(false)
-                        ddsqUpdatePlaylistPreview()                 
+                        if(0 < global.ddsqPlaylist.length){
+                            ddsqPreviewRect.visible = true
+                            showDDSQComponents(false)
+                            ddsqUpdatePlaylistPreview()                 
+                        }
+                        else {
+                            showAlert("You must have at least 1 element\nadded to the playlist before the\npreview will be meaningful.")
+                        }
                     }
                 }
 
-                Text {
-                    color: "#cccccc"
-                    text: "---------"
-                    font.pointSize: 10
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
+                // Text {
+                //     color: "#cccccc"
+                //     text: "---------"
+                //     font.pointSize: 10
+                //     anchors.horizontalCenter: parent.horizontalCenter
+                // }
 
                 Text {
                     color: "#cccccc"
@@ -1835,6 +1860,35 @@ Rectangle {
 
     }
 
+    function ddsqDeleteProfileDefinition(profile_index){
+        ddsqUpdateGlobalPlaylistFromGUI()
+        if(0 <= profile_index && profile_index < global.ddsqProfiles.length){
+            //first, remove this profile from any lpaylist elements
+            //Iterate backwards so we don't have to worry about our dleetions
+            //affecting our indexes
+            for(var i=global.ddsqPlaylist.length - 1; 0 <= i; i--){
+                if(global.ddsqPlaylist[i]["profile_idx"] == profile_index){
+                    deleteProfileFromPlaylist(i)
+                }
+            }
+
+            //Now we need to lower the indexes of each profile that had a value grater than the one we just deleted
+            for(var i=0; i<global.ddsqPlaylist.length; i++){
+                if(profile_index < global.ddsqPlaylist[i]["profile_idx"]){
+                    global.ddsqPlaylist[i]["profile_idx"] = global.ddsqPlaylist[i]["profile_idx"] - 1
+                }
+            }
+        }
+
+        //Now delete the profile itself
+        global.ddsqProfiles.splice(profile_index, 1)
+
+        //NOw update the GUI with the new profiles and playlist arrays
+        setAvailableProfilesFromGlobalProfileList()
+        setGUIPlaylistFromGlobalPlaylist()
+
+    }
+
     Rectangle {
         id: ddsqEditProfileSelectionBox
         anchors.centerIn: rectDDSQueue
@@ -1920,7 +1974,87 @@ Rectangle {
                 margins: 10
             }
         }
+    }
 
+        Rectangle {
+        id: ddsqDeleteProfileSelectionBox
+        anchors.centerIn: rectDDSQueue
+        color: '#333333'
+        width: 250
+        height: 150
+        border.color: '#39F'
+        border.width: 2
+        visible: false
+        z: 100
+
+        Text {
+            id: ddsqDeleteProfileSelectionTitle
+            text: "Select Profile To Delete\nWARNING: IRREVERSIBLE!"
+            font.family: 'Helvetica'
+            font.pointSize: 12
+            font.bold: true
+            anchors {
+                top: parent.top
+                left: parent.left
+                margins: 10
+            }
+            color: '#FFF'
+        }
+
+        ComboBox {
+            id: deleteProfileSelectionComboBox
+            textRole: 'name'
+            anchors {
+                top: ddsqDeleteProfileSelectionTitle.bottom
+                left: parent.left
+                right: parent.right
+                margins: 10
+            }
+            model: availableProfiles
+        }
+
+        ThemeButton {
+            id: deleteProfileOKButton
+            width: 40
+            height: 26
+            text: "Ok"
+            pointSize: 12
+            textColor: "#ffffff"
+            borderWidth: 1
+            highlight: true
+            onClicked: {
+                ddsqDeleteProfileSelectionBox.visible = false
+                if(deleteProfileSelectionComboBox.currentIndex != -1){
+                    ddsqDeleteProfileDefinition(deleteProfileSelectionComboBox.currentIndex)
+                }
+                showDDSQComponents(true)
+            }
+            anchors {
+                bottom: parent.bottom
+                right: deleteProfileCancelButton.left
+                margins: 10
+            }
+        }
+
+        ThemeButton {
+            id: deleteProfileCancelButton
+            width: 60
+            height: 26
+            text: "Cancel"
+            pointSize: 12
+            textColor: "#ffffff"
+            borderWidth: 1
+            highlight: true
+            onClicked: {
+                ddsqDeleteProfileSelectionBox.visible = false;
+                showDDSQComponents(true)
+            }
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
+                margins: 10
+            }
+        }
     }
 
     Rectangle {
