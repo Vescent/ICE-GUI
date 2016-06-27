@@ -1201,6 +1201,15 @@ Rectangle {
             var interrupt_cbox = row.children[3]
             interrupt_cbox.currentIndex = global.ddsqPlaylist[i]["interrupt_idx"]
         }
+
+        if(global.ddsqPlaylist.length == 0){
+            ddsqPlaylistStartupHelp.visible = true
+            ddsqPlaylistLabels.visible = false
+        }
+        else {
+            ddsqPlaylistStartupHelp.visible = false
+            ddsqPlaylistLabels.visible = true
+        }
     }
 
     function ddsqUpdateGlobalPlaylistFromGUI(){
@@ -1483,6 +1492,8 @@ Rectangle {
                     margins: 10
                 }
                 value: 0
+                precision: 2
+                decimal: 0
             }
 
             ThemeButton {
@@ -1530,16 +1541,8 @@ Rectangle {
                 var loaded_data = ice.loadData(ddsqLoadPlaylistDialog.fileUrl)
                 global.ddsqProfiles = loaded_data["profiles"]
                 global.ddsqPlaylist = loaded_data["playlist"]
-                setGUIPlaylistFromGlobalPlaylist()
                 setAvailableProfilesFromGlobalProfileList()
-                if(0 < global.ddsqPlaylist.length){
-                    ddsqPlaylistStartupHelp.visible = false
-                    ddsqPlaylistLabels.visible = true
-                }
-                else{
-                    ddsqPlaylistStartupHelp.visible = true
-                    ddsqPlaylistLabels.visible = false
-                }
+                setGUIPlaylistFromGlobalPlaylist()
             }
             onRejected: {
                 console.log("Canceled load operation")
