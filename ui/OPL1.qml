@@ -123,17 +123,6 @@ Rectangle {
             updateServoLock();
         }
     }
-	
-	function save(value) {
-		ice.send('Save', slot, function(result){
-			if (result == "Success") {
-				python.log('Successfully saved settings.');
-			}
-			else {
-				python.log('Error saving settings.');
-			}
-		});
-	}
 
 	function setGraphLabels() {
         var yDiv = (graphcomponent.yMaximum - graphcomponent.yMinimum)/graphcomponent.gridYDiv;
@@ -614,19 +603,6 @@ Rectangle {
         font.pointSize: 12
         font.family: "MS Shell Dlg 2"
     }
-	
-	ThemeButton {
-		id: saveBtn
-		y: 7
-		width: 40
-		height: 20
-		anchors.right: widget.right
-		anchors.rightMargin: 10
-		text: "Save"
-		highlight: false
-		onClicked: save()
-		enabled: true
-	}
 
     Rectangle {
         id: rampRect
@@ -1227,6 +1203,17 @@ Rectangle {
         }
     }
 
+    function ddsqUpdateGlobalPlaylistFromGUI(){
+        //TODO: Refactor functions that operate on playlsit to use this function.
+        global.ddsqPlaylist = []
+        for(var i=0; i<playlistProfiles.count; i++){
+            var playlist_entry = playlistRepeater.itemAt(i)
+            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
+            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
+            global.ddsqPlaylist[i] = {"profile_idx": prof_idx, "interrupt_idx": interrupt_type}
+        }
+    }
+
     function setAvailableProfilesFromGlobalProfileList(){
         availableProfiles.clear()
         for(var i=0; i<global.ddsqProfiles.length; i++){
@@ -1506,30 +1493,32 @@ Rectangle {
                     if(0 < global.ddsqProfiles.length){
                         ddsqPlaylistStartupHelp.visible = false
                         ddsqPlaylistLabels.visible =true
-                    }
 
-                    var profile_indices = []
-                    var interrupt_indices = []
-                    var original_count = playlistProfiles.count
-                    for(var i=0; i<original_count; i++){
-                        var test = playlistRepeater.itemAt(i)
+                        var profile_indices = []
+                        var interrupt_indices = []
+                        var original_count = playlistProfiles.count
+                        for(var i=0; i<original_count; i++){
+                            var test = playlistRepeater.itemAt(i)
 
-                        var profile_cbox = test.children[1]
-                        profile_indices[profile_indices.length] = profile_cbox.currentIndex
+                            var profile_cbox = test.children[1]
+                            profile_indices[profile_indices.length] = profile_cbox.currentIndex
 
-                        var interrupt_cbox = test.children[3]
-                        interrupt_indices[interrupt_indices.length] = interrupt_cbox.currentIndex
-                    }
-                    playlistProfiles.append({"name": global.ddsqProfiles[0]["name"]})
+                            var interrupt_cbox = test.children[3]
+                            interrupt_indices[interrupt_indices.length] = interrupt_cbox.currentIndex
+                        }
+                        playlistProfiles.append({"name": global.ddsqProfiles[0]["name"]})
 
-                    for(var i=0; i<original_count; i++){
-                        var test = playlistRepeater.itemAt(i)
+                        for(var i=0; i<original_count; i++){
+                            var test = playlistRepeater.itemAt(i)
 
-                        var profile_cbox = test.children[1]
-                        profile_cbox.currentIndex = profile_indices[i]
+                            var profile_cbox = test.children[1]
+                            profile_cbox.currentIndex = profile_indices[i]
 
-                        var interrupt_cbox = test.children[3]
-                        interrupt_cbox.currentIndex = interrupt_indices[i]
+                            var interrupt_cbox = test.children[3]
+                            interrupt_cbox.currentIndex = interrupt_indices[i]
+                        }
+                    } else { //no profiles to add!
+                        showAlert("You must create at least one profile\nbefore adding a profile to\nthe DDS Playlist")
                     }
 
                 }
@@ -2409,17 +2398,6 @@ Rectangle {
                 right: parent.right
                 margins: 10
             }
-        }
-    }
-
-    function ddsqUpdateGlobalPlaylistFromGUI(){
-        //TODO: Refactor functions that operate on playlsit to use this function.
-        global.ddsqPlaylist = []
-        for(var i=0; i<playlistProfiles.count; i++){
-            var playlist_entry = playlistRepeater.itemAt(i)
-            var prof_idx = playlist_entry.children[1].currentIndex //index of combobox that has the profile
-            var interrupt_type = playlist_entry.children[3].currentIndex //Will use this later, grab it now
-            global.ddsqPlaylist[i] = {"profile_idx": prof_idx, "interrupt_idx": interrupt_type}
         }
     }
 
