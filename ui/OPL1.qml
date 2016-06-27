@@ -1611,21 +1611,6 @@ Rectangle {
                     }
                 }
 
-                ThemeButton {
-                    id: ddsqPreviewButton
-                    y: 7
-                    width: 90
-                    height: 30
-                    text: "Preview"
-                    highlight: false
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    onClicked: {
-                        ddsqPreviewRect.visible = true
-                        showDDSQComponents(false)
-                        ddsqUpdatePlaylistPreview()                 
-                    }
-                }
-
                 Text {
                     color: "#cccccc"
                     text: "---------"
@@ -1666,6 +1651,21 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
                         ddsqLoadPlaylistDialog.open()
+                    }
+                }
+
+                ThemeButton {
+                    id: ddsqPreviewButton
+                    y: 7
+                    width: 90
+                    height: 30
+                    text: "Preview"
+                    highlight: false
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        ddsqPreviewRect.visible = true
+                        showDDSQComponents(false)
+                        ddsqUpdatePlaylistPreview()                 
                     }
                 }
 
@@ -1763,7 +1763,6 @@ Rectangle {
             drgNValue.value = profile["drgNValue"]
             drgOffsetDAC.value = profile["drgOffsetDAC"]
 
-            ddsqPrintProfileVals(profile_index)
         }
     }
 
