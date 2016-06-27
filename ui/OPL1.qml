@@ -1618,6 +1618,7 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
                         ddsqPreviewRect.visible = true
+                        showDDSQComponents(false)
                         ddsqUpdatePlaylistPreview()                 
                     }
                 }
@@ -2450,6 +2451,7 @@ Rectangle {
             }
             onClicked: {
                 ddsqPreviewRect.visible = false
+                showDDSQComponents(true)
             }
         }
 
