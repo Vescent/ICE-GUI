@@ -63,6 +63,19 @@ Rectangle {
             if (typeof(appWindow.widgetState[slot].numDataPoints) === 'number') {
                 global.numDataPoints = appWindow.widgetState[slot].numDataPoints;
             }
+
+            //NOTE: MUST set profiles first!  The playlist depends on the profile already being defined
+            //      before it can update the gui playlist.  Updating playlist before profile will break the system.
+            if(typeof(appWindow.widgetState[slot].ddsqProfiles) === 'object'){
+                global.ddsqProfiles = appWindow.widgetState[slot].ddsqProfiles
+                setAvailableProfilesFromGlobalProfileList()
+            }          
+
+            if(typeof(appWindow.widgetState[slot].ddsqPlaylist) === 'object'){
+                global.ddsqPlaylist = appWindow.widgetState[slot].ddsqPlaylist
+                setGUIPlaylistFromGlobalPlaylist()
+            }
+            
 			
 			/*
             if (typeof(appWindow.widgetState[slot].rampOn) === 'boolean') {
@@ -98,6 +111,13 @@ Rectangle {
             appWindow.widgetState[slot].numDataPoints = global.numDataPoints;
             appWindow.widgetState[slot].rampOn = global.rampOn;
             appWindow.widgetState[slot].servoOn = global.servoOn;
+
+            ddsqUpdateGlobalPlaylistFromGUI()
+            // No need to call function to update available profiles... global list is always up to date since add/delete definition
+            // functions modify the global profile list.
+
+            appWindow.widgetState[slot].ddsqProfiles = global.ddsqProfiles
+            appWindow.widgetState[slot].ddsqPlaylist = global.ddsqPlaylist
         }
     }
 
