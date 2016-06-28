@@ -2134,6 +2134,12 @@ Rectangle {
                     cursorVisible: true
                     height: 12
                     color: '#FFF'
+                    selectByMouse: true
+                    onFocusChanged: {
+                        if (profileName.focus === true) {
+                        profileName.selectAll()
+                        }
+                    }
                 }
                 
 
