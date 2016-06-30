@@ -56,6 +56,8 @@ Rectangle {
             setGraphLabels();
             getFeatureID();
 
+            ddspllStatusCheckTimer.start();
+
             if (typeof(appWindow.widgetState[slot].vDivSetting) === 'number') {
                 graphcomponent.vDivSetting = appWindow.widgetState[slot].vDivSetting;
             }
@@ -118,6 +120,8 @@ Rectangle {
 
             appWindow.widgetState[slot].ddsqProfiles = global.ddsqProfiles
             appWindow.widgetState[slot].ddsqPlaylist = global.ddsqPlaylist
+
+            ddspllStatusCheckTimer.stop();
         }
     }
 
@@ -588,6 +592,18 @@ Rectangle {
         oneshotTimer.start();
     }
 
+    function update_DDS_PLL_LockIndicator(){
+        ice.send('DDSPLL?', slot, function(result){
+            var state = result
+            if (state == "On"){
+                ddspllLockIndicator.setState(true)
+            }
+            else if (state == "Off"){
+                ddspllLockIndicator.setState(false)
+            }
+        });
+    }
+
     // One shot timer for implementing a window.setTimeout() function.
     Timer {
         id: oneshotTimer
@@ -606,6 +622,15 @@ Rectangle {
         running: false
         repeat: true
         onTriggered: timerUpdate()
+        triggeredOnStart: true
+    }
+
+    Timer {
+        id: ddspllStatusCheckTimer
+        interval: updateRate
+        running: false
+        repeat: true
+        onTriggered: update_DDS_PLL_LockIndicator()
         triggeredOnStart: true
     }
 
@@ -788,6 +813,16 @@ Rectangle {
         color: "#00000000"
         radius: 7
         border.color: "#cccccc"
+
+        LEDIndicator {
+            id: ddspllLockIndicator
+            anchors {
+                top: parent.top
+                left: parent.left
+            }
+            labelText: "DDS PLL Locked?"
+            currentState: false
+        }
 
         Text {
             id: textCurrentSet
