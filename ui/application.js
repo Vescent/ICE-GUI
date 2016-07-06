@@ -166,6 +166,8 @@ function loadSlotWidget(slotNumber, deviceType) {
                 break;
 		case 6: sourceFile = 'PB1.qml';
                 break;
+        case 9: sourceFile = 'OPL1.qml';
+            break;
         default: return;
     }
 
@@ -206,12 +208,12 @@ function loadSystemDevices() {
         textSlot.font.bold = true;
 
         // Load first slot that has a device
-        for (var i = 0; i < config.num_devices; i++) {
-            if (config.devices[i].id !== 0) {
-                switchSlot(i + 1);
-                break;
-            }
-        }
+        // for (var i = 0; i < config.num_devices; i++) {
+        //     if (config.devices[i].id !== 0) {
+        //         switchSlot(i + 1);
+        //         break;
+        //     }
+        // }
     }
 }
 
