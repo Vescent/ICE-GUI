@@ -1323,7 +1323,7 @@ Rectangle {
 
                 //Send all the STP things 
                 ice.send(base_int_str + "0 " + profile["stpNValue"], slot, null) 
-                ice.send(base_int_str + "1 " + profile["stpInvertPFDValue"], slot, null)
+                ice.send(base_int_str + "1 " + profile["invertPFDPolarity"], slot, null)
                 ice.send(base_float_str + "2 " + profile["stpOffsetDac"], slot, null)
                 //ice.send(base_float_str + "3 " + profile["stpAuxDac"], slot, null) //Unused AUX DAC option
                 ice.send(base_int_str + "4 " + profile["duration"], slot, null) 
@@ -1341,7 +1341,7 @@ Rectangle {
 
                 //Send all the DRG things --many of the argument indexes are the same as STP
                 ice.send(base_int_str + "0 " + profile["drgNValue"], slot, null) 
-                ice.send(base_int_str + "1 " + profile["drgInvertPFDValue"], slot, null)
+                ice.send(base_int_str + "1 " + profile["invertPFDPolarity"], slot, null)
                 ice.send(base_float_str + "2 " + profile["drgOffsetDAC"], slot, null)
                 //ice.send(base_float_str + "3 " + profile["drgAuxDac"], slot, null) //Unused AUX DAC option
                 ice.send(base_int_str + "4 " + profile["duration"], slot, null)
@@ -1825,6 +1825,7 @@ Rectangle {
             profileName.text = profile["name"]
             ddsqProfileTypeComboBox.currentIndex = profile["type"]
             profileDuration.value = profile["duration"]
+            ddsqProfileInvertPFDPolarityComboBox.currentIndex = profile["invertPFDPolarity"]
 
             //Single Tone Profile parameters
             stpFrequency.value = profile["stpFrequency"] / 1000000.0 //convert back to MHz
@@ -1857,6 +1858,7 @@ Rectangle {
             print("name  " + profile["name"])
             print( "type  " + profile["type"])
             print( "duration  " + profile["duration"])
+            print( "invertPFD " + profile["invertPFDPolarity"])
 
             //Single Tone Profile parameters
             print( "stpFrequency  " + profile["stpFrequency"])
@@ -1888,6 +1890,7 @@ Rectangle {
             "name": profileName.text,
             "type": ddsqProfileTypeComboBox.currentIndex,
             "duration": profileDuration.value,
+            "invertPFDPolarity": ddsqProfileInvertPFDPolarityComboBox.currentIndex,
             
             "stpFrequency": stpFrequency.value * 1000000, //convert to Hz
             "stpNValue": stpNValue.value,
@@ -2120,7 +2123,7 @@ Rectangle {
         anchors.centerIn: rectDDSQueue
         color: '#333333'
         width: 400
-        height: 400
+        height: 450
         border.color: '#39F'
         border.width: 2
         visible: false
@@ -2148,7 +2151,7 @@ Rectangle {
                 margins: 10
             }
             width: 380
-            height: 85
+            height: 110
             color: '#555'
             border.color: '#39F'
             border.width: 2
@@ -2172,16 +2175,19 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Total Duration* [micro-s]: "
+                    text: "Invert PFD Polarity: "
                     color: '#FFF'
                 }
 
+                Text {
+                    text: "Total Duration* [micro-s]: "
+                    color: '#FFF'
+                }
             }
         
             Column {
                 id: commonProfileData
                 anchors.left: ddsqProfileClassLCol.right
-                anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: 10
                 spacing: 6
@@ -2202,7 +2208,7 @@ Rectangle {
                 
 
                 ComboBox {
-                    editable: true
+                    editable: false
                     id: ddsqProfileTypeComboBox
                     model: ListModel {
                         id: model
@@ -2221,16 +2227,54 @@ Rectangle {
                     }
                 }
 
+                ComboBox {
+                    editable: false
+                    id: ddsqProfileInvertPFDPolarityComboBox
+                    model: ListModel {
+                        id: model2
+                        ListElement { text: "Disabled" }
+                        ListElement { text: "Enabled" }
+                    }
+                }
+
                 DataInput {
                     id: profileDuration
                     value: 10000
                     text: "10000"
                     pointSize: 8
                     radius: 0
-                    minVal: 0
+                    minVal: 100
                     maxVal: 65535
                     precision: 5
                     decimal: 0
+                }
+            }
+
+            Column{
+                id: ddsqProfileClassLimitations
+                anchors.left: commonProfileData.right
+                anchors.top: parent.top
+                anchors.margins: 10
+                spacing: 10
+
+                Text{
+                    text: "{Any String}"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "Pick one"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "Pick one"
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: "[200, 65535]"
+                    color: '#FFF'
                 }
             }
         }
