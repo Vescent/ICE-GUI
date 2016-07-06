@@ -27,7 +27,8 @@ Rectangle {
                               rampCenter: 0,
 							  rampSwp: 10,
                               ddsqPlaylist: [],
-                              ddsqProfiles: []
+                              ddsqProfiles: [],
+                              pid_poles: {}
                           })
 	property double intfreq: 100
 
@@ -51,6 +52,8 @@ Rectangle {
             getServo();
             getServoOffset();
             getGain();
+
+            get_pid_poles();
 
             intervalTimer.start();
             setGraphLabels();
@@ -602,6 +605,30 @@ Rectangle {
                 ddspllLockIndicator.setState(false)
             }
         });
+    }
+
+    function get_pid_poles(){
+        ice.send('POLES?', slot, function(result){
+            var poles = result.split(" ")
+            var int_pole = parseInt(poles[0])
+            var diff_pole = parseInt(poles[1])
+
+            global.pid_poles["int"] = int_pole
+            global.pid_poles["diff"] = diff_pole
+
+            pidPoleIntegralComboBox.currentIndex = int_pole
+            pidPoleDerivativeComboBox.currentIndex = diff_pole
+        });
+    }
+
+    function set_pid_poles(){
+        var int_pole = pidPoleIntegralComboBox.currentIndex
+        var diff_pole = pidPoleDerivativeComboBox.currentIndex
+
+        var cmd_str = "POLES " + int_pole + " " + diff_pole
+
+        ice.send(cmd_str, slot, null)
+        get_pid_poles()
     }
 
     // One shot timer for implementing a window.setTimeout() function.
@@ -1174,6 +1201,7 @@ Rectangle {
             if(enableState){
                 global.rampState = global.rampRun
                 runRamp(false)
+                get_pid_poles()
 
                 rectPIDControls.visible = true
                 rectDDSQueue.visible = false
@@ -1274,9 +1302,86 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.topMargin: 0
         anchors.margins: 10
+        visible: false
         color: 'transparent'
         border.color: '#CCCCCC'
         radius: 5
+
+        Image {
+            id: pidTransferFunctionImage
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.top
+                topMargin: 10
+            }
+            source: ".\\resources\\pid_transfer_function.png"
+        }
+
+        Row {
+            spacing: 5
+
+            anchors {
+                top: pidTransferFunctionImage.bottom
+                left: parent.left
+                right: parent.right
+                margins: 10
+            }
+            Column {
+                y: 5                
+                spacing: 10
+
+                Text {
+                    text: "f_D [kHz]"
+                    color: "#cccccc"
+                    font.pointSize: 8
+                }
+
+                Text {
+                    text: "f_I [kHz]"
+                    color: "#cccccc"
+                    font.pointSize: 8
+
+                }
+            }
+
+            Column {                
+                spacing: 5
+
+                ComboBox {
+                    id: pidPoleDerivativeComboBox
+                    model: ListModel {
+                        ListElement { text: "10 kHz" }
+                        ListElement { text: "30 kHz" }
+                        ListElement { text: "100 kHz" }
+                        ListElement { text: "300 kHz" }
+                    }
+                }
+
+                ComboBox {
+                    id: pidPoleIntegralComboBox
+                    model: ListModel {
+                        ListElement { text: "3 kHz" }
+                        ListElement { text: "10 kHz" }
+                        ListElement { text: "32 kHz" }
+                        ListElement { text: "100 kHz" }
+                    }
+                }
+            }
+        }
+
+        ThemeButton {
+            height: 30
+            width: 80
+            text: "Update Poles"
+            anchors {
+                bottom: parent.bottom
+                right: parent.right
+                margins: 10
+            }
+            onClicked: {
+                set_pid_poles()
+            }
+        }
     }
 
     ListModel {
@@ -2810,6 +2915,7 @@ Rectangle {
         border.width: 2
         visible: false
         z: 100
+        radius: 5
 
         Text {
             id: alertText
