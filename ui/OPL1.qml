@@ -1323,10 +1323,11 @@ Rectangle {
 
                 //Send all the STP things 
                 ice.send(base_int_str + "0 " + profile["stpNValue"], slot, null) 
-                ice.send(base_float_str + "1 " + profile["stpOffsetDac"], slot, null)
-                //ice.send(base_float_str + "2 " + profile["stpAuxDac"], slot, null) //Unused AUX DAC option
-                ice.send(base_int_str + "3 " + profile["duration"], slot, null) 
-                ice.send(base_int_str + "4 " + profile["stpFrequency"], slot, null)
+                ice.send(base_int_str + "1 " + profile["stpInvertPFDValue"], slot, null)
+                ice.send(base_float_str + "2 " + profile["stpOffsetDac"], slot, null)
+                //ice.send(base_float_str + "3 " + profile["stpAuxDac"], slot, null) //Unused AUX DAC option
+                ice.send(base_int_str + "4 " + profile["duration"], slot, null) 
+                ice.send(base_int_str + "5 " + profile["stpFrequency"], slot, null)
 
                 //Now save the mapping of this profile to the 
                 var new_mapping = {"type": 2, "index": idx}
@@ -1340,14 +1341,15 @@ Rectangle {
 
                 //Send all the DRG things --many of the argument indexes are the same as STP
                 ice.send(base_int_str + "0 " + profile["drgNValue"], slot, null) 
-                ice.send(base_float_str + "1 " + profile["drgOffsetDAC"], slot, null)
-                //ice.send(base_float_str + "2 " + profile["drgAuxDac"], slot, null) //Unused AUX DAC option
-                ice.send(base_int_str + "3 " + profile["duration"], slot, null)
-                ice.send(base_int_str + "4 " + profile["drgRampDuration"], slot, null)
-                ice.send(base_int_str + "5 " + profile["drgDirection"], slot, null)
-                ice.send(base_int_str + "6 0", slot, null) //Ramp destination is frequency.  Hard coded for now (also default setting on board)
-                ice.send(base_int_str + "7 " + profile["drgLowerLimit"], slot, null)
-                ice.send(base_int_str + "8 " + profile["drgUpperLimit"], slot, null)
+                ice.send(base_int_str + "1 " + profile["drgInvertPFDValue"], slot, null)
+                ice.send(base_float_str + "2 " + profile["drgOffsetDAC"], slot, null)
+                //ice.send(base_float_str + "3 " + profile["drgAuxDac"], slot, null) //Unused AUX DAC option
+                ice.send(base_int_str + "4 " + profile["duration"], slot, null)
+                ice.send(base_int_str + "5 " + profile["drgRampDuration"], slot, null)
+                ice.send(base_int_str + "6 " + profile["drgDirection"], slot, null)
+                ice.send(base_int_str + "7 0", slot, null) //Ramp destination is frequency.  Hard coded for now (also default setting on board)
+                ice.send(base_int_str + "8 " + profile["drgLowerLimit"], slot, null)
+                ice.send(base_int_str + "9 " + profile["drgUpperLimit"], slot, null)
 
                 //Now save the mapping of this profile to the 
                 var new_mapping = {"type": 1, "index": idx}
