@@ -814,16 +814,6 @@ Rectangle {
         radius: 7
         border.color: "#cccccc"
 
-        LEDIndicator {
-            id: ddspllLockIndicator
-            anchors {
-                top: parent.top
-                left: parent.left
-            }
-            labelText: "DDS PLL Locked?"
-            currentState: false
-        }
-
         Text {
             id: textCurrentSet
             color: "#ffffff"
@@ -1183,6 +1173,16 @@ Rectangle {
                 graphPanelBtn.enableSwitch(!enableState);
             }
         }
+    }
+
+    LEDIndicator {
+        id: ddspllLockIndicator
+        anchors {
+            top: ddsqPanelBtn.top
+            left: ddsqPanelBtn.right
+        }
+        labelText: "DDS PLL Locked?"
+        currentState: false
     }
 
     Rectangle {
