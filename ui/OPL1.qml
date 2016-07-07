@@ -1662,6 +1662,7 @@ Rectangle {
                                 // anchor.left: parent.left
                                 y: 3
                                 text: index
+                                font.bold: true
                                 color: "#cccccc"
                             }
                             Text {
@@ -1756,6 +1757,30 @@ Rectangle {
                 precision: 2
                 decimal: 0
             }
+
+            ThemeButton {
+                id: ddsqPreviewButton
+                y: 7
+                width: 90
+                height: 30
+                text: "Preview"
+                highlight: false
+                anchors {
+                    bottom: parent.bottom
+                    right: parent.right
+                    margins: 10
+                }
+                onClicked: {
+                    if(0 < global.ddsqPlaylist.length){
+                        ddsqPreviewRect.visible = true
+                        showDDSQComponents(false)
+                        ddsqUpdatePlaylistPreview()                 
+                    }
+                    else {
+                        showAlert("You must have at least 1 element\nadded to the playlist before the\npreview will be meaningful.")
+                    }
+                }
+            }
         }
 
         FileDialog {
@@ -1812,11 +1837,11 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 Text {
-                    color: "#cccccc"
-                    text: "Playlist\nProfiles"
+                    color: "#ffffff"
+                    text: "Profiles"
                     styleColor: "#ffffff"
                     font.bold: true
-                    font.pointSize: 10
+                    font.pointSize: 12
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
@@ -1883,11 +1908,11 @@ Rectangle {
                 // }
 
                 Text {
-                    color: "#cccccc"
-                    text: "Playlist\nOptions"
+                    color: "#ffffff"
+                    text: "Options"
                     styleColor: "#ffffff"
                     font.bold: true
-                    font.pointSize: 10
+                    font.pointSize: 12
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
@@ -1918,26 +1943,6 @@ Rectangle {
                     }
                 }
 
-                ThemeButton {
-                    id: ddsqPreviewButton
-                    y: 7
-                    width: 90
-                    height: 25
-                    text: "Preview"
-                    highlight: false
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    onClicked: {
-                        if(0 < global.ddsqPlaylist.length){
-                            ddsqPreviewRect.visible = true
-                            showDDSQComponents(false)
-                            ddsqUpdatePlaylistPreview()                 
-                        }
-                        else {
-                            showAlert("You must have at least 1 element\nadded to the playlist before the\npreview will be meaningful.")
-                        }
-                    }
-                }
-
                 // Text {
                 //     color: "#cccccc"
                 //     text: "---------"
@@ -1946,11 +1951,11 @@ Rectangle {
                 // }
 
                 Text {
-                    color: "#cccccc"
-                    text: "DDS Queue\nCommands"
+                    color: "#ffffff"
+                    text: "Commands"
                     styleColor: "#ffffff"
                     font.bold: true
-                    font.pointSize: 10
+                    font.pointSize: 12
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
@@ -1972,6 +1977,22 @@ Rectangle {
                             ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
                             ddsqCurrentStep.text = "Programmed\n& Idling"
                         }
+                    }
+                }
+
+                ThemeButton {
+                    id: ddsqAbortDDSQBtn
+                    y: 7
+                    width: 90
+                    height: 25
+                    text: "Abort Seq."
+                    highlight: false
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
+                        var cmd_str = "DDSQABRT 0"  //Execute profile 0 after stopping the queue
+                        ice.send(cmd_str, slot, null)
+                        get_ddsq_step()
                     }
                 }
 
