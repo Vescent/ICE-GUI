@@ -54,6 +54,7 @@ Rectangle {
             getGain();
 
             get_pid_poles();
+            get_ddsq_event_addr();
 
             intervalTimer.start();
             setGraphLabels();
@@ -1527,6 +1528,14 @@ Rectangle {
             
     }
 
+    function get_ddsq_event_addr(){
+        ice.send("evtaddr? 0", slot, function(result){
+            var addr = result
+            ddsqEventAddr.value = parseInt(addr)
+            ddsqEventAddr.text = addr
+        })
+    }
+
     Rectangle {
         id: rectDDSQueue
         anchors.top: graphPanelBtn.bottom
@@ -1941,11 +1950,41 @@ Rectangle {
                     y: 7
                     width: 90
                     height: 30
-                    text: "Trigger Step"
+                    text: "Trigger Event"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
                         //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
+                        var cmd_str = "#doevent " + ddsqEventAddr.value
+                        ice.send(cmd_str, slot, null)
+                    }
+                }
+
+                Text {
+                    color: "#cccccc"
+                    text: "Event Addr:"
+                    styleColor: "#ffffff"
+                    font.bold: true
+                    font.pointSize: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                DataInput {
+                    id: ddsqEventAddr
+                    value: 1
+                    text: "1"
+                    pointSize: 12
+                    radius: 0
+                    minVal: 0
+                    maxVal: 7
+                    precision: 1
+                    decimal: 0
+                    width: 40
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onValueEntered: {
+                        var cmd_str = "evtaddr 0 " + ddsqEventAddr.value //0 is the identifier for ddsq events.  other ints are something else
+                        ice.send(cmd_str, slot, null)
+                        get_ddsq_event_addr()
                     }
                 }
             }
