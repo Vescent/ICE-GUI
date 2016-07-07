@@ -158,7 +158,7 @@ function loadSlotWidget(slotNumber, deviceType) {
                 break;
         case 2: sourceFile = 'PeakLockServo.qml';
                 break;
-        case 3: sourceFile = 'OPL1.qml';
+        case 3: sourceFile = 'OPLS.qml';
                 break;
         case 4: sourceFile = 'SOA.qml';
                 break;
@@ -208,6 +208,9 @@ function loadSystemDevices() {
         textSlot.font.bold = true;
 
         // Load first slot that has a device
+        // NOTE: With OPL1 as the first slot, this routine will freeze.
+        //       I don't understand why.  Since this is a convenience thing,
+        //       I'm removing it.
         // for (var i = 0; i < config.num_devices; i++) {
         //     if (config.devices[i].id !== 0) {
         //         switchSlot(i + 1);
