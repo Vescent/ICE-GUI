@@ -857,7 +857,7 @@ Rectangle {
 
         Text {
             id: slaveSlotLabel
-            color: "#ffffff"
+            color: "#BBBBFF"
             text: qsTr("Slave Slot: ")
             anchors.top: parent.top
             anchors.left: parent.left
@@ -887,7 +887,7 @@ Rectangle {
 
         Text {
             id: textCurrentSet
-            color: "#ffffff"
+            color: "#BBBBFF"
             text: qsTr("Laser Current (mA)")
             y:30
             // anchors.top: parent.top
@@ -925,7 +925,7 @@ Rectangle {
 
         Text {
             id: textLaserBtn
-            color: "#ffffff"
+            color: "#BBBBFF"
             text: qsTr("Laser")
             anchors.top: parent.top
             anchors.margins: 5
@@ -983,7 +983,7 @@ Rectangle {
             id: textCurrentLimit
             anchors.top: toggleswitchServo.bottom
             anchors.margins: 5
-            color: "#ffffff"
+            color: "#BBBBFF"
             text: qsTr("Current Limit (mA)")
             anchors.horizontalCenter: datainputCurrentLimit.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
