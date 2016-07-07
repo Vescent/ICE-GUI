@@ -28,7 +28,8 @@ Rectangle {
 							  rampSwp: 10,
                               ddsqPlaylist: [],
                               ddsqProfiles: [],
-                              pid_poles: {}
+                              pid_poles: {},
+                              ddsq_event_addr: 1
                           })
 	property double intfreq: 100
 
@@ -1531,11 +1532,18 @@ Rectangle {
             
     }
 
+    function set_ddsq_event_addr(addr){
+        var cmd_str = "evtaddr 0 " + addr //0 is the identifier for ddsq events.  other ints are something else
+        ice.send(cmd_str, slot, null)
+        get_ddsq_event_addr()
+    }
+
     function get_ddsq_event_addr(){
         ice.send("evtaddr? 0", slot, function(result){
             var addr = result
             ddsqEventAddr.value = parseInt(addr)
             ddsqEventAddr.text = addr
+            global.ddsq_event_addr = parseInt(addr)
         })
     }
 
@@ -1962,6 +1970,7 @@ Rectangle {
                             sendPlaylistToDevice()
                             get_ddsq_step()
                             ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
+                            ddsqCurrentStep.text = "Programmed\n& Idling"
                         }
                     }
                 }
@@ -2004,9 +2013,7 @@ Rectangle {
                     width: 40
                     anchors.horizontalCenter: parent.horizontalCenter
                     onValueEntered: {
-                        var cmd_str = "evtaddr 0 " + ddsqEventAddr.value //0 is the identifier for ddsq events.  other ints are something else
-                        ice.send(cmd_str, slot, null)
-                        get_ddsq_event_addr()
+                        set_ddsq_event_addr(ddsqEventAddr.value)
                     }
                 }
 
