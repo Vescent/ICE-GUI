@@ -1454,6 +1454,9 @@ Rectangle {
     }
 
     function sendPlaylistToDevice(){
+
+        ddsqUpdateGlobalPlaylistFromGUI()
+
         //Because of the way the DDSQ works on OPL1 board, we need 
         // to count the number of STP and DRG profiles we send.
         var cnt_drg = 0
@@ -1540,10 +1543,15 @@ Rectangle {
         ice.send("ddsqppt? 3", slot, function(result){  //3 is the parameter id for ddsqproperty.next_index_to_exe
             var index = parseInt(result)
             if(index == 255){
+                //We haven't even set up the next profile.  Queue is inactive
                 ddsqCurrentStep.text = "Queue\nInactive"
             }
+            else if(index == 1){
+                ddsqCurrentStep.text = "1st Profile\nProgrammed"
+            }
             else{
-                ddsqCurrentStep.text = index
+                ddsqCurrentStep.text = index - 2 //the actual reported index is of the NEXT index to PROGRAM.
+                // That means the index that's actually executing is 2 behind.
             }
         })  
     }
@@ -1601,14 +1609,14 @@ Rectangle {
                     color: "#505050"
 
                     Text {
-                        x: 14
+                        x: 29
                         anchors.top: parent.top
                         text: "Profile"
                         color: "#cccccc"
                     }
 
                     Text {
-                        x: 168
+                        x: 183
                         anchors.top: parent.top
                         text: "Interrupt Trigger"
                         color: "#cccccc"
@@ -1639,17 +1647,28 @@ Rectangle {
                         Rectangle {
                             y: 0
                             height: 15
-                            width: 15
+                            width: 30
                             color: 'transparent'
                             Text {
+                                id: profileIndexText
+                                // anchor.left: parent.left
+                                y: 3
+                                text: index
+                                color: "#cccccc"
+                            }
+                            Text {
+                                id: delProfileXBox
+                                // anchor.left: parent
+                                x: 15
                                 y: 3
                                 text: "[X]"
                                 color: "#cccccc"
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    deleteProfileFromPlaylist(index)
+                            
+                                MouseArea {
+                                    anchors.fill: delProfileXBox
+                                    onClicked: {
+                                        deleteProfileFromPlaylist(index)
+                                    }
                                 }
                             }
                         }
@@ -1941,6 +1960,7 @@ Rectangle {
                         }
                         else{
                             sendPlaylistToDevice()
+                            get_ddsq_step()
                             ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
                         }
                     }
