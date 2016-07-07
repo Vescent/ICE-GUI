@@ -39,9 +39,9 @@ Rectangle {
         if (active) {
             ice.send('#pauselcd f', slot, null);
 
-            getLaser();
-            getCurrent();
-            getCurrentLimit();
+            getLaserFromSlave();
+            getCurrentFromSlave();
+            getCurrentLimitFromSlave();
 
             getRampSweep();
             setRampNum(widget.dataWidth);
@@ -162,10 +162,17 @@ Rectangle {
         graphcomponent.refresh();
 	}
 
+    function getCurrentSlaveInfo(){
+        getCurrentFromSlave();
+        getCurrentLimitFromSlave();
+        getLaserFromSlave();
+    }
+
     // Common Laser Controller Command Set
-    function setLaser(value) {
+    function setLaserOnSlave(value) {
+        var slave_slot = slaveSlotComboBox.currentIndex + 1
         state = (value) ? 'On' : 'Off';
-        ice.send('Laser ' + state, slot, function(result){
+        ice.send('Laser ' + state, slave_slot, function(result){
             if (result === 'On') {
                 toggleswitchLaser.enableSwitch(true);
             }
@@ -176,8 +183,9 @@ Rectangle {
         });
     }
 
-    function getLaser() {
-        ice.send('Laser?', slot, function(result){
+    function getLaserFromSlave() {
+        var slave_slot = slaveSlotComboBox.currentIndex + 1
+        ice.send('Laser?', slave_slot, function(result){
             if (result === 'On') {
                 toggleswitchLaser.enableSwitch(true);
             }
@@ -188,30 +196,34 @@ Rectangle {
         });
     }
 
-    function setCurrent(value) {
-        ice.send('CurrSet ' + value, slot, function(result){
+    function setCurrentOnSlave(value) {
+        var slave_slot = slaveSlotComboBox.currentIndex + 1
+        ice.send('CurrSet ' + value, slave_slot, function(result){
             rotarycontrolCurrent.setValue(result);
             return;
         });
     }
 
-    function getCurrent() {
-        ice.send('CurrSet?', slot, function(result){
+    function getCurrentFromSlave() {
+        var slave_slot = slaveSlotComboBox.currentIndex + 1
+        ice.send('CurrSet?', slave_slot, function(result){
             rotarycontrolCurrent.setValue(result);
             return;
         });
     }
 
-    function setCurrentLimit(value) {
-        ice.send('CurrLim ' + value, slot, function(result){
+    function setCurrentLimitOnSlave(value) {
+        var slave_slot = slaveSlotComboBox.currentIndex + 1
+        ice.send('CurrLim ' + value, slave_slot, function(result){
             datainputCurrentLimit.setValue(result);
             rotarycontrolCurrent.maxValue = parseFloat(result);
             return;
         });
     }
 
-    function getCurrentLimit() {
-        ice.send('CurrLim?', slot, function(result){
+    function getCurrentLimitFromSlave() {
+        var slave_slot = slaveSlotComboBox.currentIndex + 1
+        ice.send('CurrLim?', slave_slot, function(result){
             datainputCurrentLimit.setValue(result);
             rotarycontrolCurrent.maxValue = parseFloat(result);
             return;
@@ -844,10 +856,41 @@ Rectangle {
         border.color: "#cccccc"
 
         Text {
+            id: slaveSlotLabel
+            color: "#ffffff"
+            text: qsTr("Slave Slot: ")
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 5
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 10
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        ComboBox {
+            id: slaveSlotComboBox
+            anchors.top: parent.top
+            anchors.left: slaveSlotLabel.right
+            anchors.margins: 5
+            width: 30
+            model: ListModel {
+                ListElement { text: "1" }
+                ListElement { text: "2" }
+                ListElement { text: "3" }
+                ListElement { text: "4" }
+                ListElement { text: "5" }
+                ListElement { text: "6" }
+                ListElement { text: "7" }
+                ListElement { text: "8" }
+            }
+        }
+
+        Text {
             id: textCurrentSet
             color: "#ffffff"
             text: qsTr("Laser Current (mA)")
-            anchors.top: parent.top
+            y:30
+            // anchors.top: parent.top
             anchors.margins: 5
             anchors.horizontalCenterOffset: 0
             anchors.horizontalCenter: rotarycontrolCurrent.horizontalCenter
@@ -859,8 +902,8 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolCurrent
             x: 11
-            width: 100
-            height: 100
+            width: 70
+            height: 70
             colorInner: "#ff7300"
             anchors.top: textCurrentSet.bottom
             anchors.margins: 5
@@ -876,7 +919,7 @@ Rectangle {
             minValue: 0
             maxValue: maxCurrent
             onNewValue: {
-                setCurrent(value);
+                setCurrentOnSlave(value);
             }
         }
 
@@ -900,7 +943,7 @@ Rectangle {
             width: 56
             height: 32
             pointSize: 12
-            onClicked: setLaser(enableState)
+            onClicked: setLaserOnSlave(enableState)
         }
 
         Text {
@@ -963,7 +1006,7 @@ Rectangle {
             decimal: 1
             pointSize: 19
             stepSize: 1
-            onValueEntered: setCurrentLimit(newVal)
+            onValueEntered: setCurrentLimitOnSlave(newVal)
         }
 
         Text {
