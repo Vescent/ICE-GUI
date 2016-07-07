@@ -55,7 +55,7 @@ Rectangle {
             getGain();
 
             get_pid_poles();
-            get_ddsq_event_addr();
+            set_ddsq_event_addr(global.ddsq_event_addr)
 
             intervalTimer.start();
             setGraphLabels();
