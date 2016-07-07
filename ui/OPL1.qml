@@ -1536,6 +1536,18 @@ Rectangle {
         })
     }
 
+    function get_ddsq_step(){
+        ice.send("ddsqppt? 3", slot, function(result){  //3 is the parameter id for ddsqproperty.next_index_to_exe
+            var index = parseInt(result)
+            if(index == 255){
+                ddsqCurrentStep.text = "Queue\nInactive"
+            }
+            else{
+                ddsqCurrentStep.text = index
+            }
+        })  
+    }
+
     Rectangle {
         id: rectDDSQueue
         anchors.top: graphPanelBtn.bottom
@@ -1717,23 +1729,6 @@ Rectangle {
                 precision: 2
                 decimal: 0
             }
-
-            ThemeButton {
-                id: ddsqProgramDeviceBtn
-                y: 7
-                width: 150
-                height: 30
-                text: "Send program to device"
-                highlight: false
-                anchors {
-                    right: parent.right
-                    bottom: parent.bottom
-                    margins: 10
-                }
-                onClicked: {
-                    sendPlaylistToDevice()
-                }
-            }
         }
 
         FileDialog {
@@ -1802,7 +1797,7 @@ Rectangle {
                     id: ddsqNewProfileBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "New Profile"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1817,7 +1812,7 @@ Rectangle {
                     id: ddsqEditProfileBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Edit Profile"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1837,7 +1832,7 @@ Rectangle {
                     id: ddsqDeleteProfileBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Delete Profile"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1873,7 +1868,7 @@ Rectangle {
                     id: ddsqSaveSettingsBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Save Settings"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1887,7 +1882,7 @@ Rectangle {
                     id: ddsqLoadSettingsBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Load Settings"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1900,7 +1895,7 @@ Rectangle {
                     id: ddsqPreviewButton
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Preview"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1936,12 +1931,18 @@ Rectangle {
                     id: ddsqStartDDSQBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Execute Seq."
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
+                        if (playlistProfiles.count == 0){
+                            showAlert("Please add profiles to the playlist\n before attempting to program\nthe device.")
+                        }
+                        else{
+                            sendPlaylistToDevice()
+                            ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
+                        }
                     }
                 }
 
@@ -1949,7 +1950,7 @@ Rectangle {
                     id: ddsqTriggerDDSQBtn
                     y: 7
                     width: 90
-                    height: 30
+                    height: 25
                     text: "Trigger Event"
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -1957,6 +1958,7 @@ Rectangle {
                         //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
                         var cmd_str = "#doevent " + ddsqEventAddr.value
                         ice.send(cmd_str, slot, null)
+                        get_ddsq_step()
                     }
                 }
 
@@ -1986,6 +1988,25 @@ Rectangle {
                         ice.send(cmd_str, slot, null)
                         get_ddsq_event_addr()
                     }
+                }
+
+                Text {
+                    color: "#cccccc"
+                    text: "Current Step:"
+                    styleColor: "#ffffff"
+                    font.bold: true
+                    font.pointSize: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    id: ddsqCurrentStep
+                    color: "#cccccc"
+                    text: "N/A"
+                    styleColor: "#ffffff"
+                    font.bold: true
+                    font.pointSize: 10
+                    anchors.horizontalCenter: parent.horizontalCenter
                 }
             }
         }
