@@ -2374,7 +2374,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Total Duration* [micro-s]: "
+                    text: "Total Duration* [\u03BCs]: "
                     color: '#FFF'
                 }
             }
@@ -2633,7 +2633,7 @@ Rectangle {
                 }
 
                 Text{
-                    text: "Ramp Duration [micro-s]: "
+                    text: "Ramp Duration [\u03BCs]: "
                     color: '#FFF'
                 }
 
@@ -2849,8 +2849,8 @@ Rectangle {
         //Now set the x_scale to the appropriate value
         ddsqPreviewGraph.xMinimum = 0
         ddsqPreviewGraph.xMaximum = time_offset
-        ddsqPreviewGraph.gridXDiv = time_offset / 1000 //Each div is 1 ms
-        ddsqPreviewGraph.axisXLabel = "Total Time = " + time_offset + "[micro-s] [1 ms/div]"
+        ddsqPreviewGraph.gridXDiv = 10 
+        ddsqPreviewGraph.axisXLabel = "Total Time = " + time_offset + "[\u03BCs] [" + time_offset / 10 + " \u03BCs/div]"
 
         ddsqPreviewGraph.yMinimum = 0
         ddsqPreviewGraph.yMaximum = max_value / 1000000.0 //convert to MHz
