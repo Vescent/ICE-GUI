@@ -883,6 +883,9 @@ Rectangle {
                 ListElement { text: "7" }
                 ListElement { text: "8" }
             }
+            onCurrentIndexChanged: {
+                getCurrentSlaveInfo()
+            }
         }
 
         Text {
