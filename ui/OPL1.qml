@@ -254,7 +254,6 @@ Rectangle {
             else {
                 toggleswitchInvert.enableSwitch(false);
             }
-
             return;
         });
     }
@@ -300,15 +299,16 @@ Rectangle {
     }
 
     function setIntFreq(value) {
-        ice.send('IntFreq ' + value, slot, function(result){
-            datainputIntFreq.setValue(result);
+        ice.send('PFLFREQ 0 ' + value * 1000000, slot, function(result){ //multiply by 1000000 to convert from MHz to Hz
+            datainputIntFreq.setValue(result / 1000000); //Convert from Hz to MHz
             return;
         });
     }
 
     function getIntFreq() {
-        ice.send('IntFreq?', slot, function(result){
-            datainputIntFreq.setValue(result);
+        ice.send('PFLFREQ? 0', slot, function(result){
+            var val = parseInt(result)
+            datainputIntFreq.setValue(val / 1000000); //Convert from Hz to MHz
 			/*
 			//var val = '100.0000000000';
 			//datainputIntFreq.setValue(val);
@@ -1166,7 +1166,7 @@ Rectangle {
             anchors.top: textIntFreq.bottom
             width: 170
             height: 35
-            text: "0.000000"
+            text: "100.000000"
             useInt: false
             pointSize: 19
             precision: 10
@@ -1593,19 +1593,51 @@ Rectangle {
         })
     }
 
+    function abort_ddsq(){
+        //Set all the current manual control values.  This ensures when teh ddsq is aborted or ends, we
+        // Return to the same manual control values.
+        setIntFreq(datainputIntFreq.value) //convert from MHz to Hz
+        setInvert(toggleswitchInvert.enableState)
+        setNDiv(rotarycontrolNDiv.getValue())
+        setServoOffset(rotarycontrolServoOffset.getValue())
+        //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
+        var cmd_str = "DDSQABRT 0"  //Execute profile 0 after stopping the queue
+        ice.send(cmd_str, slot, null)
+        get_ddsq_step()
+    }
+
     function get_ddsq_step(){
         ice.send("ddsqppt? 3", slot, function(result){  //3 is the parameter id for ddsqproperty.next_index_to_exe
             var index = parseInt(result)
             if(index == 255){
                 //We haven't even set up the next profile.  Queue is inactive
                 ddsqCurrentStep.text = "Queue\nInactive"
+                textServoOffset.color = "#FFFFFF"
+                textNDiv.color = "#FFFFFF"
+                textInvert.color = "#FFFFFF"
+                textIntFreq.color = "#FFFFFF"
+            }
+            else if(result == "Invalid Command"){
+                ddsqCurrentStep.text = "Error.\nRestart."
+                textServoOffset.color = "#FFFFFF"
+                textNDiv.color = "#FFFFFF"
+                textInvert.color = "#FFFFFF"
+                textIntFreq.color = "#FFFFFF"
             }
             else if(index == 1){
                 ddsqCurrentStep.text = "1st Profile\nProgrammed"
+                textServoOffset.color = "#DD0000"
+                textNDiv.color = "#DD0000"
+                textInvert.color = "#DD0000"
+                textIntFreq.color = "#DD0000"
             }
             else{
                 ddsqCurrentStep.text = index - 2 //the actual reported index is of the NEXT index to PROGRAM.
                 // That means the index that's actually executing is 2 behind.
+                textServoOffset.color = "#DD0000"
+                textNDiv.color = "#DD0000"
+                textInvert.color = "#DD0000"
+                textIntFreq.color = "#DD0000"
             }
         })  
     }
@@ -2019,7 +2051,8 @@ Rectangle {
                         }
                         else{
                             sendPlaylistToDevice()
-                            get_ddsq_step()
+                            ice.send('ddsqppt 7 0', slot, null) //Tell device to execute profile 0 after execution ends
+                            ice.send('ddsqppt 8 1', slot, null) //Tell device to execute selected profile after execution ends.
                             ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
                             ddsqCurrentStep.text = "Programmed\n& Idling"
                         }
@@ -2035,10 +2068,7 @@ Rectangle {
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
-                        var cmd_str = "DDSQABRT 0"  //Execute profile 0 after stopping the queue
-                        ice.send(cmd_str, slot, null)
-                        get_ddsq_step()
+                        abort_ddsq()
                     }
                 }
 
