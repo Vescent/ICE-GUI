@@ -1224,11 +1224,9 @@ Rectangle {
     		    rectGraph.visible = true;
                 rectDDSQueue.visible = false;
                 rectPIDControls.visible = false
-                rectManualCtrl.visible = false
 
                 ddsqPanelBtn.enableSwitch(false);
                 pidControlTabBtn.enableSwitch(false)
-                manualControlBtn.enableSwitch(false)
             }
 		}
 	}
@@ -1256,39 +1254,8 @@ Rectangle {
                 rectPIDControls.visible = true
                 rectDDSQueue.visible = false
                 rectGraph.visible = false
-                rectManualCtrl.visible = false
 
                 graphPanelBtn.enableSwitch(false)
-                ddsqPanelBtn.enableSwitch(false)
-                manualControlBtn.enableSwitch(false)
-            }
-        }
-    }
-
-    ToggleSwitch {  
-        id: manualControlBtn
-        width: 80
-        anchors.top: textWidgetTitle.top
-        anchors.margins: 0
-        anchors.topMargin: 10
-        anchors.bottomMargin: 0
-        anchors.left: pidControlTabBtn.right
-        text: "Manual Ctrl"
-        textOnState: "Manual Ctrl"
-        enableState: false
-        radius: 0
-        onClicked: {
-            if(enableState){
-                global.rampState = global.rampRun
-                runRamp(false)
-
-                rectManualCtrl.visible = true
-                rectDDSQueue.visible = false
-                rectGraph.visible = false
-                rectPIDControls.visible = false
-
-                graphPanelBtn.enableSwitch(false)
-                pidControlTabBtn.enableSwitch(false)
                 ddsqPanelBtn.enableSwitch(false)
             }
         }
@@ -1301,7 +1268,7 @@ Rectangle {
         anchors.margins: 0
         anchors.topMargin: 10
         anchors.bottomMargin: 0
-        anchors.left: manualControlBtn.right
+        anchors.left: pidControlTabBtn.right
         text: "DDS Queue"
         textOnState: "DDS Queue"
         enableState: false
@@ -1314,11 +1281,9 @@ Rectangle {
                 rectDDSQueue.visible = true
                 rectGraph.visible = false
                 rectPIDControls.visible = false
-                rectManualCtrl.visible = false
 
                 graphPanelBtn.enableSwitch(false)
                 pidControlTabBtn.enableSwitch(false)
-                manualControlBtn.enableSwitch(false)
             }
         }
     }
@@ -1465,22 +1430,6 @@ Rectangle {
                 set_pid_poles()
             }
         }
-    }
-
-    Rectangle {
-        id: rectManualCtrl
-        anchors.top: graphPanelBtn.bottom
-        anchors.left: rampRect.right
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.topMargin: 0
-        anchors.margins: 10
-        visible: false
-        color: 'transparent'
-        border.color: '#CCCCCC'
-        radius: 5
-
-        
     }
 
     ListModel {
