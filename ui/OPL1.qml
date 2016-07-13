@@ -29,7 +29,8 @@ Rectangle {
                               ddsqPlaylist: [],
                               ddsqProfiles: [],
                               pid_poles: {},
-                              ddsq_event_addr: 1
+                              ddsq_event_addr: 1,
+                              ddsq_active: false
                           })
 	property double intfreq: 100
 
@@ -232,10 +233,12 @@ Rectangle {
 
     // OPLS Commands
     function setNDiv(value) {
-        ice.send('N ' + value, slot, function(result){
-            rotarycontrolNDiv.setValue(result);
-            return;
-        });
+        if(global.ddsq_active == false){
+            ice.send('N ' + value, slot, function(result){
+                rotarycontrolNDiv.setValue(result);
+                return;
+            });
+        }
     }
 
     function getNDiv() {
@@ -246,16 +249,18 @@ Rectangle {
     }
 
     function setInvert(value) {
-        state = (value) ? 'On' : 'Off';
-        ice.send('Invert ' + state, slot, function(result){
-            if (result === 'On') {
-                toggleswitchInvert.enableSwitch(true);
-            }
-            else {
-                toggleswitchInvert.enableSwitch(false);
-            }
-            return;
-        });
+        if(global.ddsq_active == false){
+            state = (value) ? 'On' : 'Off';
+            ice.send('Invert ' + state, slot, function(result){
+                if (result === 'On') {
+                    toggleswitchInvert.enableSwitch(true);
+                }
+                else {
+                    toggleswitchInvert.enableSwitch(false);
+                }
+                return;
+            });
+        }
     }
 
     function getInvert() {
@@ -299,10 +304,12 @@ Rectangle {
     }
 
     function setIntFreq(value) {
-        ice.send('PFLFREQ 0 ' + value * 1000000, slot, function(result){ //multiply by 1000000 to convert from MHz to Hz
-            datainputIntFreq.setValue(result / 1000000); //Convert from Hz to MHz
-            return;
-        });
+        if(global.ddsq_active == false){
+            ice.send('PFLFREQ 0 ' + value * 1000000, slot, function(result){ //multiply by 1000000 to convert from MHz to Hz
+                datainputIntFreq.setValue(result / 1000000); //Convert from Hz to MHz
+                return;
+            });
+        }
     }
 
     function getIntFreq() {
@@ -382,12 +389,14 @@ Rectangle {
     }
 
     function setServoOffset(value) {
-        ice.send('SvOffst ' + value, slot, function(result){
-            rotarycontrolServoOffset.setValue(result);
-            rotarycontrolCenter.setValue(result);
-            global.rampCenter = parseFloat(result);
-            return;
-        });
+        if(global.ddsq_active == false){
+            ice.send('SvOffst ' + value, slot, function(result){
+                rotarycontrolServoOffset.setValue(result);
+                rotarycontrolCenter.setValue(result);
+                global.rampCenter = parseFloat(result);
+                return;
+            });
+        }
     }
 
     function getServoOffset() {
@@ -1620,7 +1629,10 @@ Rectangle {
                 textNDiv.color = "#FFFFFF"
                 textInvert.color = "#FFFFFF"
                 textIntFreq.color = "#FFFFFF"
-                send_manual_mode_params()
+                if(global.ddsq_active == true){
+                    global.ddsq_active = false
+                    send_manual_mode_params()
+                }
             }
             else if(result == "Invalid Command"){
                 ddsqCurrentStep.text = "Error.\nRestart."
@@ -1628,6 +1640,7 @@ Rectangle {
                 textNDiv.color = "#FFFFFF"
                 textInvert.color = "#FFFFFF"
                 textIntFreq.color = "#FFFFFF"
+                global.ddsq_active = false
             }
             else if(index == 1){
                 ddsqCurrentStep.text = "1st Profile\nProgrammed"
@@ -1635,6 +1648,7 @@ Rectangle {
                 textNDiv.color = "#DD0000"
                 textInvert.color = "#DD0000"
                 textIntFreq.color = "#DD0000"
+                global.ddsq_active = true
             }
             else{
                 ddsqCurrentStep.text = index - 2 //the actual reported index is of the NEXT index to PROGRAM.
@@ -1643,6 +1657,7 @@ Rectangle {
                 textNDiv.color = "#DD0000"
                 textInvert.color = "#DD0000"
                 textIntFreq.color = "#DD0000"
+                global.ddsq_active = true
             }
         })  
     }
