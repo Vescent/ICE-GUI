@@ -30,7 +30,8 @@ Rectangle {
                               ddsqProfiles: [],
                               pid_poles: {},
                               ddsq_event_addr: 1,
-                              ddsq_active: false
+                              ddsq_active: false,
+                              laser_slave_slot: 1
                           })
 	property double intfreq: 100
 
@@ -40,6 +41,15 @@ Rectangle {
         if (active) {
             ice.send('#pauselcd f', slot, null);
 
+            if (typeof(appWindow.widgetState[slot].laser_slave_slot) === 'number') {
+                global.laser_slave_slot = appWindow.widgetState[slot].laser_slave_slot;
+            }
+            else{
+                global.laser_slave_slot = 1
+            }
+            slaveSlotComboBox.currentIndex = global.laser_slave_slot - 1 //comboboxes are 0 indexed, but slaves are 1 indexed, so subtract one
+                                                                         //to translate from slave index to cbox index.
+            
             getLaserFromSlave();
             getCurrentFromSlave();
             getCurrentLimitFromSlave();
@@ -126,6 +136,7 @@ Rectangle {
 
             appWindow.widgetState[slot].ddsqProfiles = global.ddsqProfiles
             appWindow.widgetState[slot].ddsqPlaylist = global.ddsqPlaylist
+            appWindow.widgetState[slot].laser_slave_slot = global.laser_slave_slot
 
             ddspllStatusCheckTimer.stop();
         }
@@ -171,9 +182,8 @@ Rectangle {
 
     // Common Laser Controller Command Set
     function setLaserOnSlave(value) {
-        var slave_slot = slaveSlotComboBox.currentIndex + 1
         state = (value) ? 'On' : 'Off';
-        ice.send('Laser ' + state, slave_slot, function(result){
+        ice.send('Laser ' + state, global.laser_slave_slot, function(result){
             if (result === 'On') {
                 toggleswitchLaser.enableSwitch(true);
             }
@@ -185,8 +195,7 @@ Rectangle {
     }
 
     function getLaserFromSlave() {
-        var slave_slot = slaveSlotComboBox.currentIndex + 1
-        ice.send('Laser?', slave_slot, function(result){
+        ice.send('Laser?', global.laser_slave_slot, function(result){
             if (result === 'On') {
                 toggleswitchLaser.enableSwitch(true);
             }
@@ -198,24 +207,21 @@ Rectangle {
     }
 
     function setCurrentOnSlave(value) {
-        var slave_slot = slaveSlotComboBox.currentIndex + 1
-        ice.send('CurrSet ' + value, slave_slot, function(result){
+        ice.send('CurrSet ' + value, global.laser_slave_slot, function(result){
             rotarycontrolCurrent.setValue(result);
             return;
         });
     }
 
     function getCurrentFromSlave() {
-        var slave_slot = slaveSlotComboBox.currentIndex + 1
-        ice.send('CurrSet?', slave_slot, function(result){
+        ice.send('CurrSet?', global.laser_slave_slot, function(result){
             rotarycontrolCurrent.setValue(result);
             return;
         });
     }
 
     function setCurrentLimitOnSlave(value) {
-        var slave_slot = slaveSlotComboBox.currentIndex + 1
-        ice.send('CurrLim ' + value, slave_slot, function(result){
+        ice.send('CurrLim ' + value, global.laser_slave_slot, function(result){
             datainputCurrentLimit.setValue(result);
             rotarycontrolCurrent.maxValue = parseFloat(result);
             return;
@@ -223,8 +229,7 @@ Rectangle {
     }
 
     function getCurrentLimitFromSlave() {
-        var slave_slot = slaveSlotComboBox.currentIndex + 1
-        ice.send('CurrLim?', slave_slot, function(result){
+        ice.send('CurrLim?', global.laser_slave_slot, function(result){
             datainputCurrentLimit.setValue(result);
             rotarycontrolCurrent.maxValue = parseFloat(result);
             return;
@@ -893,6 +898,7 @@ Rectangle {
                 ListElement { text: "8" }
             }
             onCurrentIndexChanged: {
+                global.laser_slave_slot = currentIndex + 1
                 getCurrentSlaveInfo()
             }
         }
