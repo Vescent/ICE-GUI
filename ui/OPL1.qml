@@ -175,9 +175,53 @@ Rectangle {
 	}
 
     function getCurrentSlaveInfo(){
+        validateLaserSlave();
         getCurrentFromSlave();
         getCurrentLimitFromSlave();
         getLaserFromSlave();
+    }
+
+    function validateLaserSlave(){
+        var valid_color = "#BBBBFF"
+        var invalid_color = "#FF0000"
+        ice.send("Laser?", global.laser_slave_slot, function(result){
+            if(result === "Invalid Command"){
+                slaveSlotLabel.color = invalid_color
+                textLaserBtn.color = invalid_color
+                textLaserBtn.text = "Invalid Slave"
+            }
+            else {
+                slaveSlotLabel.color = valid_color
+                textLaserBtn.color = valid_color 
+                textLaserBtn.text = "Laser"
+            }
+        })
+
+        ice.send("CurrSet?", global.laser_slave_slot, function(result){
+            if(result === "Invalid Command"){
+                slaveSlotLabel.color = invalid_color
+                textCurrentSet.color = invalid_color
+                textCurrentSet.text = "Invalid Slave"
+            }
+            else {
+                slaveSlotLabel.color = valid_color
+                textCurrentSet.color = valid_color 
+                textCurrentSet.text = "Laser Current (mA)"
+            }
+        })
+
+        ice.send("CurrLim?", global.laser_slave_slot, function(result){
+            if(result === "Invalid Command"){
+                slaveSlotLabel.color = invalid_color
+                textCurrentLimit.color = invalid_color
+                textCurrentLimit.text = "Invalid Slave"
+            }
+            else {
+                slaveSlotLabel.color = valid_color
+                textCurrentLimit.color = valid_color 
+                textCurrentLimit.text = "Current Limit (mA)"
+            }
+        })
     }
 
     // Common Laser Controller Command Set
