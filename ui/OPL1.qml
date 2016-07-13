@@ -306,7 +306,7 @@ Rectangle {
     }
 
     function getIntFreq() {
-        ice.send('PFLFREQ? 0', slot, function(result){
+        ice.send('PFLF? 0', slot, function(result){
             var val = parseInt(result)
             datainputIntFreq.setValue(val / 1000000); //Convert from Hz to MHz
 			/*
@@ -1593,13 +1593,17 @@ Rectangle {
         })
     }
 
-    function abort_ddsq(){
-        //Set all the current manual control values.  This ensures when teh ddsq is aborted or ends, we
-        // Return to the same manual control values.
+    function send_manual_mode_params(){
         setIntFreq(datainputIntFreq.value) //convert from MHz to Hz
         setInvert(toggleswitchInvert.enableState)
         setNDiv(rotarycontrolNDiv.getValue())
         setServoOffset(rotarycontrolServoOffset.getValue())
+    }
+
+    function abort_ddsq(){
+        //Set all the current manual control values.  This ensures when teh ddsq is aborted or ends, we
+        // Return to the same manual control values.
+        send_manual_mode_params()
         //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
         var cmd_str = "DDSQABRT 0"  //Execute profile 0 after stopping the queue
         ice.send(cmd_str, slot, null)
@@ -1616,6 +1620,7 @@ Rectangle {
                 textNDiv.color = "#FFFFFF"
                 textInvert.color = "#FFFFFF"
                 textIntFreq.color = "#FFFFFF"
+                send_manual_mode_params()
             }
             else if(result == "Invalid Command"){
                 ddsqCurrentStep.text = "Error.\nRestart."
