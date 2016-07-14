@@ -916,7 +916,7 @@ Rectangle {
         Text {
             id: slaveSlotLabel
             color: "#BBBBFF"
-            text: qsTr("Slave Slot: ")
+            text: qsTr("Laser Slot: ")
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.margins: 5
