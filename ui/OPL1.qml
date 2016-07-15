@@ -1660,12 +1660,14 @@ Rectangle {
     }
 
     function abort_ddsq(){
-        //Set all the current manual control values.  This ensures when teh ddsq is aborted or ends, we
-        // Return to the same manual control values.
-        send_manual_mode_params()
-        //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
-        var cmd_str = "DDSQABRT 0"  //Execute profile 0 after stopping the queue
-        ice.send(cmd_str, slot, null)
+        if(global.ddsq_active == true){
+            //Set all the current manual control values.  This ensures when teh ddsq is aborted or ends, we
+            // Return to the same manual control values.
+            send_manual_mode_params()
+            //Send a #doevent command to address corresponding to the address that triggers the next ddsq step
+            var cmd_str = "DDSQABRT 0"  //Execute profile 0 after stopping the queue
+            ice.send(cmd_str, slot, null)
+        }
         get_ddsq_step()
     }
 
@@ -2124,7 +2126,9 @@ Rectangle {
                             ice.send('ddsqppt 7 0', slot, null) //Tell device to execute profile 0 after execution ends
                             ice.send('ddsqppt 8 1', slot, null) //Tell device to execute selected profile after execution ends.
                             ice.send('ddsqexe 1', slot, null) //Tell the device to begin ddsq mode.
+                            get_ddsq_step()
                             ddsqCurrentStep.text = "Programmed\n& Idling"
+                            global.ddsq_active = true
                         }
                     }
                 }
