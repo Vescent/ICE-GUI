@@ -1563,6 +1563,9 @@ Rectangle {
 
         ddsqUpdateGlobalPlaylistFromGUI()
 
+        //Go ahead and abort any running queue
+        abort_ddsq()
+
         //Because of the way the DDSQ works on OPL1 board, we need 
         // to count the number of STP and DRG profiles we send.
         var cnt_drg = 0
