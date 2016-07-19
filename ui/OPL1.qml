@@ -1448,13 +1448,13 @@ Rectangle {
                 spacing: 10
 
                 Text {
-                    text: "f_D [kHz]"
+                    text: "f_I [kHz]"
                     color: "#cccccc"
                     font.pointSize: 10
                 }
 
                 Text {
-                    text: "f_I [kHz]"
+                    text: "f_D [kHz]"
                     color: "#cccccc"
                     font.pointSize: 10
 
@@ -1472,20 +1472,6 @@ Rectangle {
                 spacing: 5
 
                 ComboBox {
-                    id: pidPoleDerivativeComboBox
-                    model: ListModel {
-                        ListElement { text: "Off" }  //passed_diff_pole = 0
-                        ListElement { text: "10 kHz" }
-                        ListElement { text: "30 kHz" }
-                        ListElement { text: "100 kHz" }
-                        ListElement { text: "300 kHz" } //passed_diff_pole = 4
-                    }
-                    onActivated: {
-                        set_pid_poles()
-                    }
-                }
-
-                ComboBox {
                     id: pidPoleIntegralComboBox
                     model: ListModel {
                         ListElement { text: "Off" }  //passed_int_pole = 0
@@ -1494,6 +1480,20 @@ Rectangle {
                         ListElement { text: "32 kHz" }
                         ListElement { text: "100 kHz" }
                         ListElement { text: "300 kHz" }  //passed_int_pole = 5
+                    }
+                    onActivated: {
+                        set_pid_poles()
+                    }
+                }
+
+                ComboBox {
+                    id: pidPoleDerivativeComboBox
+                    model: ListModel {
+                        ListElement { text: "Off" }  //passed_diff_pole = 0
+                        ListElement { text: "10 kHz" }
+                        ListElement { text: "30 kHz" }
+                        ListElement { text: "100 kHz" }
+                        ListElement { text: "300 kHz" } //passed_diff_pole = 4
                     }
                     onActivated: {
                         set_pid_poles()
