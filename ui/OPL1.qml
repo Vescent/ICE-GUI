@@ -1479,6 +1479,9 @@ Rectangle {
                         ListElement { text: "100 kHz" }
                         ListElement { text: "300 kHz" } //passed_diff_pole = 4
                     }
+                    onActivated: {
+                        set_pid_poles()
+                    }
                 }
 
                 ComboBox {
@@ -1490,6 +1493,9 @@ Rectangle {
                         ListElement { text: "32 kHz" }
                         ListElement { text: "100 kHz" }
                         ListElement { text: "300 kHz" }  //passed_int_pole = 5
+                    }
+                    onActivated: {
+                        set_pid_poles()
                     }
                 }
 
@@ -1508,20 +1514,6 @@ Rectangle {
                     maxValue: 64
                     onNewValue: setGain(value)
                 }
-            }
-        }
-
-        ThemeButton {
-            height: 30
-            width: 80
-            text: "Update Poles"
-            anchors {
-                bottom: parent.bottom
-                right: parent.right
-                margins: 10
-            }
-            onClicked: {
-                set_pid_poles()
             }
         }
     }
