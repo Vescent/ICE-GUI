@@ -433,6 +433,7 @@ Rectangle {
     function setGain(value) {
         ice.send('Gain ' + value, slot, function(result){
             rotarycontrolGain.setValue(result);
+            rotarycontrolGainPIDPane.setValue(result)
             return;
         });
     }
@@ -440,6 +441,7 @@ Rectangle {
     function getGain() {
         ice.send('Gain?', slot, function(result){
             rotarycontrolGain.setValue(result);
+            rotarycontrolGainPIDPane.setValue(result)
             return;
         });
     }
@@ -1447,15 +1449,22 @@ Rectangle {
                 Text {
                     text: "f_D [kHz]"
                     color: "#cccccc"
-                    font.pointSize: 8
+                    font.pointSize: 10
                 }
 
                 Text {
                     text: "f_I [kHz]"
                     color: "#cccccc"
-                    font.pointSize: 8
+                    font.pointSize: 10
 
                 }
+                Text {
+                    text: "Proportional Gain"
+                    color: "#cccccc"
+                    font.pointSize: 10
+
+                }
+
             }
 
             Column {                
@@ -1482,6 +1491,22 @@ Rectangle {
                         ListElement { text: "100 kHz" }
                         ListElement { text: "300 kHz" }  //passed_int_pole = 5
                     }
+                }
+
+                RotaryControl {
+                    id: rotarycontrolGainPIDPane
+                    x: 16
+                    width: 70
+                    height: 70
+                    displayTextRatio: 0.3
+                    decimalPlaces: 0
+                    useArc: true
+                    showRange: false
+                    value: 1
+                    stepSize: 1
+                    minValue: 1
+                    maxValue: 64
+                    onNewValue: setGain(value)
                 }
             }
         }
