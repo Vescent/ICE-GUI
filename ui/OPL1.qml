@@ -362,6 +362,7 @@ Rectangle {
         if(global.ddsq_active == false){
             ice.send('PFLFREQ 0 ' + value * 1000000, slot, function(result){ //multiply by 1000000 to convert from MHz to Hz
                 datainputIntFreq.setValue(result / 1000000); //Convert from Hz to MHz
+                readoutOffsetFreq.setValue(datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000);
                 return;
             });
         }
@@ -1264,7 +1265,7 @@ Rectangle {
             height: 25
             text: datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000
             pointSize: 16
-            decimal: 3
+            decimal: 6
             textColor: "#ffffff"
         }
 
