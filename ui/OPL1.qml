@@ -304,8 +304,11 @@ Rectangle {
                 if (result === 'On') {
                     toggleswitchInvert.enableSwitch(true);
                 }
-                else {
+                else if(result === 'Off'){
                     toggleswitchInvert.enableSwitch(false);
+                }
+                else{
+                    //Error, don't change the state.
                 }
                 return;
             });
@@ -317,8 +320,11 @@ Rectangle {
             if (result === 'On') {
                 toggleswitchInvert.enableSwitch(true);
             }
-            else {
-                toggleswitchInvert.enableSwitch(false);
+            else if(result === 'Off'){
+                    toggleswitchInvert.enableSwitch(false);
+                }
+            else{
+                //Error, don't change the state.
             }
 
             return;
@@ -841,8 +847,8 @@ Rectangle {
             width: 76
             height: 70
             useCursor: true
-            maxValue: 2.4
-            minValue: -2.4
+            maxValue: 10.0
+            minValue: -10.0
             value: 0
             stepSize: 0.05
             decimalPlaces: 2
@@ -861,7 +867,7 @@ Rectangle {
             height: 70
             value: 1
             stepSize: 0.2
-            maxValue: 4.8
+            maxValue: 20.0
             minValue: 0
             decimalPlaces: 1
             anchors.verticalCenterOffset: -21
@@ -1127,8 +1133,8 @@ Rectangle {
             showRange: false
             value: 0
             stepSize: 0.05
-            minValue: -2.4
-            maxValue: 2.4
+            minValue: -10.0
+            maxValue: 10.0
             onNewValue: setServoOffset(value)
         }
 
@@ -1258,7 +1264,7 @@ Rectangle {
             height: 25
             text: datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000
             pointSize: 16
-            decimal: 6
+            decimal: 3
             textColor: "#ffffff"
         }
 
@@ -1457,20 +1463,23 @@ Rectangle {
                 ComboBox {
                     id: pidPoleDerivativeComboBox
                     model: ListModel {
+                        ListElement { text: "Off" }  //passed_diff_pole = 0
                         ListElement { text: "10 kHz" }
                         ListElement { text: "30 kHz" }
                         ListElement { text: "100 kHz" }
-                        ListElement { text: "300 kHz" }
+                        ListElement { text: "300 kHz" } //passed_diff_pole = 4
                     }
                 }
 
                 ComboBox {
                     id: pidPoleIntegralComboBox
                     model: ListModel {
+                        ListElement { text: "Off" }  //passed_int_pole = 0
                         ListElement { text: "3 kHz" }
                         ListElement { text: "10 kHz" }
                         ListElement { text: "32 kHz" }
                         ListElement { text: "100 kHz" }
+                        ListElement { text: "300 kHz" }  //passed_int_pole = 5
                     }
                 }
             }
