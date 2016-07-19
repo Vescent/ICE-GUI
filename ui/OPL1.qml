@@ -66,6 +66,7 @@ Rectangle {
             getGain();
 
             get_pid_poles();
+            get_ddsq_step();
             set_ddsq_event_addr(global.ddsq_event_addr)
 
             intervalTimer.start();
@@ -1742,6 +1743,18 @@ Rectangle {
                 global.ddsq_active = true
             }
         })  
+
+        if(global.ddsq_active == true){
+            //Set the trigger and abort buttons to green.
+            ddsqTriggerDDSQBtn.backgroundColor = "#66AA66"
+            ddsqAbortDDSQBtn.backgroundColor = "#66AA66"
+            ddsqStartDDSQBtn.text = "Restart Seq."
+        }
+        else{
+            ddsqTriggerDDSQBtn.backgroundColor = "#AA6666"
+            ddsqAbortDDSQBtn.backgroundColor = "#AA6666"
+            ddsqStartDDSQBtn.text = "Execute Seq."
+        }
     }
 
     Rectangle {
