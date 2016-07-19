@@ -15,7 +15,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5 import QtQuick
 from PyQt5.QtQml import QJSValue
 import iceComm
-from xml.etree import ElementTree
+from xml.etree import ElementTree   
 from urllib.request import urlopen
 from collections import defaultdict
 import json
@@ -106,6 +106,7 @@ class iceController(QObject):
         data = self.iceRef.send(command)
 
         if data[:9] == 'I2C Error':
+            logging.error(command)
             logging.error('Error I2c!!!')
             return
 
