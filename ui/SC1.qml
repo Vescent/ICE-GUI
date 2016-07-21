@@ -1,4 +1,6 @@
 import QtQuick 2.0
+import QtQuick.Controls 1.4
+import QtQml.Models 2.2
 
 Rectangle {
     id: widget
@@ -1097,10 +1099,18 @@ Rectangle {
 		enableState: true
 		radius: 0
 		onClicked: {
-		    rectAllEvents.visible = !enableState;
-		    rectGraph.visible = enableState;
-		    evtPanelBtn.enableSwitch(!enableState);
-		    runRamp(global.rampState); // restore old state of ramp
+            if(enableState){
+
+                rectGraph.visible = true;
+                rectAllEvents.visible = false;
+                rectPIDControls.visible = false;
+
+                evtPanelBtn.enableSwitch(false);
+                pidControlTabBtn.enableSwitch(false);
+
+                runRamp(global.rampState); // restore old state of ramp    
+            }
+		    
 		}
 	}
 
@@ -1117,13 +1127,49 @@ Rectangle {
 		enableState: false
 		radius: 0
 		onClicked: {
-		    global.rampState = global.rampRun;
-		    runRamp(false);
-		    rectAllEvents.visible = enableState;
-		    rectGraph.visible = !enableState;
-		    graphPanelBtn.enableSwitch(!enableState);
+            if(enableState){
+    		    global.rampState = global.rampRun;
+    		    runRamp(false);
+
+    		    rectAllEvents.visible = true;
+    		    rectGraph.visible = false;
+                rectPIDControls.visible = false
+
+    		    graphPanelBtn.enableSwitch(false);
+                pidControlTabBtn.enableSwitch(false)
+            }
 		}
 	}
+
+    ToggleSwitch {
+        id: pidControlTabBtn
+        width: 70
+        radius: 0
+        anchors {
+            top: textWidgetTitle.bottom
+            margins: 0
+            topMargin: 10
+            bottomMargin: 0
+            left: evtPanelBtn.right
+        }
+        text: "PID Poles"
+        textOnState: "PID Poles"
+        enableState: false
+        onClicked: {
+            if(enableState){
+                global.rampState = global.rampRun
+                //runRamp(false)
+               // get_pid_poles()
+
+                rectPIDControls.visible = true
+                rectGraph.visible = false
+                rectAllEvents.visible = false
+
+                graphPanelBtn.enableSwitch(false)
+                evtPanelBtn.enableSwitch(false)
+            }
+        }
+    }
 
     Rectangle {
         id: rectGraph
@@ -1388,6 +1434,138 @@ Rectangle {
             Text {
                 text: "Note: TTL Event\ninputs may override\nGUI trigger button."
                 color: "#cccccc"
+            }
+        }
+    }
+
+    function get_pid_poles(){
+        ice.send('POLES?', slot, function(result){
+            var poles = result.split(" ")
+            var int_pole = parseInt(poles[0])
+            var diff_pole = parseInt(poles[1])
+
+            global.pid_poles["int"] = int_pole
+            global.pid_poles["diff"] = diff_pole
+
+            pidPoleIntegralComboBox.currentIndex = int_pole
+            pidPoleDerivativeComboBox.currentIndex = diff_pole
+        });
+    }
+
+    function set_pid_poles(){
+        var int_pole = pidPoleIntegralComboBox.currentIndex
+        var diff_pole = pidPoleDerivativeComboBox.currentIndex
+
+        var cmd_str = "POLES " + int_pole + " " + diff_pole
+
+        ice.send(cmd_str, slot, null)
+        get_pid_poles()
+    }
+
+    Rectangle {
+        id: rectPIDControls
+        anchors.top: graphPanelBtn.bottom
+        anchors.left: rampRect.right
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.topMargin: 0
+        anchors.margins: 10
+        visible: false
+        color: 'transparent'
+        border.color: '#CCCCCC'
+        radius: 5
+
+        Image {
+            id: pidTransferFunctionImage
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.top
+                topMargin: 10
+            }
+            source: ".\\resources\\pid_transfer_function.png"
+        }
+
+        Row {
+            spacing: 5
+
+            anchors {
+                top: pidTransferFunctionImage.bottom
+                left: parent.left
+                right: parent.right
+                margins: 10
+            }
+            Column {
+                y: 5                
+                spacing: 10
+
+                Text {
+                    text: "f_I [kHz]"
+                    color: "#cccccc"
+                    font.pointSize: 10
+                }
+
+                Text {
+                    text: "f_D [kHz]"
+                    color: "#cccccc"
+                    font.pointSize: 10
+
+                }
+                Text {
+                    text: "Proportional Gain"
+                    color: "#cccccc"
+                    font.pointSize: 10
+
+                }
+
+            }
+
+            Column {                
+                spacing: 5
+
+                ComboBox {
+                    id: pidPoleIntegralComboBox
+                    model: ListModel {
+                        ListElement { text: "Off" }  //passed_int_pole = 0
+                        ListElement { text: "3 kHz" }
+                        ListElement { text: "10 kHz" }
+                        ListElement { text: "32 kHz" }
+                        ListElement { text: "100 kHz" }
+                        ListElement { text: "300 kHz" }  //passed_int_pole = 5
+                    }
+                    onActivated: {
+                        set_pid_poles()
+                    }
+                }
+
+                ComboBox {
+                    id: pidPoleDerivativeComboBox
+                    model: ListModel {
+                        ListElement { text: "Off" }  //passed_diff_pole = 0
+                        ListElement { text: "10 kHz" }
+                        ListElement { text: "30 kHz" }
+                        ListElement { text: "100 kHz" }
+                        ListElement { text: "300 kHz" } //passed_diff_pole = 4
+                    }
+                    onActivated: {
+                        set_pid_poles()
+                    }
+                }
+
+                RotaryControl {
+                    id: rotarycontrolGainPIDPane
+                    x: 16
+                    width: 70
+                    height: 70
+                    displayTextRatio: 0.3
+                    decimalPlaces: 0
+                    useArc: true
+                    showRange: false
+                    value: 1
+                    stepSize: 1
+                    minValue: 1
+                    maxValue: 64
+                    onNewValue: setGain(value)
+                }
             }
         }
     }
