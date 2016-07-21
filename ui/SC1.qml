@@ -30,7 +30,6 @@ Rectangle {
     signal error(string msg)
 
     onActiveChanged: {
-        active = false //REMOVE AFTER DEVELOPMENT
         if (active) {
             ice.send('#pauselcd f', slot, null);
 
@@ -102,9 +101,8 @@ Rectangle {
             graphcomponent2.refresh();
         }
         else {
-            // UNCOMMENT AFTER DEVELOPMENT
-            // intervalTimer.stop();
-            // runRamp(false);
+            intervalTimer.stop();
+            runRamp(false);
 
             appWindow.widgetState[slot].vDivSetting1 = graphcomponent.vDivSetting;
             appWindow.widgetState[slot].vDivSetting2 = graphcomponent2.vDivSetting;
@@ -1158,8 +1156,8 @@ Rectangle {
         onClicked: {
             if(enableState){
                 global.rampState = global.rampRun
-                //runRamp(false)
-               // get_pid_poles()
+                runRamp(false)
+                get_pid_poles()
 
                 rectPIDControls.visible = true
                 rectGraph.visible = false
