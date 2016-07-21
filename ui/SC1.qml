@@ -28,6 +28,7 @@ Rectangle {
     signal error(string msg)
 
     onActiveChanged: {
+        active = false //REMOVE AFTER DEVELOPMENT
         if (active) {
             ice.send('#pauselcd f', slot, null);
 
@@ -99,8 +100,9 @@ Rectangle {
             graphcomponent2.refresh();
         }
         else {
-            intervalTimer.stop();
-            runRamp(false);
+            // UNCOMMENT AFTER DEVELOPMENT
+            // intervalTimer.stop();
+            // runRamp(false);
 
             appWindow.widgetState[slot].vDivSetting1 = graphcomponent.vDivSetting;
             appWindow.widgetState[slot].vDivSetting2 = graphcomponent2.vDivSetting;
@@ -158,62 +160,6 @@ Rectangle {
         //graphcomponent2.axisYLabel = "DC Error [" + yDiv + " V/Div]";
         graphcomponent2.refresh();
 	}
-
-    // Common Laser Controller Command Set
-    function setLaser(value) {
-        state = (value) ? 'On' : 'Off';
-        ice.send('Laser ' + state, slot, function(result){
-            if (result === 'On') {
-                toggleswitchLaser.enableSwitch(true);
-            }
-            else {
-                toggleswitchLaser.enableSwitch(false);
-            }
-            return;
-        });
-    }
-
-    function getLaser() {
-        ice.send('Laser?', slot, function(result){
-            if (result === 'On') {
-                toggleswitchLaser.enableSwitch(true);
-            }
-            else {
-                toggleswitchLaser.enableSwitch(false);
-            }
-            return;
-        });
-    }
-
-    function setCurrent(value) {
-        ice.send('CurrSet ' + value, slot, function(result){
-            rotarycontrolCurrent.setValue(result);
-            return;
-        });
-    }
-
-    function getCurrent() {
-        ice.send('CurrSet?', slot, function(result){
-            rotarycontrolCurrent.setValue(result);
-            return;
-        });
-    }
-
-    function setCurrentLimit(value) {
-        ice.send('CurrLim ' + value, slot, function(result){
-            datainputCurrentLimit.setValue(result);
-            rotarycontrolCurrent.maxValue = parseFloat(result);
-            return;
-        });
-    }
-
-    function getCurrentLimit() {
-        ice.send('CurrLim?', slot, function(result){
-            datainputCurrentLimit.setValue(result);
-            rotarycontrolCurrent.maxValue = parseFloat(result);
-            return;
-        });
-    }
 
     // Peak Lock Servo Commands
     function setPhase(value) {
@@ -889,102 +835,14 @@ Rectangle {
         border.color: "#cccccc"
 
         Text {
-            id: textCurrentLimit
-            x: 128
-            y: 70
-            color: "#ffffff"
-            text: qsTr("Current Limit")
-            anchors.horizontalCenter: datainputCurrentLimit.horizontalCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 10
-            verticalAlignment: Text.AlignVCenter
-        }
-
-        Text {
-            id: textCurrentSet
-            x: 27
-            y: 5
-            color: "#ffffff"
-            text: qsTr("Laser Current")
-            anchors.bottom: rotarycontrolCurrent.top
-            anchors.bottomMargin: 3
-            anchors.horizontalCenterOffset: 0
-            anchors.horizontalCenter: rotarycontrolCurrent.horizontalCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 10
-            verticalAlignment: Text.AlignVCenter
-        }
-
-        DataInput {
-            id: datainputCurrentLimit
-            x: 143
-            y: 88
-            width: 106
-            height: 35
-            text: "0.0"
-            precision: 5
-            useInt: false
-            maxVal: maxCurrent
-            minVal: 0
-            decimal: 1
-            pointSize: 19
-            stepSize: 1
-            onValueEntered: setCurrentLimit(newVal)
-        }
-
-        RotaryControl {
-            id: rotarycontrolCurrent
-            x: 11
-            y: 23
-            width: 100
-            height: 100
-            colorInner: "#ff7300"
-            anchors.verticalCenterOffset: -88
-            anchors.horizontalCenterOffset: -76
-            anchors.horizontalCenter: parent.horizontalCenter
-            displayTextRatio: 0.2
-            decimalPlaces: 2
-            useArc: true
-            showRange: true
-            value: 0
-            stepSize: .2
-            minValue: 0
-            maxValue: maxCurrent
-            onNewValue: {
-                setCurrent(value);
-            }
-        }
-
-        Text {
-            id: textLaserBtn
-            x: 147
-            y: 11
-            color: "#ffffff"
-            text: qsTr("Laser")
-            anchors.horizontalCenter: toggleswitchLaser.horizontalCenter
-            font.pointSize: 12
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
-
-        ToggleSwitch {
-            id: toggleswitchLaser
-            x: 128
-            y: 32
-            width: 56
-            height: 32
-            pointSize: 12
-            onClicked: setLaser(enableState)
-        }
-
-        Text {
             id: textServoBtn
             x: 13
             y: 8
             color: "#ffffff"
             text: qsTr("Servo")
-            anchors.bottom: toggleswitchServo.top
-            anchors.bottomMargin: 3
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            anchors.bottomMargin: 5
             anchors.horizontalCenter: toggleswitchServo.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 12
@@ -993,8 +851,9 @@ Rectangle {
 
         ToggleSwitch {
             id: toggleswitchServo
-            x: 200
-            y: 32
+            anchors.top: textServoBtn.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.margins: 5
             width: 58
             height: 32
             pointSize: 12
@@ -1031,7 +890,7 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolPhase
             x: 16
-            y: 243
+            y: 183
             width: 70
             height: 70
             anchors.verticalCenterOffset: 117
@@ -1067,7 +926,7 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolDitherAmp
             x: 101
-            y: 243
+            y: 183
             width: 70
             height: 70
             anchors.verticalCenterOffset: 117
@@ -1102,7 +961,7 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolDCOffset
             x: 184
-            y: 149
+            y: 89
             width: 70
             height: 70
             anchors.verticalCenterOffset: 23
@@ -1137,7 +996,7 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolServoOffset
             x: 101
-            y: 149
+            y: 89
             width: 70
             height: 70
             anchors.verticalCenterOffset: 23
@@ -1172,7 +1031,7 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolOpOffset
             x: 184
-            y: 243
+            y: 183
             width: 70
             height: 70
             anchors.verticalCenterOffset: 117
@@ -1207,7 +1066,7 @@ Rectangle {
         RotaryControl {
             id: rotarycontrolGain
             x: 16
-            y: 149
+            y: 89
             width: 70
             height: 70
             anchors.verticalCenterOffset: 23
