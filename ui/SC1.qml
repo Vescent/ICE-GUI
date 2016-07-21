@@ -8,7 +8,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: "ICE-CS1: Peak Lock Servo and Current Controller"
+    property string widgetTitle: "ICE-SC1: Ben's Badass Board"
     property int slot: 1
     property bool active: false
     property int updateRate: 500
