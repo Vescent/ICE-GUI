@@ -1406,7 +1406,7 @@ Rectangle {
         Text {
             id: textGraphNote
             color: "#ffff26"
-            text: qsTr("Note: Servo locks to <i>negative</i> slope.")
+            text: qsTr("Note: Servo locks to <i>positive</i> slope.")
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.margins: 5
