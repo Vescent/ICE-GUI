@@ -166,6 +166,17 @@ Rectangle {
         }
     }
 
+    function save(value) {
+        ice.send('Save', slot, function(result){
+            if (result == "Success") {
+                python.log('Successfully saved settings.');
+            }
+            else {
+                python.log('Error saving settings.');
+            }
+        });
+    }
+
 	function setGraphLabels() {
         var yDiv = (graphcomponent.yMaximum - graphcomponent.yMinimum)/graphcomponent.gridYDiv;
         var xDiv = global.rampSwp/graphcomponent.gridXDiv;
@@ -756,6 +767,19 @@ Rectangle {
         font.bold: true
         font.pointSize: 12
         font.family: "MS Shell Dlg 2"
+    }
+
+    ThemeButton {
+        id: saveBtn
+        y: 7
+        width: 40
+        height: 20
+        anchors.right: widget.right
+        anchors.rightMargin: 10
+        text: "Save"
+        highlight: false
+        onClicked: save()
+        enabled: true
     }
 
     Rectangle {
@@ -2258,19 +2282,28 @@ Rectangle {
         //Profile class box, common to all profile types
         profileName.text = "My New Profile"
         ddsqProfileTypeComboBox.currentIndex = 0
+        //Some defualts are taken from the current servo settings
+        if(toggleswitchInvert.enableState == false){
+            ddsqProfileInvertPFDPolarityComboBox.currentIndex = 0
+        }
+        else{
+            ddsqProfileInvertPFDPolarityComboBox.currentIndex = 1
+        }
         profileDuration.value = 1000.0
+
+
 
         //Single Tone Profile parameters
         stpFrequency.value = 100.000000
-        stpNValue.value = 8
-        stpOffsetDac.value = 0.0
+        stpNValue.value = rotarycontrolNDiv.getValue()
+        stpOffsetDac.value = rotarycontrolServoOffset.value
 
         //Ramp Profile Parameters
         drgStopFreq.value = 150.000000
         drgStartFreq.value = 100.000000
         drgRampDuration.value = 1000
-        drgNValue.value = 8
-        drgOffsetDAC.value = 0.0
+        drgNValue.value = rotarycontrolNDiv.value
+        drgOffsetDAC.value = rotarycontrolServoOffset.value
     }
 
     function ddsqSetProfileBoxParamsToProfileVals(profile_index){
