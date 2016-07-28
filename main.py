@@ -1,6 +1,6 @@
-#!python3.4
+#!python3.5
 __author__ = 'Vescent Photonics, Inc.'
-__version__ = '1.1'
+__version__ = '1.2'
 
 # NOTE: PyQt5 depends on DirectX for doing OpenGL graphics, so
 # the deployment machine may require the Microsoft DirectX runtime
