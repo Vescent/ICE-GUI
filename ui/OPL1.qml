@@ -1777,7 +1777,7 @@ Rectangle {
         else{
             ddsqTriggerDDSQBtn.backgroundColor = "#AA6666"
             ddsqAbortDDSQBtn.backgroundColor = "#AA6666"
-            ddsqStartDDSQBtn.text = "Execute Seq."
+            ddsqStartDDSQBtn.text = "Load Seq."
         }
     }
 
@@ -2181,7 +2181,7 @@ Rectangle {
                     y: 7
                     width: 90
                     height: 25
-                    text: "Execute Seq."
+                    text: "Load Seq."
                     highlight: false
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
