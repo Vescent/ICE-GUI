@@ -31,7 +31,8 @@ Rectangle {
                               pid_poles: {},
                               ddsq_event_addr: 1,
                               ddsq_active: false,
-                              laser_slave_slot: 1
+                              laser_slave_slot: 1,
+                              this_slot_loaded: false
                           })
 	property double intfreq: 100
 
@@ -121,6 +122,8 @@ Rectangle {
             }
 
             graphcomponent.refresh();
+
+            global.this_slot_loaded = true;
         }
         else {
             intervalTimer.stop();
@@ -140,6 +143,8 @@ Rectangle {
             appWindow.widgetState[slot].laser_slave_slot = global.laser_slave_slot
 
             ddspllStatusCheckTimer.stop();
+
+            global.this_slot_loaded = false;
         }
     }
 
@@ -167,12 +172,22 @@ Rectangle {
     }
 
     function save(value) {
+        //Save settings for OPL1
         ice.send('Save', slot, function(result){
             if (result == "Success") {
                 python.log('Successfully saved settings.');
             }
             else {
                 python.log('Error saving settings.');
+            }
+        });
+        //Save settings on the current slave
+        ice.send('Save', global.laser_slave_slot, function(result){
+            if (result == "Success") {
+                python.log('Successfully saved settings to slave.');
+            }
+            else {
+                python.log('Error saving settings to slave.');
             }
         });
     }
@@ -747,7 +762,7 @@ Rectangle {
 
     Timer {
         id: ddspllStatusCheckTimer
-        interval: updateRate
+        interval: updateRate * 2
         running: false
         repeat: true
         onTriggered: update_DDS_PLL_LockIndicator()
@@ -1505,8 +1520,10 @@ Rectangle {
                         ListElement { text: "100 kHz" }
                         ListElement { text: "300 kHz" }  //passed_int_pole = 5
                     }
-                    onActivated: {
-                        set_pid_poles()
+                    onCurrentIndexChanged: {
+                        if(global.this_slot_loaded === true){
+                            set_pid_poles()
+                        }
                     }
                 }
 
@@ -1519,8 +1536,10 @@ Rectangle {
                         ListElement { text: "100 kHz" }
                         ListElement { text: "300 kHz" } //passed_diff_pole = 4
                     }
-                    onActivated: {
-                        set_pid_poles()
+                    onCurrentIndexChanged: {
+                        if(global.this_slot_loaded === true){
+                            set_pid_poles()
+                        }
                     }
                 }
 
