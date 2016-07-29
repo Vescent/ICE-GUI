@@ -1279,7 +1279,7 @@ Rectangle {
             pointSize: 19
             precision: 10
             maxVal: 250
-            minVal: 1
+            minVal: 0.001
             value: 100
             decimal: 6
             stepSize: 1.0
