@@ -45,10 +45,10 @@ Setting up the environment should be needed only when you want to develop or cha
 program. Most of the user interface is contained in the *.qml files distributed with the program and doesn't require 
 a development environment setup to edit. 
 
-The main dependencies are [Python 3.4](https://www.python.org/downloads/),
-[QT5.4](http://doc.qt.io/qt-5/gettingstarted.html),
+The main dependencies are [Python 3.5](https://www.python.org/downloads/),
+[QT5.5](http://doc.qt.io/qt-5/gettingstarted.html),
 [SIP4.6](http://www.riverbankcomputing.com/software/sip/download)
-and [PyQt5.4](http://www.riverbankcomputing.com/software/pyqt/download5).
+and [PyQt5.6](http://www.riverbankcomputing.com/software/pyqt/download5).
 
 ### Installing on Windows
 The following sections describe how to install the requirements for a development version of ICE Control on Windows.
@@ -57,20 +57,26 @@ The following sections describe how to install the requirements for a developmen
 
 Download and install git from: https://git-scm.com/download/win
 
-#### Install Python 3.4
+#### Install Python 3.5
 
-Download and install Python 3.4.latest for windows from: https://www.python.org/downloads/
+Download and install Python 3.5.latest for windows from: https://www.python.org/downloads/
 
 #### Install PyQt5.4
 
 Download and install binary packages for Windows from: http://www.riverbankcomputing.com/software/pyqt/download5
 
+It is possible to install PyQt5 via pip, as is suggested on the Riverbank website.  Our recommendation is to install 
+PyQt5 via a distributed executable, as the pip install does not include some Qt dependencies.  These executables can be 
+found at [the PyQt project on SourceForge](https://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.6/).  Be sure to
+download the executable that matches the bitness (32 vs. 64 bit) of your python install.
+
+
 #### Install Python Libraries
 
 The only required python library is PySerial version 2.5 or greater. Install using:
 
-
 ```pip install pyserial```
+
 
 #### Clone ICE Control
 
@@ -90,7 +96,10 @@ If you want to build binaries for ICE Control, install PyInstaller as detailed b
 
 Download and install pywin32 from http://sourceforge.net/projects/pywin32/files/pywin32/Build%20219/
 
-> Make sure to download pywin32 for Python 3.4, 64bit or 32bit version depending on which version of Python you installed.
+> Make sure to download pywin32 for Python 3.5, 64bit or 32bit version depending on which version of Python you installed.
+
+> In our experience, using a pip-installed PyQt5 causes problems with PyInstaller.  We recommend installing PyQt5 via
+  a distributed executable as detailed above.
 
 Clone the 'vescent' branch of PyInstaller from https://github.com/jtshugrue/pyinstaller.git. This fork of the development 
 version of PyInstaller contains bug fixes to build QtQuick binaries on Windows.
