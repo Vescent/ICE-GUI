@@ -1,7 +1,7 @@
 # ICE Control
 
 This project is a GUI for controlling the [Integrated Control Electronics (ICE)][ICE] product. The program is based on 
-Python 3.4 and PyQt5. For convenience, it is released as binaries as well.
+Python 3.5 and PyQt5. For convenience, it is released as binaries as well.
 
 The program entry point, main.py, creates a QtQuick application and sets up the QML environment with hooks for
 serial communication. The application GUI and logic are contained in the QML files in the UI sub-directory. 
