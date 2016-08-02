@@ -77,6 +77,8 @@ The only required python library is PySerial version 2.5 or greater. Install usi
 
 ```pip install pyserial```
 
+> Note: PySerial 3.0 is the greatest version that supports Windows XP.
+
 
 #### Clone ICE Control
 
