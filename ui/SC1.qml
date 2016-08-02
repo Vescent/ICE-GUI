@@ -41,6 +41,7 @@ Rectangle {
             getDCOffset();
             getServoOffset();
             getAuxOffset();
+            getInvert();
             getGain();
             getDataChannel();
             intervalTimer.start();
@@ -161,21 +162,19 @@ Rectangle {
 	}
 
     function setInvert(value) {
-        if(global.ddsq_active == false){
-            state = (value) ? 'On' : 'Off';
-            ice.send('Invert ' + state, slot, function(result){
-                if (result === 'On') {
-                    toggleswitchInvert.enableSwitch(true);
-                }
-                else if(result === 'Off'){
-                    toggleswitchInvert.enableSwitch(false);
-                }
-                else{
-                    //Error, don't change the state.
-                }
-                return;
-            });
-        }
+        state = (value) ? 'On' : 'Off';
+        ice.send('Invert ' + state, slot, function(result){
+            if (result === 'On') {
+                toggleswitchInvert.enableSwitch(true);
+            }
+            else if(result === 'Off'){
+                toggleswitchInvert.enableSwitch(false);
+            }
+            else{
+                //Error, don't change the state.
+            }
+            return;
+        });
     }
 
     function getInvert() {
@@ -914,12 +913,12 @@ Rectangle {
             anchors.verticalCenterOffset: 117
             anchors.horizontalCenterOffset: -1
             displayTextRatio: 0.25
-            decimalPlaces: 0
+            decimalPlaces: 2
             useArc: true
             useCursor: true
             showRange: false
             value: 0
-            stepSize: 0.1
+            stepSize: 0.01
             minValue: -10.0
             maxValue: 10.0
             onNewValue: setAuxOffset(value)
