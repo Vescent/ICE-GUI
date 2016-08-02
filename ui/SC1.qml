@@ -9,7 +9,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: "ICE-SC1: Ben's Badass Board"
+    property string widgetTitle: "ICE-SC1: Servo"
     property int slot: 1
     property bool active: false
     property int updateRate: 500
@@ -38,12 +38,11 @@ Rectangle {
 
             get_pid_poles();
             getServo();
-            getPhase();
-            getDitherAmplitude();
             getDCOffset();
             getServoOffset();
+            getAuxOffset();
+            getInvert();
             getGain();
-            getOpAmpOffset();
             getDataChannel();
             intervalTimer.start();
             setGraphLabels();
@@ -99,7 +98,7 @@ Rectangle {
 
             global.this_slot_loaded = true
         }
-        else {
+        else{
             intervalTimer.stop();
             runRamp(false);
 
@@ -162,43 +161,34 @@ Rectangle {
         graphcomponent2.refresh();
 	}
 
-    // Peak Lock Servo Commands
-    function setPhase(value) {
-        ice.send('Phase ' + value, slot, function(result){
-            rotarycontrolPhase.setValue(result);
+    function setInvert(value) {
+        state = (value) ? 'On' : 'Off';
+        ice.send('Invert ' + state, slot, function(result){
+            if (result === 'On') {
+                toggleswitchInvert.enableSwitch(true);
+            }
+            else if(result === 'Off'){
+                toggleswitchInvert.enableSwitch(false);
+            }
+            else{
+                //Error, don't change the state.
+            }
             return;
         });
     }
 
-    function getPhase() {
-        ice.send('Phase?', slot, function(result){
-            rotarycontrolPhase.setValue(result);
-            return;
-        });
-    }
+    function getInvert() {
+        ice.send('Invert?', slot, function(result){
+            if (result === 'On') {
+                toggleswitchInvert.enableSwitch(true);
+            }
+            else if(result === 'Off'){
+                    toggleswitchInvert.enableSwitch(false);
+                }
+            else{
+                //Error, don't change the state.
+            }
 
-    function setDitherAmplitude(value) {
-        ice.send('DitherA ' + value, slot, function(result){
-            rotarycontrolDitherAmp.setValue(result);
-            return;
-        });
-    }
-
-    function getDitherAmplitude() {
-        ice.send('DitherA?', slot, function(result){
-            rotarycontrolDitherAmp.setValue(result);
-            return;
-        });
-    }
-
-    function setDither(value) {
-        ice.send('Dither ' + value, slot, function(result){
-            return;
-        });
-    }
-
-    function getDither() {
-        ice.send('Dither?', slot, function(result){
             return;
         });
     }
@@ -260,6 +250,20 @@ Rectangle {
         });
     }
 
+    function setAuxOffset(value) {
+        ice.send('AxOffst ' + value, slot, function(result){
+            rotarycontrolAuxOffset.setValue(result);
+            return;
+        });
+    }
+
+    function getAuxOffset() {
+        ice.send('AxOffst?', slot, function(result){
+            rotarycontrolAuxOffset.setValue(result);
+            return;
+        });
+    }
+
     function setGain(value) {
         ice.send('Gain ' + value, slot, function(result){
             rotarycontrolGain.setValue(result);
@@ -271,20 +275,6 @@ Rectangle {
         ice.send('Gain?', slot, function(result){
             rotarycontrolGain.setValue(result);
             rotarycontrolGainPIDPane.setValue(result);
-            return;
-        });
-    }
-
-    function setOpAmpOffset(value) {
-        ice.send('OpOffst ' + value, slot, function(result){
-            rotarycontrolOpOffset.setValue(result);
-            return;
-        });
-    }
-
-    function getOpAmpOffset() {
-        ice.send('OpOffst?', slot, function(result){
-            rotarycontrolOpOffset.setValue(result);
             return;
         });
     }
@@ -836,6 +826,7 @@ Rectangle {
         radius: 7
         border.color: "#cccccc"
 
+
         Text {
             id: textServoBtn
             x: 13
@@ -875,58 +866,46 @@ Rectangle {
         }
 
         Text {
-            id: textPhase
-            x: 258
-            y: 1
+            id: textInvert
             color: "#ffffff"
-            text: qsTr("Phase")
-            anchors.bottom: rotarycontrolPhase.top
-            anchors.bottomMargin: 2
-            anchors.horizontalCenterOffset: 0
-            anchors.horizontalCenter: rotarycontrolPhase.horizontalCenter
+            text: qsTr("Invert")
+            anchors.top: parent.top
+            anchors.topMargin: 5
+            anchors.bottomMargin: 5
+            anchors.horizontalCenter: toggleswitchInvert.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 10
+            font.pointSize: 12
             verticalAlignment: Text.AlignVCenter
         }
 
-        RotaryControl {
-            id: rotarycontrolPhase
-            x: 16
-            y: 183
-            width: 70
-            height: 70
-            anchors.verticalCenterOffset: 117
-            anchors.horizontalCenterOffset: -86
-            anchors.horizontalCenter: parent.horizontalCenter
-            displayTextRatio: 0.2
-            decimalPlaces: 2
-            useArc: true
-            useCursor: true
-            showRange: false
-            value: 0
-            stepSize: 11.25
-            minValue: -12.0
-            maxValue: 360.1
-            onNewValue: setPhase(value)
-        }
+        ToggleSwitch {
+            id: toggleswitchInvert
+            x: 20
+            width: 58
+            height: 32
+            anchors.margins: 5
+            anchors.top: textInvert.bottom
+            pointSize: 12
+            onClicked: setInvert(enableState)
+        }        
 
         Text {
-            id: textDitherAmp
+            id: textAuxOffset
             x: 258
             y: 1
             color: "#ffffff"
-            text: qsTr("Dither Amp")
-            anchors.bottom: rotarycontrolDitherAmp.top
+            text: qsTr("Aux Offset")
+            anchors.bottom: rotarycontrolAuxOffset.top
             anchors.bottomMargin: 2
             anchors.horizontalCenterOffset: 0
-            anchors.horizontalCenter: rotarycontrolDitherAmp.horizontalCenter
+            anchors.horizontalCenter: rotarycontrolAuxOffset.horizontalCenter
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 10
             verticalAlignment: Text.AlignVCenter
         }
 
         RotaryControl {
-            id: rotarycontrolDitherAmp
+            id: rotarycontrolAuxOffset
             x: 101
             y: 183
             width: 70
@@ -934,15 +913,15 @@ Rectangle {
             anchors.verticalCenterOffset: 117
             anchors.horizontalCenterOffset: -1
             displayTextRatio: 0.25
-            decimalPlaces: 0
+            decimalPlaces: 2
             useArc: true
-            useCursor: false
+            useCursor: true
             showRange: false
             value: 0
-            stepSize: 1
-            minValue: 0
-            maxValue: 63
-            onNewValue: setDitherAmplitude(value)
+            stepSize: 0.01
+            minValue: -10.0
+            maxValue: 10.0
+            onNewValue: setAuxOffset(value)
         }
 
         Text {
@@ -974,9 +953,9 @@ Rectangle {
             useCursor: true
             showRange: false
             value: 0
-            stepSize: 0.001
-            minValue: -0.22
-            maxValue: 0.22
+            stepSize: 0.01
+            minValue: -5.00
+            maxValue: 5.00
             onNewValue: setDCOffset(value)
         }
 
@@ -1016,41 +995,6 @@ Rectangle {
         }
 
         Text {
-            id: textOpOffset
-            x: 89
-            y: 122
-            color: "#ffffff"
-            text: qsTr("Op Offset")
-            anchors.bottom: rotarycontrolOpOffset.top
-            anchors.bottomMargin: 2
-            anchors.horizontalCenterOffset: 0
-            anchors.horizontalCenter: rotarycontrolOpOffset.horizontalCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pointSize: 10
-            verticalAlignment: Text.AlignVCenter
-        }
-
-        RotaryControl {
-            id: rotarycontrolOpOffset
-            x: 184
-            y: 183
-            width: 70
-            height: 70
-            anchors.verticalCenterOffset: 117
-            anchors.horizontalCenterOffset: 82
-            displayTextRatio: 0.3
-            decimalPlaces: 0
-            useArc: true
-            useCursor: true
-            showRange: false
-            value: 128
-            stepSize: 1
-            minValue: 0
-            maxValue: 255
-            onNewValue: setOpAmpOffset(value)
-        }
-
-        Text {
             id: textGain
             x: 274
             y: 87
@@ -1079,8 +1023,8 @@ Rectangle {
             showRange: false
             value: 0
             stepSize: 1
-            minValue: 0
-            maxValue: 28
+            minValue: -28
+            maxValue: 38
             onNewValue: setGain(value)
         }
 
@@ -1652,8 +1596,8 @@ Rectangle {
                     showRange: false
                     value: 1
                     stepSize: 1
-                    minValue: 0
-                    maxValue: 28
+                    minValue: -28
+                    maxValue: 38
                     onNewValue: setGain(value)
                 }
             }
