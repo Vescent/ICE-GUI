@@ -1,6 +1,5 @@
 import QtQuick 2.0
-import QtQuick.Controls 1.4
-import QtQml.Models 2.2
+import QtQuick.Controls 1.0
 
 Rectangle {
     id: widget
@@ -24,7 +23,8 @@ Rectangle {
                               servoOn: false,
 							  blockChunkSize: 8,
 							  rampCenter: 0,
-							  rampSwp: 10
+							  rampSwp: 10,
+                              this_slot_loaded: false
                           })
 
     signal error(string msg)
@@ -33,13 +33,10 @@ Rectangle {
         if (active) {
             ice.send('#pauselcd f', slot, null);
 
-            getLaser();
-            getCurrent();
-            getCurrentLimit();
-
             getRampSweep();
             setRampNum(widget.dataWidth);
 
+            get_pid_poles();
             getServo();
             getPhase();
             getDitherAmplitude();
@@ -99,6 +96,8 @@ Rectangle {
 
             graphcomponent.refresh();
             graphcomponent2.refresh();
+
+            global.this_slot_loaded = true
         }
         else {
             intervalTimer.stop();
@@ -110,6 +109,8 @@ Rectangle {
             appWindow.widgetState[slot].numDataPoints = global.numDataPoints;
             appWindow.widgetState[slot].rampOn = global.rampOn;
             appWindow.widgetState[slot].servoOn = global.servoOn;
+
+            global.this_slot_loaded = false
         }
     }
 
@@ -269,6 +270,7 @@ Rectangle {
     function getGain() {
         ice.send('Gain?', slot, function(result){
             rotarycontrolGain.setValue(result);
+            rotarycontrolGainPIDPane.setValue(result);
             return;
         });
     }
@@ -1436,28 +1438,56 @@ Rectangle {
         }
     }
 
+    function get_i1_pole(){
+        ice.send('I1POLE?', slot, function(result){
+            var i1_pole = parseInt(result)
+            pidPoleIntegralOneComboBox.currentIndex = i1_pole
+            })
+    }
+
+    function set_i1_pole(){
+        var i1_pole = pidPoleIntegralOneComboBox.currentIndex
+        var cmd_str = "I1POLE " + i1_pole
+        ice.send(cmd_str, slot, null)
+    }
+
+    function get_i2_pole(){
+        ice.send('I2POLE?', slot, function(result){
+            var i2_pole = parseInt(result)
+            pidPoleIntegralTwoComboBox.currentIndex = i2_pole
+            })
+    }
+
+    function set_i2_pole(){
+        var i2_pole = pidPoleIntegralTwoComboBox.currentIndex
+        var cmd_str = "I2POLE " + i2_pole
+        ice.send(cmd_str, slot, null)
+    }
+
+    function get_d_pole(){
+        ice.send('DPOLE?', slot, function(result){
+            var d_pole = parseInt(result)
+            pidPoleDerivativeComboBox.currentIndex = d_pole
+            })
+    }
+
+    function set_d_pole(){
+        var d_pole = pidPoleDerivativeComboBox.currentIndex
+        var cmd_str = "DPOLE " + d_pole
+        ice.send(cmd_str, slot, null)
+    }
+
     function get_pid_poles(){
-        ice.send('POLES?', slot, function(result){
-            var poles = result.split(" ")
-            var int_pole = parseInt(poles[0])
-            var diff_pole = parseInt(poles[1])
-
-            global.pid_poles["int"] = int_pole
-            global.pid_poles["diff"] = diff_pole
-
-            pidPoleIntegralComboBox.currentIndex = int_pole
-            pidPoleDerivativeComboBox.currentIndex = diff_pole
-        });
+        get_i1_pole();
+        get_i2_pole();
+        get_d_pole();
     }
 
     function set_pid_poles(){
-        var int_pole = pidPoleIntegralComboBox.currentIndex
-        var diff_pole = pidPoleDerivativeComboBox.currentIndex
-
-        var cmd_str = "POLES " + int_pole + " " + diff_pole
-
-        ice.send(cmd_str, slot, null)
-        get_pid_poles()
+        set_i1_pole();
+        set_i2_pole();
+        set_d_pole();
+        get_pid_poles();
     }
 
     Rectangle {
@@ -1480,7 +1510,7 @@ Rectangle {
                 top: parent.top
                 topMargin: 10
             }
-            source: ".\\resources\\pid_transfer_function.png"
+            source: ".\\resources\\pid_transfer_function_SC1.png"
         }
 
         Row {
@@ -1497,23 +1527,24 @@ Rectangle {
                 spacing: 10
 
                 Text {
-                    text: "f_I [kHz]"
+                    text: "f_I1"
                     color: "#cccccc"
                     font.pointSize: 10
                 }
 
                 Text {
-                    text: "f_D [kHz]"
+                    text: "f_I2"
                     color: "#cccccc"
                     font.pointSize: 10
-
                 }
+
                 Text {
-                    text: "Proportional Gain"
+                    text: "f_D"
                     color: "#cccccc"
                     font.pointSize: 10
 
                 }
+                
 
             }
 
@@ -1521,17 +1552,54 @@ Rectangle {
                 spacing: 5
 
                 ComboBox {
-                    id: pidPoleIntegralComboBox
+                    id: pidPoleIntegralOneComboBox
                     model: ListModel {
                         ListElement { text: "Off" }  //passed_int_pole = 0
-                        ListElement { text: "3 kHz" }
+                        ListElement { text: "10 Hz" }
+                        ListElement { text: "20 Hz" }
+                        ListElement { text: "50 Hz" }
+                        ListElement { text: "100 Hz" }
+                        ListElement { text: "200 Hz" }  
+                        ListElement { text: "500 Hz" }  
+                        ListElement { text: "1 kHz" }
+                        ListElement { text: "2 kHz" }
+                        ListElement { text: "5 kHz" }
                         ListElement { text: "10 kHz" }
-                        ListElement { text: "32 kHz" }
+                        ListElement { text: "20 kHz" }
+                        ListElement { text: "50 kHz" }
                         ListElement { text: "100 kHz" }
-                        ListElement { text: "300 kHz" }  //passed_int_pole = 5
+                        ListElement { text: "200 kHz" }
                     }
-                    onActivated: {
-                        set_pid_poles()
+                    onCurrentIndexChanged: {
+                        if(global.this_slot_loaded === true){
+                            set_pid_poles()
+                        }
+                    }
+                }
+
+                ComboBox {
+                    id: pidPoleIntegralTwoComboBox
+                    model: ListModel {
+                        ListElement { text: "Off" }  //passed_int_pole = 0
+                        ListElement { text: "100 Hz" }
+                        ListElement { text: "200 Hz" }  
+                        ListElement { text: "500 Hz" }  
+                        ListElement { text: "1 kHz" }
+                        ListElement { text: "2 kHz" }
+                        ListElement { text: "5 kHz" }
+                        ListElement { text: "10 kHz" }
+                        ListElement { text: "20 kHz" }
+                        ListElement { text: "50 kHz" }
+                        ListElement { text: "100 kHz" }
+                        ListElement { text: "200 kHz" }
+                        ListElement { text: "500 kHz" }
+                        ListElement { text: "1 MHz" }
+                        ListElement { text: "2 MHz" }
+                    }
+                    onCurrentIndexChanged: {
+                        if(global.this_slot_loaded === true){
+                            set_pid_poles()
+                        }
                     }
                 }
 
@@ -1539,14 +1607,38 @@ Rectangle {
                     id: pidPoleDerivativeComboBox
                     model: ListModel {
                         ListElement { text: "Off" }  //passed_diff_pole = 0
+                        ListElement { text: "500 Hz" }  
+                        ListElement { text: "1 kHz" }
+                        ListElement { text: "2 kHz" }
+                        ListElement { text: "5 kHz" }
                         ListElement { text: "10 kHz" }
-                        ListElement { text: "30 kHz" }
+                        ListElement { text: "20 kHz" }
+                        ListElement { text: "50 kHz" }
                         ListElement { text: "100 kHz" }
-                        ListElement { text: "300 kHz" } //passed_diff_pole = 4
+                        ListElement { text: "200 kHz" }
+                        ListElement { text: "500 kHz" }
+                        ListElement { text: "1 MHz" }
+                        ListElement { text: "2 MHz" }
+                        ListElement { text: "5 MHz" }
+                        ListElement { text: "10 MHz" }
                     }
-                    onActivated: {
-                        set_pid_poles()
+                    onCurrentIndexChanged: {
+                        if(global.this_slot_loaded === true){
+                            set_pid_poles()
+                        }
                     }
+                }
+
+            }
+
+            Column {
+                spacing: 5
+
+                Text {
+                    text: "Proportional Gain"
+                    color: "#cccccc"
+                    font.pointSize: 10
+
                 }
 
                 RotaryControl {
@@ -1560,8 +1652,8 @@ Rectangle {
                     showRange: false
                     value: 1
                     stepSize: 1
-                    minValue: 1
-                    maxValue: 64
+                    minValue: 0
+                    maxValue: 28
                     onNewValue: setGain(value)
                 }
             }
