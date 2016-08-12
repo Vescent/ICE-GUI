@@ -1745,7 +1745,7 @@ Rectangle {
     }
 
     function get_ddsq_step(){
-        ice.send("ddsqppt? 3", slot, function(result){  //3 is the parameter id for ddsqproperty.next_index_to_exe
+        ice.send("ddsqppt? 10", slot, function(result){  //10 is the parameter id for ddsqproperty.executing_index
             var index = parseInt(result)
             if(index == 255){
                 //We haven't even set up the next profile.  Queue is inactive
@@ -1767,7 +1767,8 @@ Rectangle {
                 textIntFreq.color = "#FFFFFF"
                 global.ddsq_active = false
             }
-            else if(index == 1){
+            else if(index == 254){
+                //254 is code to indicate ddsq is active but has not started executuing a profile
                 ddsqCurrentStep.text = "1st Profile\nProgrammed"
                 textServoOffset.color = "#DD0000"
                 textNDiv.color = "#DD0000"
@@ -1776,7 +1777,7 @@ Rectangle {
                 global.ddsq_active = true
             }
             else{
-                ddsqCurrentStep.text = index - 2 //the actual reported index is of the NEXT index to PROGRAM.
+                ddsqCurrentStep.text = index //the actual reported index is of the NEXT index to PROGRAM.
                 // That means the index that's actually executing is 2 behind.
                 textServoOffset.color = "#DD0000"
                 textNDiv.color = "#DD0000"
