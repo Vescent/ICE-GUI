@@ -396,7 +396,7 @@ Rectangle {
     }
 
     function getIntFreq() {
-        ice.send('PFLF? 0', slot, function(result){
+        ice.send('PFLFREQ? 0', slot, function(result){
             var val = parseInt(result)
             datainputIntFreq.setValue(val / 1000000); //Convert from Hz to MHz
 			/*
