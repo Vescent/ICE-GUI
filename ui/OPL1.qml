@@ -2790,7 +2790,7 @@ Rectangle {
                     pointSize: 8
                     radius: 0
                     minVal: 100
-                    maxVal: 65535
+                    maxVal: 130000
                     precision: 5
                     decimal: 0
                 }
@@ -2819,7 +2819,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "[200, 65535]"
+                    text: "[200, 130000]"
                     color: '#FFF'
                 }
             }
@@ -3042,7 +3042,7 @@ Rectangle {
                     pointSize: 8
                     radius: 0
                     minVal: 100
-                    maxVal: 65535
+                    maxVal: 130000
                     precision: 5
                     decimal: 0
                 }
@@ -3093,7 +3093,7 @@ Rectangle {
                 }
 
                 Text{
-                    text: "[100, 65535]"
+                    text: "[100, 130000]"
                     color: '#FFF'
                 }
 
