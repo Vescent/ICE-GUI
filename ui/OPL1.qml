@@ -68,6 +68,7 @@ Rectangle {
             get_pid_poles();
             get_ddsq_step();
             set_ddsq_event_addr(global.ddsq_event_addr)
+            set_ddsq_loop_state(false);
 
             intervalTimer.start();
             setGraphLabels();
@@ -1800,6 +1801,25 @@ Rectangle {
         }
     }
 
+    function set_ddsq_loop_state(state){
+        var cmd_str = "";
+        if(state == true){
+            cmd_str = "ddsqppt 9 1";
+        }
+        else{
+            cmd_str = "ddsqppt 9 0";
+        }
+        ice.send(cmd_str, slot, function(result){
+            var new_state = parseInt(result);
+            if(new_state == 1){
+                toggleswitchLoopDDSQ.enableState = true;
+            }
+            else{
+                toggleswitchLoopDDSQ.enableState = false;
+            }
+            })
+    }
+
     Rectangle {
         id: rectDDSQueue
         anchors.top: graphPanelBtn.bottom
@@ -1992,6 +2012,24 @@ Rectangle {
                 value: 0
                 precision: 2
                 decimal: 0
+            }
+
+            ToggleSwitch {
+                id: toggleswitchLoopDDSQ
+                anchors {
+                    left: addProfileToPlaylistIndexBox.right
+                    bottom: parent.bottom
+                    right: ddsqPreviewButton.left
+                    margins: 10
+                }
+                textOnState: "Loop"
+                textOffState: "Once"
+                height: 30
+                pointSize: 12
+                enableState: true
+                onClicked: {
+                    set_ddsq_loop_state(enableState);
+                }
             }
 
             ThemeButton {
