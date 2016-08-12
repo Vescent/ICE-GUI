@@ -38,7 +38,7 @@ Rectangle {
     signal error(string msg)
 
     onActiveChanged: {
-        if (active) {        
+        if (active) {
             ice.send('#pauselcd f', slot, null);
 
             if (typeof(appWindow.widgetState[slot].laser_slave_slot) === 'number') {
@@ -125,7 +125,7 @@ Rectangle {
 
             global.this_slot_loaded = true;
         }
-        else{
+        else {
             intervalTimer.stop();
             runRamp(false);
 
@@ -483,6 +483,7 @@ Rectangle {
             });
         }
         updateFeedForwardLimits();
+        verifyFeedForwardsAreValid();
     }
 
     function updateFeedForwardLimits(){
@@ -496,6 +497,32 @@ Rectangle {
         drgOffsetDAC.minVal = min_value;
         drgOffsetDAC.maxVal = max_value;
         drgFeedForwardLimits.text = limit_text;
+    }
+
+    function verifyFeedForwardsAreValid(){
+        var invalid_feed_forward = false
+        var offending_profiles = ""
+        for(var i=0; i<global.ddsqProfiles.length; i++){
+            if(global.ddsqProfiles[i]["type"] == 0){ //single tone
+                var new_offset = global.ddsqProfiles[i]["stpFeedForwardOffset"] + rotarycontrolServoOffset.value
+                if(new_offset < -10.0 || 10.0 < new_offset){  //still limited by -10.0 to 10.0 V in hardware
+                    invalid_feed_forward = true
+                    offending_profiles += global.ddsqProfiles[i]["name"] + "\n"
+                }
+            }
+            else if(global.ddsqProfiles[i]["type"] == 1){ //frequency ramp
+                var new_offset = global.ddsqProfiles[i]["drgFeedForwardOffset"] + rotarycontrolServoOffset.value
+                if(new_offset < -10.0 || 10.0 < new_offset){  //still limited by -10.0 to 10.0 V in hardware
+                    invalid_feed_forward = true
+                    offending_profiles += global.ddsqProfiles[i]["name"] + "\n"
+                }
+            }
+        }
+        if (invalid_feed_forward == true){
+            var warning_text = "With this new servo offset, one/some of the\ndefined profiles has a feed forward\nvoltage that would exceed the absolute\nvoltage limits [-10.0, 10.0 V]"
+            warning_text += "\nPROFILES WITH INVALID FEED FORWARD VALUES:\n" + offending_profiles
+            showAlert(warning_text)
+        }
     }
 
     function getServoOffset() {
@@ -1680,7 +1707,7 @@ Rectangle {
                 //Send all the STP things 
                 ice.send(base_int_str + "0 " + profile["stpNValue"], slot, null) 
                 ice.send(base_int_str + "1 " + profile["invertPFDPolarity"], slot, null)
-                ice.send(base_float_str + "2 " + profile["stpOffsetDac"], slot, null)
+                ice.send(base_float_str + "2 " + (rotarycontrolServoOffset.value + profile["stpFeedForwardOffset"]), slot, null)
                 //ice.send(base_float_str + "3 " + profile["stpAuxDac"], slot, null) //Unused AUX DAC option
                 ice.send(base_int_str + "4 " + profile["duration"], slot, null) 
                 ice.send(base_int_str + "5 " + profile["stpFrequency"], slot, null)
@@ -1698,7 +1725,7 @@ Rectangle {
                 //Send all the DRG things --many of the argument indexes are the same as STP
                 ice.send(base_int_str + "0 " + profile["drgNValue"], slot, null) 
                 ice.send(base_int_str + "1 " + profile["invertPFDPolarity"], slot, null)
-                ice.send(base_float_str + "2 " + profile["drgOffsetDAC"], slot, null)
+                ice.send(base_float_str + "2 " + (rotarycontrolServoOffset.value + profile["drgFeedForwardOffset"]), slot, null)
                 //ice.send(base_float_str + "3 " + profile["drgAuxDac"], slot, null) //Unused AUX DAC option
                 ice.send(base_int_str + "4 " + profile["duration"], slot, null)
                 ice.send(base_int_str + "5 " + profile["drgRampDuration"], slot, null)
@@ -3138,7 +3165,7 @@ Rectangle {
         Text {
             id: feedForwardWarning
             color: "#FFFFFF"
-            text: "** Absolute offset is calculated by adding manual servo offset\ncontrol value to the input feed forward voltage. This calculation\noccurs when the user presses \"OK\"."
+            text: "** Absolute offset is calculated by adding manual servo offset\ncontrol value to the input feed forward voltage. This calculation\noccurs when the user presses \"Load Seq.\"."
             anchors {
                 top: ddsqDefineDRGProfileParamsBox.bottom
                 left: parent.left
@@ -3336,8 +3363,8 @@ Rectangle {
         id: rectAlert
         anchors.centerIn: rectDDSQueue
         color: '#333333'
-        width: 250
-        height: 250
+        width: 400
+        height: 400
         border.color: '#39F'
         border.width: 2
         visible: false
@@ -3346,7 +3373,9 @@ Rectangle {
 
         Text {
             id: alertText
-            anchors.centerIn: parent
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 10
             text: "No message."
             color: "#cccccc"
             font.bold: true
