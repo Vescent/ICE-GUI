@@ -765,7 +765,10 @@ Rectangle {
         interval: updateRate * 2
         running: false
         repeat: true
-        onTriggered: update_DDS_PLL_LockIndicator()
+        onTriggered: {
+                update_DDS_PLL_LockIndicator();
+                get_ddsq_step();
+        }
         triggeredOnStart: true
     }
 
