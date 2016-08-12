@@ -38,7 +38,7 @@ Rectangle {
     signal error(string msg)
 
     onActiveChanged: {
-        if (active) {
+        if (active) {        
             ice.send('#pauselcd f', slot, null);
 
             if (typeof(appWindow.widgetState[slot].laser_slave_slot) === 'number') {
@@ -125,7 +125,7 @@ Rectangle {
 
             global.this_slot_loaded = true;
         }
-        else {
+        else{
             intervalTimer.stop();
             runRamp(false);
 
@@ -482,6 +482,20 @@ Rectangle {
                 return;
             });
         }
+        updateFeedForwardLimits();
+    }
+
+    function updateFeedForwardLimits(){
+        var current_servo_offset = rotarycontrolServoOffset.value;
+        var min_value = (-10.0 - current_servo_offset).toFixed(2);
+        var max_value = (10.0 - current_servo_offset).toFixed(2);
+        var limit_text = "[" + min_value + ", " + max_value + "]";
+        stpOffsetDac.minVal = min_value;
+        stpOffsetDac.maxVal = max_value;
+        stpFeedForwardLimits.text = limit_text;
+        drgOffsetDAC.minVal = min_value;
+        drgOffsetDAC.maxVal = max_value;
+        drgFeedForwardLimits.text = limit_text;
     }
 
     function getServoOffset() {
@@ -2356,14 +2370,16 @@ Rectangle {
         //Single Tone Profile parameters
         stpFrequency.value = 100.000000
         stpNValue.value = rotarycontrolNDiv.getValue()
-        stpOffsetDac.value = rotarycontrolServoOffset.value
+        // stpOffsetDac.value = rotarycontrolServoOffset.value
+        stpOffsetDac.value = 0.0
 
         //Ramp Profile Parameters
         drgStopFreq.value = 150.000000
         drgStartFreq.value = 100.000000
         drgRampDuration.value = 1000
         drgNValue.value = rotarycontrolNDiv.value
-        drgOffsetDAC.value = rotarycontrolServoOffset.value
+        // drgOffsetDAC.value = rotarycontrolServoOffset.value
+        drgOffsetDAC.value = 0.0
     }
 
     function ddsqSetProfileBoxParamsToProfileVals(profile_index){
@@ -2379,7 +2395,8 @@ Rectangle {
             //Single Tone Profile parameters
             stpFrequency.value = profile["stpFrequency"] / 1000000.0 //convert back to MHz
             stpNValue.value = profile["stpNValue"]
-            stpOffsetDac.value = profile["stpOffsetDac"]
+            // stpOffsetDac.value = profile["stpOffsetDac"]
+            stpOffsetDac.value = profile["stpFeedForwardOffset"]
 
             //Ramp Profile Parameters
             if(profile["drgDirection"] == 0){ //lower -> upper
@@ -2394,7 +2411,8 @@ Rectangle {
 
             drgRampDuration.value = profile["drgRampDuration"]
             drgNValue.value = profile["drgNValue"]
-            drgOffsetDAC.value = profile["drgOffsetDAC"]
+            // drgOffsetDAC.value = profile["drgOffsetDAC"]
+            drgOffsetDAC.value = profile["drgFeedForwardOffset"]
 
         }
     }
@@ -2443,11 +2461,13 @@ Rectangle {
             
             "stpFrequency": stpFrequency.value * 1000000, //convert to Hz
             "stpNValue": stpNValue.value,
-            "stpOffsetDac": stpOffsetDac.value,
+            "stpOffsetDac": rotarycontrolServoOffset.value + stpOffsetDac.value,
+            "stpFeedForwardOffset": stpOffsetDac.value,
 
             "drgRampDuration": drgRampDuration.value,
             "drgNValue": drgNValue.value,
-            "drgOffsetDAC": drgOffsetDAC.value,            
+            "drgOffsetDAC": rotarycontrolServoOffset.value + drgOffsetDAC.value,   
+            "drgFeedForwardOffset": drgOffsetDAC.value,         
         }
 
         if(drgStartFreq.value < drgStopFreq.value){
@@ -2873,7 +2893,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Servo Offset [V]: "
+                    text: "Feed Forward** [V]: "
                     color: '#FFF'
                 }
 
@@ -2947,6 +2967,7 @@ Rectangle {
                 }
 
                 Text {
+                    id: stpFeedForwardLimits
                     text: "[-10.00, 10.00]"
                     color: '#FFF'
                 }
@@ -2998,7 +3019,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Servo Offset [V]: "
+                    text: "Feed Forward** [V]: "
                     color: '#FFF'
                 }
 
@@ -3106,10 +3127,22 @@ Rectangle {
                 }
 
                 Text {
+                    id: drgFeedForwardLimits
                     text: "[-10.00, 10.00]"
                     color: '#FFF'
                 }
 
+            }
+        }
+
+        Text {
+            id: feedForwardWarning
+            color: "#FFFFFF"
+            text: "** Absolute offset is calculated by adding manual servo offset\ncontrol value to the input feed forward voltage. This calculation\noccurs when the user presses \"OK\"."
+            anchors {
+                top: ddsqDefineDRGProfileParamsBox.bottom
+                left: parent.left
+                margins: 10
             }
         }
         
