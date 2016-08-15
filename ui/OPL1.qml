@@ -532,6 +532,8 @@ Rectangle {
             global.rampCenter = parseFloat(result);
             return;
         });
+        updateFeedForwardLimits();
+        verifyFeedForwardsAreValid();
     }
 
     // Ramp Commands
