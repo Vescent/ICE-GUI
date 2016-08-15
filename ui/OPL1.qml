@@ -1070,7 +1070,7 @@ Rectangle {
             useArc: true
             showRange: true
             value: 0
-            stepSize: 1
+            stepSize: 0.2
             minValue: 0
             maxValue: maxCurrent
             onNewValue: {
