@@ -2406,7 +2406,7 @@ Rectangle {
         drgStopFreq.value = 150.000000
         drgStartFreq.value = 100.000000
         drgRampDuration.value = 1000
-        drgNValue.value = rotarycontrolNDiv.value
+        drgNValue.value = rotarycontrolNDiv.getValue()
         // drgOffsetDAC.value = rotarycontrolServoOffset.value
         drgOffsetDAC.value = 0.0
     }
@@ -3244,17 +3244,40 @@ Rectangle {
                 var n_value = profile["drgNValue"]
                 if(profile["drgDirection"] == 0){ // positive direction, start w/ lower limit
                     ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
-                    time_offset = time_offset + profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
-                    time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
+
+                    //Now determine if the end point is limited by the profile duration or the ramp duration
+                    //first, consider the case where the ramp duration is less than the total duration
+                    if(profile["drgRampDuration"] < profile["duration"]){
+                        time_offset = time_offset + profile["drgRampDuration"]
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
+
+                        time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
+                    }
+                    //Now consider the total duration being less than ramp duration, such that the ramp is cut off by the profile transition
+                    else{
+                        time_offset = time_offset + profile["duration"]
+                        var freq_offset = (profile["drgUpperLimit"] - profile["drgLowerLimit"]) * (profile["duration"] / profile["drgRampDuration"])
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * (profile["drgUpperLimit"] - freq_offset) / 1000000.0], 0)
+                    }
                 }
                 else if(profile["drgDirection"] == 1){ //negative direction
                     ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgUpperLimit"] / 1000000.0], 0)
-                    time_offset = time_offset + profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
-                    time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
-                    ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
+
+                    //Go through the same logic as above, but for the negative direction
+                    if(profile["drgRampDuration"] < profile["duration"]){
+                        time_offset = time_offset + profile["drgRampDuration"]
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
+
+                        time_offset = time_offset + profile["duration"] - profile["drgRampDuration"]
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * profile["drgLowerLimit"] / 1000000.0], 0)
+                    }
+                    //Now consider the total duration being less than ramp duration, such that the ramp is cut off by the profile transition
+                    else{
+                        time_offset = time_offset + profile["duration"]
+                        var freq_offset = (profile["drgUpperLimit"] - profile["drgLowerLimit"]) * (profile["duration"] / profile["drgRampDuration"])
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * (profile["drgLowerLimit"] + freq_offset) / 1000000.0], 0)
+                    }
                 }
                 if(max_value < n_value * profile["drgUpperLimit"]){
                     max_value = n_value * profile["drgUpperLimit"]
