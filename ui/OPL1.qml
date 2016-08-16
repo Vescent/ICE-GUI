@@ -3329,6 +3329,18 @@ Rectangle {
             }
         }
 
+        Text {
+            id: ddsqPreviewNoteText
+            color: "#ffff26"
+            text: qsTr("Note: Preview assumes profiles transition after profile duration, so ramps will be cut off if (ramp duration > profile duration)")
+            anchors.left: parent.left
+            anchors.top: ddsqPreviewTitle.bottom
+            anchors.margins: 5
+            horizontalAlignment: Text.AlignHCenter
+            font.pointSize: 9
+            verticalAlignment: Text.AlignVCenter
+        }
+
         ThemeButton {
             id: ddsqPreviewExit
             text: "Close"
@@ -3350,7 +3362,7 @@ Rectangle {
         PlotComponent{
             id: ddsqPreviewGraph
             anchors {
-                top: ddsqPreviewTitle.bottom
+                top: ddsqPreviewNoteText.bottom
                 left: parent.left
                 right: parent.right
                 bottom: parent.bottom
