@@ -2843,7 +2843,7 @@ Rectangle {
                     radius: 0
                     minVal: 100
                     maxVal: 130000
-                    precision: 5
+                    precision: 6
                     decimal: 0
                 }
             }
@@ -3096,14 +3096,14 @@ Rectangle {
                     radius: 0
                     minVal: 100
                     maxVal: 130000
-                    precision: 5
+                    precision: 6
                     decimal: 0
                 }
 
                 DataInput {
                     id: drgNValue
-                    value: 0.0
-                    text: "0.0"
+                    value: 8
+                    text: "8"
                     pointSize: 8
                     radius: 0
                     minVal: 0
