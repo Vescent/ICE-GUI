@@ -3335,7 +3335,7 @@ Rectangle {
                     else{
                         time_offset = time_offset + profile["duration"]
                         var freq_offset = (profile["drgUpperLimit"] - profile["drgLowerLimit"]) * (profile["duration"] / profile["drgRampDuration"])
-                        ddsqPreviewGraph.addPoint([time_offset, n_value * (profile["drgUpperLimit"] - freq_offset) / 1000000.0], 0)
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * (profile["drgLowerLimit"] + freq_offset) / 1000000.0], 0)
                     }
                 }
                 else if(profile["drgDirection"] == 1){ //negative direction
@@ -3353,7 +3353,7 @@ Rectangle {
                     else{
                         time_offset = time_offset + profile["duration"]
                         var freq_offset = (profile["drgUpperLimit"] - profile["drgLowerLimit"]) * (profile["duration"] / profile["drgRampDuration"])
-                        ddsqPreviewGraph.addPoint([time_offset, n_value * (profile["drgLowerLimit"] + freq_offset) / 1000000.0], 0)
+                        ddsqPreviewGraph.addPoint([time_offset, n_value * (profile["drgUpperLimit"] - freq_offset) / 1000000.0], 0)
                     }
                 }
                 if(max_value < n_value * profile["drgUpperLimit"]){
