@@ -68,7 +68,7 @@ Rectangle {
             get_pid_poles();
             get_ddsq_step();
             set_ddsq_event_addr(global.ddsq_event_addr)
-            set_ddsq_loop_state(false);
+            set_ddsq_loop_state(true);
 
             intervalTimer.start();
             setGraphLabels();
@@ -1858,10 +1858,10 @@ Rectangle {
         ice.send(cmd_str, slot, function(result){
             var new_state = parseInt(result);
             if(new_state == 1){
-                toggleswitchLoopDDSQ.enableState = true;
+                toggleswitchLoopDDSQ.enableSwitch(true);
             }
             else{
-                toggleswitchLoopDDSQ.enableState = false;
+                toggleswitchLoopDDSQ.enableSwitch(false);
             }
             })
     }
