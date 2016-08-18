@@ -314,6 +314,7 @@ Rectangle {
                 rotarycontrolNDiv.setValue(result);
                 return;
             });
+            updateOffsetFreqReadout();
         }
     }
 
@@ -322,6 +323,7 @@ Rectangle {
             rotarycontrolNDiv.setValue(result);
             return;
         });
+        updateOffsetFreqReadout();
     }
 
     function setInvert(value) {
@@ -385,13 +387,17 @@ Rectangle {
         });
     }
 
+    function updateOffsetFreqReadout(){
+        readoutOffsetFreq.setValue(datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000);
+    }
+
     function setIntFreq(value) {
         if(global.ddsq_active == false){
             ice.send('PFLFREQ 0 ' + value * 1000000, slot, function(result){ //multiply by 1000000 to convert from MHz to Hz
                 datainputIntFreq.setValue(result / 1000000); //Convert from Hz to MHz
-                readoutOffsetFreq.setValue(datainputIntFreq.value*rotarycontrolNDiv.getValue()/1000);
                 return;
             });
+            updateOffsetFreqReadout();
         }
     }
 
