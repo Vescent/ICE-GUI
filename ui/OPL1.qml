@@ -2398,7 +2398,19 @@ Rectangle {
 
         //Single Tone Profile parameters
         stpFrequency.value = 100.000000
-        stpNValue.value = rotarycontrolNDiv.getValue()
+        var n_value = rotarycontrolNDiv.getValue()
+        if(n_value == 64){
+            stpNDiv.currentIndex = 3;
+        }
+        else if (n_value == 32){
+            stpNDiv.currentIndex = 2;
+        }
+        else if (n_value == 16){
+            stpNDiv.currentIndex = 1;
+        }
+        else{
+            stpNDiv.currentIndex = 0;
+        }
         // stpOffsetDac.value = rotarycontrolServoOffset.value
         stpOffsetDac.value = 0.0
 
@@ -2406,7 +2418,18 @@ Rectangle {
         drgStopFreq.value = 150.000000
         drgStartFreq.value = 100.000000
         drgRampDuration.value = 1000
-        drgNValue.value = rotarycontrolNDiv.getValue()
+        if(n_value == 64){
+            drgNDiv.currentIndex = 3;
+        }
+        else if (n_value == 32){
+            drgNDiv.currentIndex = 2;
+        }
+        else if (n_value == 16){
+            drgNDiv.currentIndex = 1;
+        }
+        else{
+            drgNDiv.currentIndex = 0;
+        }
         // drgOffsetDAC.value = rotarycontrolServoOffset.value
         drgOffsetDAC.value = 0.0
     }
@@ -2423,7 +2446,19 @@ Rectangle {
 
             //Single Tone Profile parameters
             stpFrequency.value = profile["stpFrequency"] / 1000000.0 //convert back to MHz
-            stpNValue.value = profile["stpNValue"]
+            var n_value = profile["stpNValue"]
+            if(n_value == 64){
+                stpNDiv.currentIndex = 3;
+            }
+            else if (n_value == 32){
+                stpNDiv.currentIndex = 2;
+            }
+            else if (n_value == 16){
+                stpNDiv.currentIndex = 1;
+            }
+            else{
+                stpNDiv.currentIndex = 0;
+            }
             // stpOffsetDac.value = profile["stpOffsetDac"]
             stpOffsetDac.value = profile["stpFeedForwardOffset"]
 
@@ -2439,7 +2474,19 @@ Rectangle {
             
 
             drgRampDuration.value = profile["drgRampDuration"]
-            drgNValue.value = profile["drgNValue"]
+            n_value = profile["drgNValue"]
+            if(n_value == 64){
+                drgNDiv.currentIndex = 3;
+            }
+            else if (n_value == 32){
+                drgNDiv.currentIndex = 2;
+            }
+            else if (n_value == 16){
+                drgNDiv.currentIndex = 1;
+            }
+            else{
+                drgNDiv.currentIndex = 0;
+            }
             // drgOffsetDAC.value = profile["drgOffsetDAC"]
             drgOffsetDAC.value = profile["drgFeedForwardOffset"]
 
@@ -2481,7 +2528,37 @@ Rectangle {
                 already_defined = true;
                 existing_index = i;
             }
-        }        
+        }    
+        var n_index = stpNDiv.currentIndex
+        var stp_n_value = 8
+        if(n_index == 3){
+            stp_n_value = 64;
+        }
+        else if (n_index == 2){
+            stp_n_value = 32;
+        }
+        else if (n_index == 1){
+            stp_n_value = 16;
+        }
+        else{
+            stp_n_value = 8;
+        }
+
+        n_index = drgNDiv.currentIndex
+        var drg_n_value = 8
+        if(n_index == 3){
+            drg_n_value = 64;
+        }
+        else if (n_index == 2){
+            drg_n_value = 32;
+        }
+        else if (n_index == 1){
+            drg_n_value = 16;
+        }
+        else{
+            drg_n_value = 8;
+        }
+
         var new_entry = {
             "name": profileName.text,
             "type": ddsqProfileTypeComboBox.currentIndex,
@@ -2489,12 +2566,12 @@ Rectangle {
             "invertPFDPolarity": ddsqProfileInvertPFDPolarityComboBox.currentIndex,
             
             "stpFrequency": stpFrequency.value * 1000000, //convert to Hz
-            "stpNValue": stpNValue.value,
+            "stpNValue": stp_n_value,
             "stpOffsetDac": rotarycontrolServoOffset.value + stpOffsetDac.value,
             "stpFeedForwardOffset": stpOffsetDac.value,
 
             "drgRampDuration": drgRampDuration.value,
-            "drgNValue": drgNValue.value,
+            "drgNValue": drg_n_value,
             "drgOffsetDAC": rotarycontrolServoOffset.value + drgOffsetDAC.value,   
             "drgFeedForwardOffset": drgOffsetDAC.value,         
         }
@@ -2950,16 +3027,16 @@ Rectangle {
                     precision: 10
                 }
 
-                DataInput {
-                    id: stpNValue
-                    value: 8
-                    text: "8"
-                    pointSize: 8
-                    radius: 0
-                    minVal: 0
-                    maxVal: 64
-                    decimal: 0
-                    precision: 2
+                ComboBox {
+                    editable: false
+                    id: stpNDiv
+                    width: 60
+                    model: ListModel {
+                        ListElement { text: "8" }
+                        ListElement { text: "16" }
+                        ListElement { text: "32" }
+                        ListElement { text: "64" }
+                    }
                 }
 
                 DataInput {
@@ -3100,16 +3177,16 @@ Rectangle {
                     decimal: 0
                 }
 
-                DataInput {
-                    id: drgNValue
-                    value: 8
-                    text: "8"
-                    pointSize: 8
-                    radius: 0
-                    minVal: 0
-                    maxVal: 64
-                    precision: 2
-                    decimal: 0
+                ComboBox {
+                    editable: false
+                    id: drgNDiv
+                    width: 60
+                    model: ListModel {
+                        ListElement { text: "8" }
+                        ListElement { text: "16" }
+                        ListElement { text: "32" }
+                        ListElement { text: "64" }
+                    }
                 }
 
                 DataInput {
