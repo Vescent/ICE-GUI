@@ -11,7 +11,7 @@ Rectangle {
     radius: 15
     border.width: 2
     border.color: (active) ? '#3399ff' : "#666666";
-    property string widgetTitle: 'ICE-OPL1'
+    property string widgetTitle: 'ICE-OPL1: Phase Lock Servo'
     property int slot: 1
     property bool active: false
     property int updateRate: 500
@@ -1923,16 +1923,21 @@ Rectangle {
                     width: parent.width
                     height: 10
                     color: "#505050"
-
                     Text {
-                        x: 29
+                        x: 0
+                        anchors.top: parent.top
+                        text: "State"
+                        color: "#cccccc"
+                    }
+                    Text {
+                        x: 75
                         anchors.top: parent.top
                         text: "Profile"
                         color: "#cccccc"
                     }
 
                     Text {
-                        x: 183
+                        x: 203
                         anchors.top: parent.top
                         text: "Interrupt Trigger"
                         color: "#cccccc"
@@ -1973,19 +1978,14 @@ Rectangle {
                                 font.bold: true
                                 color: "#cccccc"
                             }
-                            Text {
-                                id: delProfileXBox
-                                // anchor.left: parent
+                            ThemeButton {
+                                y: 2
                                 x: 15
-                                y: 3
-                                text: "[X]"
-                                color: "#cccccc"
-                            
-                                MouseArea {
-                                    anchors.fill: delProfileXBox
-                                    onClicked: {
-                                        deleteProfileFromPlaylist(index)
-                                    }
+                                height: 18
+                                width: 15
+                                text: "X"
+                                onClicked: {
+                                    deleteProfileFromPlaylist(index)
                                 }
                             }
                         }
@@ -1997,27 +1997,42 @@ Rectangle {
                             model: availableProfiles
                         }
 
-                        Rectangle {
-                            y: 3
-                            height: 15
+                        ThemeButton {
+                            y: 2
+                            height: 18
                             width: 30
-                            color: 'transparent'
-                            Text {
-                                color: "#cccccc"
-                                text: "[edit]"
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    var test = playlistRepeater.itemAt(index)
-                                    var cbox = test.children[1]
-                                    ddsqSetProfileBoxParamsToProfileVals(cbox.currentIndex);
-                                    ddsqEditProfileSelectionBox.visible = false;
-                                    ddsqDefineProfileBox.visible = true;
-                                    showDDSQComponents(false)
-                                }
+                            text: "Edit"
+                            onClicked: {
+                                var test = playlistRepeater.itemAt(index)
+                                var cbox = test.children[1]
+                                ddsqSetProfileBoxParamsToProfileVals(cbox.currentIndex);
+                                ddsqEditProfileSelectionBox.visible = false;
+                                ddsqDefineProfileBox.visible = true;
+                                showDDSQComponents(false)
                             }
                         }
+
+                        // Rectangle {
+                        //     y: 3
+                        //     height: 15
+                        //     width: 30
+                        //     color: 'transparent'
+                        //     Text {
+                        //         color: "#cccccc"
+                        //         text: "[edit]"
+                        //     }
+                        //     MouseArea {
+                        //         anchors.fill: parent
+                        //         onClicked: {
+                        //             var test = playlistRepeater.itemAt(index)
+                        //             var cbox = test.children[1]
+                        //             ddsqSetProfileBoxParamsToProfileVals(cbox.currentIndex);
+                        //             ddsqEditProfileSelectionBox.visible = false;
+                        //             ddsqDefineProfileBox.visible = true;
+                        //             showDDSQComponents(false)
+                        //         }
+                        //     }
+                        // }
 
                         ComboBox {
                             model: ListModel {
@@ -2162,6 +2177,33 @@ Rectangle {
                 width: 90
                 anchors.horizontalCenter: parent.horizontalCenter
 
+                ThemeButton {
+                    id: ddsqSaveSettingsBtn
+                    y: 7
+                    width: 90
+                    height: 25
+                    text: "Save Playlist"
+                    highlight: false
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        ddsqSavePlaylistDialog.open()
+                    }
+                    enabled: true
+                }
+
+                ThemeButton {
+                    id: ddsqLoadSettingsBtn
+                    y: 7
+                    width: 90
+                    height: 25
+                    text: "Load Playlist"
+                    highlight: false
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        ddsqLoadPlaylistDialog.open()
+                    }
+                }
+
                 Text {
                     color: "#ffffff"
                     text: "Profiles"
@@ -2233,41 +2275,14 @@ Rectangle {
                 //     anchors.horizontalCenter: parent.horizontalCenter
                 // }
 
-                Text {
-                    color: "#ffffff"
-                    text: "Options"
-                    styleColor: "#ffffff"
-                    font.bold: true
-                    font.pointSize: 12
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-
-                ThemeButton {
-                    id: ddsqSaveSettingsBtn
-                    y: 7
-                    width: 90
-                    height: 25
-                    text: "Save Settings"
-                    highlight: false
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    onClicked: {
-                        ddsqSavePlaylistDialog.open()
-                    }
-                    enabled: true
-                }
-
-                ThemeButton {
-                    id: ddsqLoadSettingsBtn
-                    y: 7
-                    width: 90
-                    height: 25
-                    text: "Load Settings"
-                    highlight: false
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    onClicked: {
-                        ddsqLoadPlaylistDialog.open()
-                    }
-                }
+                // Text {
+                //     color: "#ffffff"
+                //     text: "Options"
+                //     styleColor: "#ffffff"
+                //     font.bold: true
+                //     font.pointSize: 12
+                //     anchors.horizontalCenter: parent.horizontalCenter
+                // 
 
                 // Text {
                 //     color: "#cccccc"
@@ -2278,7 +2293,7 @@ Rectangle {
 
                 Text {
                     color: "#ffffff"
-                    text: "Commands"
+                    text: "Execution"
                     styleColor: "#ffffff"
                     font.bold: true
                     font.pointSize: 12
@@ -2856,7 +2871,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Invert PFD Polarity: "
+                    text: "Invert: "
                     color: '#FFF'
                 }
 
@@ -2913,8 +2928,8 @@ Rectangle {
                     id: ddsqProfileInvertPFDPolarityComboBox
                     model: ListModel {
                         id: model2
-                        ListElement { text: "Disabled" }
-                        ListElement { text: "Enabled" }
+                        ListElement { text: "Off" }
+                        ListElement { text: "On" }
                     }
                 }
 
