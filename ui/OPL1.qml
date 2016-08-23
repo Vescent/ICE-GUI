@@ -760,8 +760,19 @@ Rectangle {
             }
             else if (state == "Off"){
                 ddspllLockIndicator.setState(false)
+                var msg = "The DDS chip is reporting that it has lost phase lock.\nA reset button has appeared next to the DDS PLL indicator\nat the top of the page.\nPress the reset button to regain phase lock on the DDS.\n\nWARNING: Resetting the DDS will change\nthe output frequency among other settings.\nBe sure to reprogram any queue you have created.";
+                showAlert(msg);
+                resetDDSPLLButton.visible = true;
+                ddspllStatusCheckTimer.stop()
             }
         });
+    }
+
+    function reset_dds(){
+        ice.send('DDSRESET', slot, function(result){
+            resetDDSPLLButton.visible = false;
+        })
+        ddspllStatusCheckTimer.start();
     }
 
     function get_pid_poles(){
@@ -1456,6 +1467,23 @@ Rectangle {
         }
         labelText: "DDS PLL Locked?"
         currentState: false
+    }
+
+    ThemeButton {
+        id: resetDDSPLLButton
+        anchors {
+            top: ddsqPanelBtn.top
+            left: ddspllLockIndicator.right
+        }
+        x: 20
+        height: 20
+        width: 75
+        visible: false
+        text: "RESET DDS"
+        onClicked: {
+            reset_dds();
+            ddspllStatusCheckTimer.start()
+        }
     }
 
     Rectangle {
