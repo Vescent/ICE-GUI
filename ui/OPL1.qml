@@ -1747,6 +1747,9 @@ Rectangle {
                 //ice.send(base_float_str + "3 " + profile["stpAuxDac"], slot, null) //Unused AUX DAC option
                 ice.send(base_int_str + "4 " + profile["duration"], slot, null) 
                 ice.send(base_int_str + "5 " + profile["stpFrequency"], slot, null)
+                // arg 6 is phase offset word -- unused
+                //arg 7 is amplitude scale factor -- unused
+                ice.send(base_int_str + "8 " + profile["useIntRef"], slot, null)  //kludged in at later date, hence weird order
 
                 //Now save the mapping of this profile to the 
                 var new_mapping = {"type": 2, "index": idx}
@@ -1769,6 +1772,7 @@ Rectangle {
                 ice.send(base_int_str + "7 0", slot, null) //Ramp destination is frequency.  Hard coded for now (also default setting on board)
                 ice.send(base_int_str + "8 " + profile["drgLowerLimit"], slot, null)
                 ice.send(base_int_str + "9 " + profile["drgUpperLimit"], slot, null)
+                ice.send(base_int_str + "10 " + profile["useIntRef"], slot, null)  //kludged in at later date, hence weird order
 
                 //Now save the mapping of this profile to the 
                 var new_mapping = {"type": 1, "index": idx}
@@ -2441,6 +2445,14 @@ Rectangle {
         else{
             ddsqProfileInvertPFDPolarityComboBox.currentIndex = 1
         }
+
+        if(toggleswitchIntRef.enableState == false){
+            ddsqProfileUseIntRefComboBox.currentIndex = 0
+        }
+        else{
+            ddsqProfileUseIntRefComboBox.currentIndex = 1
+        }
+
         profileDuration.value = 1000.0
 
 
@@ -2492,6 +2504,7 @@ Rectangle {
             ddsqProfileTypeComboBox.currentIndex = profile["type"]
             profileDuration.value = profile["duration"]
             ddsqProfileInvertPFDPolarityComboBox.currentIndex = profile["invertPFDPolarity"]
+            ddsqProfileUseIntRefComboBox.currentIndex = profile["useIntRef"]
 
             //Single Tone Profile parameters
             stpFrequency.value = profile["stpFrequency"] / 1000000.0 //convert back to MHz
@@ -2613,6 +2626,7 @@ Rectangle {
             "type": ddsqProfileTypeComboBox.currentIndex,
             "duration": profileDuration.value,
             "invertPFDPolarity": ddsqProfileInvertPFDPolarityComboBox.currentIndex,
+            "useIntRef": ddsqProfileUseIntRefComboBox.currentIndex,
             
             "stpFrequency": stpFrequency.value * 1000000, //convert to Hz
             "stpNValue": stp_n_value,
@@ -2747,6 +2761,7 @@ Rectangle {
             text: "Cancel"
             pointSize: 12
             textColor: "#ffffff"
+            backgroundColor: "#666666"
             borderWidth: 1
             highlight: true
             onClicked: {
@@ -2828,6 +2843,7 @@ Rectangle {
             text: "Cancel"
             pointSize: 12
             textColor: "#ffffff"
+            backgroundColor: "#666666"
             borderWidth: 1
             highlight: true
             onClicked: {
@@ -2875,7 +2891,7 @@ Rectangle {
                 margins: 10
             }
             width: 380
-            height: 110
+            height: 140
             color: '#555'
             border.color: '#39F'
             border.width: 2
@@ -2886,7 +2902,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 anchors.margins: 10
-                spacing: 10
+                spacing: 12
 
                 Text{
                     text: "Profile Name: "
@@ -2896,6 +2912,11 @@ Rectangle {
                 Text {
                     text: "Profile Type: "
                     color: '#FFF'
+                }
+
+                Text {
+                    text: "Use Int. Ref.:"
+                    color: "#FFF"
                 }
 
                 Text {
@@ -2916,20 +2937,29 @@ Rectangle {
                 anchors.margins: 10
                 spacing: 6
 
-                TextInput {
-                    id: profileName
-                    text: "My New DDS Profile"
-                    cursorVisible: true
-                    height: 12
-                    color: '#FFF'
-                    selectByMouse: true
-                    onFocusChanged: {
-                        if (profileName.focus === true) {
-                        profileName.selectAll()
+                Rectangle {
+                    height: 16
+                    width: 133
+                    radius: 2
+                    color: "#FFFFFF"
+                    TextInput {
+                        id: profileName
+                        text: "My New DDS Profile"
+                        cursorVisible: true
+                        height: 16
+                        color: '#000000'
+                        selectByMouse: true
+                        anchors {
+                            fill: parent
+                            margins: 3
+                        }
+                        onFocusChanged: {
+                            if (profileName.focus === true) {
+                                profileName.selectAll()
+                            }
                         }
                     }
-                }
-                
+                }                
 
                 ComboBox {
                     editable: false
@@ -2948,6 +2978,15 @@ Rectangle {
                             ddsqDefineSTPProfileParamsBox.visible = false
                             ddsqDefineDRGProfileParamsBox.visible = true
                         }
+                    }
+                }
+
+                ComboBox {
+                    editable: false
+                    id: ddsqProfileUseIntRefComboBox
+                    model: ListModel {
+                        ListElement { text: "Off" }
+                        ListElement { text: "On" }
                     }
                 }
 
@@ -2979,20 +3018,26 @@ Rectangle {
                 anchors.left: commonProfileData.right
                 anchors.top: parent.top
                 anchors.margins: 10
-                spacing: 10
+                spacing: 12
 
+                //Used to have text in these fields, now just keeping empty strings for spacing.
                 Text{
-                    text: "{Any String}"
+                    text: " "
                     color: '#FFF'
                 }
 
                 Text {
-                    text: "Pick one"
+                    text: " "
                     color: '#FFF'
                 }
 
                 Text {
-                    text: "Pick one"
+                    text: " "
+                    color: '#FFF'
+                }
+
+                Text {
+                    text: " "
                     color: '#FFF'
                 }
 
@@ -3116,8 +3161,9 @@ Rectangle {
                     color: '#FFF'
                 }
 
+                //Used to have text here, keeping empty string as a spacer
                 Text {
-                    text: "{8, 16, 32, 64}"
+                    text: " "
                     color: '#FFF'
                 }
 
@@ -3137,7 +3183,7 @@ Rectangle {
                 margins: 10
             }
             width: 380
-            height: 170
+            height: 155
             color: '#555'
             border.color: '#39F'
             border.width: 2
@@ -3276,8 +3322,9 @@ Rectangle {
                     color: '#FFF'
                 }
 
+                //Used to have text, keeping empty string as a spacer
                 Text {
-                    text: "{8, 16, 32, 64}"
+                    text: " "
                     color: '#FFF'
                 }
 
@@ -3297,7 +3344,7 @@ Rectangle {
             anchors {
                 top: ddsqDefineDRGProfileParamsBox.bottom
                 left: parent.left
-                margins: 10
+                margins: 5
             }
         }
         
@@ -3329,6 +3376,7 @@ Rectangle {
             text: "Cancel"
             pointSize: 12
             textColor: "#ffffff"
+            backgroundColor: "#666666"
             borderWidth: 1
             highlight: true
             onClicked: {
@@ -3356,6 +3404,12 @@ Rectangle {
             var interrupt_type = global.ddsqPlaylist[i]["interrupt_idx"] //Will use this later, grab it now
 
             var profile = global.ddsqProfiles[prof_idx]
+
+            if(profile["useIntRef"] == 0){
+                //External reference, so can't predict frequency.  Just increment th time offset
+                time_offset = time_offset + profile["duration"]
+                continue;
+            }
 
             if(profile["type"] == 0){ //STP profile
                 var n_value = profile["stpNValue"]
