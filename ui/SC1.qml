@@ -1018,7 +1018,7 @@ Rectangle {
             anchors.verticalCenterOffset: 23
             anchors.horizontalCenterOffset: -86
             displayTextRatio: 0.3
-            decimalPlaces: 0
+            decimalPlaces: 1
             useArc: true
             showRange: false
             value: 0
@@ -1591,7 +1591,7 @@ Rectangle {
                     width: 70
                     height: 70
                     displayTextRatio: 0.3
-                    decimalPlaces: 0
+                    decimalPlaces: 1
                     useArc: true
                     showRange: false
                     value: 1
