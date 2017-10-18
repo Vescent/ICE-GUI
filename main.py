@@ -1,6 +1,6 @@
-#!python3.4
+#!python3.5
 __author__ = 'Vescent Photonics, Inc.'
-__version__ = '1.1'
+__version__ = '1.2'
 
 # NOTE: PyQt5 depends on DirectX for doing OpenGL graphics, so
 # the deployment machine may require the Microsoft DirectX runtime
@@ -15,9 +15,10 @@ from PyQt5.QtGui import QIcon
 from PyQt5 import QtQuick
 from PyQt5.QtQml import QJSValue
 import iceComm
-from xml.etree import ElementTree
+from xml.etree import ElementTree   
 from urllib.request import urlopen
 from collections import defaultdict
+import json
 
 # Converts XML ElementTree to Python dict
 def etree_to_dict(t):
@@ -105,6 +106,7 @@ class iceController(QObject):
         data = self.iceRef.send(command)
 
         if data[:9] == 'I2C Error':
+            logging.error(command)
             logging.error('Error I2c!!!')
             return
 
@@ -169,6 +171,23 @@ class iceController(QObject):
             portnames.append(port[0])
 
         return portnames
+
+    @pyqtSlot(str, 'QVariant')
+    def saveData(self, file_path, file_data):
+        file_path = file_path.lstrip("file:///")
+        with open(file_path, 'w') as f:
+            # f.write("OLOL")
+            f.write(json.dumps(file_data.toVariant(), sort_keys=True, indent=4, separators=(',', ': ')))
+
+    @pyqtSlot(str, result='QVariant')
+    def loadData(self, file_path):
+        file_path = file_path.lstrip("file:///")
+        data = {}
+        with open(file_path, 'r') as f:
+            data = json.loads(f.read())
+            print(data)
+        return data
+
 
 
 class StreamToLogger(object):
