@@ -319,7 +319,7 @@ class Connection(object):
             while True:
                 yield Q.get_nowait()
         except queue.Empty:
-            raise StopIteration
+            return
 
     def get_item_from_queue(self, Q, timeout=0.01):
         """ Attempts to retrieve an item from the queue Q. If Q is
