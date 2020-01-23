@@ -308,7 +308,8 @@ class Connection(object):
         :return: A list containing tuples of three strings corresponding to
         the port name, human description, and hardware ID.
         """
-        return list(list_ports.comports())
+        #return list(list_ports.comports()) #AMCD skip other devices:
+        return list(serial.tools.list_ports.grep("0403:6001"))
 
     def get_all_from_queue(self, Q):
         """ Generator to yield one after the others all items
@@ -318,7 +319,7 @@ class Connection(object):
             while True:
                 yield Q.get_nowait()
         except queue.Empty:
-            raise StopIteration
+            return
 
     def get_item_from_queue(self, Q, timeout=0.01):
         """ Attempts to retrieve an item from the queue Q. If Q is
